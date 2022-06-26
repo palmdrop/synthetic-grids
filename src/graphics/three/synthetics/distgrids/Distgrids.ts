@@ -15,21 +15,22 @@ export class Distgrids extends AbstractRenderScene {
   private gui: dat.GUI;
   private materials: THREE.ShaderMaterial[];
 
-  private grid: THREE.Object3D;
-  private cellDefaultScale: THREE.Vector3;
+  private layers: number;
+  private offset: number;
+  private colors: { [name: string]: THREE.Color }
 
   constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
     super(canvas, onLoad);
 
     this.gui = new dat.GUI();
 
-    const colors = {
-      background: new THREE.Color('#2e1a80'),
-      base: new THREE.Color('#338844'),
-      line: new THREE.Color('#ffff99')
+    this.colors = {
+      background: new THREE.Color('black'),
+      base: new THREE.Color('black'),
+      line: new THREE.Color('white')
     }
 
-    this.scene.background = colors.background;
+    this.scene.background = this.colors.background;
 
     this.scene.fog = new THREE.Fog(this.scene.background, 5.0, 300);
     const fogFolder = this.gui.addFolder('fog');
@@ -48,38 +49,21 @@ export class Distgrids extends AbstractRenderScene {
     
     this.materials = [];
 
-    const defaultMaterial = new THREE.ShaderMaterial(mapWarpShader);
-    const layers = 5;
-    const offset = 3.5;
+    // const defaultMaterial = new THREE.ShaderMaterial(mapWarpShader);
+    this.layers = 1;
+    this.offset = 1.0;
 
+    this.updateMaterials(mapWarpShader);
 
-    for(let i = 0; i < layers; i++) {
-      const material = defaultMaterial.clone()
-
-      material.extensions.derivatives = true;
-      material.side = THREE.DoubleSide;
-
-      material.uniforms.baseColor.value = colors.base;
-      material.uniforms.lineColor.value = colors.line;
-      material.uniforms.frequency.value = 1.31 * (layers - i);
-      material.uniforms.scale.value = new THREE.Vector3(
-        0, 
-        10 + i * 1,
-        // 10 * i,
-        0,
-      );
-      material.uniforms.amplitude.value = i * 0.3 + 0.3;
-
-      this.materials.push(material);
-
+    for(let i = 0; i < this.layers; i++) {
       const layer = generateTerrain({
         dimensions: { 
-          width: 2.0, 
-          height: 2.0 
+          width: 20.0, 
+          height: 20.0 
         },
         tesselation: {
-          x: i * 10 + 100,
-          y: i * 10 + 100
+          x: 500,
+          y: 500
         },
         flatShading: true,
         noiseParams: {
@@ -87,9 +71,9 @@ export class Distgrids extends AbstractRenderScene {
           min: 0.0,
           max: 1.3 * i
         }
-      }, material);
+      }, this.materials[i]);
 
-      layer.position.z = (layers * offset / 2.0) - i * offset;
+      layer.position.z = (this.layers * this.offset / 2.0) - i * this.offset;
 
       this.object.add(layer);
     }
@@ -97,23 +81,35 @@ export class Distgrids extends AbstractRenderScene {
     this.object.rotateX(Math.PI / 2.0)
 
     this.scene.add(this.object);
-    const gridConfig = {
-      width: 20,
-      height: 20,
-      depth: 20,
-      cellsX: 20,
-      cellsY: 20,
-      cellsZ: 20,
-    };
+  }
 
+  public updateMaterials = (shader: THREE.Shader) => {
+    const materialTemplate = new THREE.ShaderMaterial(shader);
 
-    this.grid = makeGeometryGrid3d(gridConfig);
-    this.cellDefaultScale = new THREE.Vector3().copy(this.grid.children[0].scale);
+    this.materials = [];
 
-    this.grid.position.set(0, 0, 0);
-    this.scene.add(this.grid);
+    for(let i = 0; i < this.layers; i++) {
+      const material = materialTemplate.clone()
 
-    // this.gui.hide();
+      material.extensions.derivatives = true;
+      material.side = THREE.DoubleSide;
+
+      material.uniforms.baseColor.value = this.colors.base;
+      material.uniforms.lineColor.value = this.colors.line;
+      material.uniforms.frequency.value = 1.31 * (this.layers - i);
+      material.uniforms.scale.value = new THREE.Vector3(
+        0, 
+        10 + i * 1,
+        0,
+      );
+      material.uniforms.amplitude.value = 0.5;
+
+      this.materials.push(material);
+
+      if(i < this.object.children.length) {
+        this.object.children[i].material = material;
+      }
+    }
   }
 
   protected createCamera(): THREE.Camera {
@@ -136,26 +132,10 @@ export class Distgrids extends AbstractRenderScene {
     this.controls.update();
 
     this.materials.forEach(material => material.uniforms.time.value = now / 10.0);
-    this.grid.children.forEach(child => {
-      const position = child.position;
-      let n = getNoise3D(position, {
-        offset: {
-          x: 0,
-          y: 0,
-          z: now * 0.2
-        },
-        frequency: 0.1
-      });
+  }
 
-      n = Math.pow(n, 2.1);
-
-      n = THREE.MathUtils.mapLinear(
-        n, 0, 1, 0.0, 2.0
-      );
-
-      child.scale.copy(
-        this.cellDefaultScale
-      ).multiplyScalar(n);
-    });
+  stop() {
+    super.stop();
+    this.gui.destroy();
   }
 }

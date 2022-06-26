@@ -4,11 +4,11 @@ import * as THREE from 'three';
 
 export const mapShader: THREE.Shader = {
   uniforms: {
-    'tDiffuse': { value: null },
-		'opacity': { value: 1.0 },
-    'scale': { value: new THREE.Vector3(0, 100, 0) },
-    'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ) },
-    'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+    'tDiffuse': { value: null, type: 'sampler2D' },
+		'opacity': { value: 1.0, type: 'float' },
+    'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
+    'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ), type: 'vec3' },
+    'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ), type: 'vec3' },
   },
 
   vertexShader: /* glsl */`

@@ -40,6 +40,5 @@ export const mapWarpShader: THREE.Shader = {
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
 		}
   `,
-  // mapShader.vertexShader,
   fragmentShader: mapShader.fragmentShader
 }
