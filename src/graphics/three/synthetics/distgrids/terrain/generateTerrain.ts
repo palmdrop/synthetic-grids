@@ -16,12 +16,25 @@ export const generateTerrain = (
   config: LayerConfig,
   material: THREE.Material
 ) => {
+  /*
   const planeGeometry = new THREE.PlaneBufferGeometry(
     config.dimensions.width,
     config.dimensions.height,
     config.tesselation.x,
     config.tesselation.y
   );
+  */
+  const geometry = new THREE.SphereBufferGeometry(
+    config.dimensions.width,
+    // config.dimensions.height,
+    // config.dimensions.height,
+    config.tesselation.x,
+    config.tesselation.y,
+    // config.tesselation.y,
+  );
+
+  geometry.computeVertexNormals();
+  geometry.normalizeNormals();
   /*
   const planeGeometry = new THREE.SphereBufferGeometry(
     config.dimensions.width,
@@ -32,7 +45,7 @@ export const generateTerrain = (
   */
 
   const mesh = new THREE.Mesh(
-    planeGeometry,
+    geometry,
     material
   );
 

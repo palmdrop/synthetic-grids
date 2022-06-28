@@ -2,13 +2,13 @@
 	import Substrates from './modules/substrates/src/App.svelte';
 	import './global.css';
 
-  import type { AbstractRenderScene } from "./graphics/three/AbstractRenderScene";
 	import { Distgrids } from "./graphics/three/synthetics/distgrids/Distgrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { programHistoryStore$, subscribeToProgram } from './modules/substrates/src/stores/programStore';
-import { makeCustomWarpShader } from './graphics/glsl/shaders/customWarpShader';
-import { mapShader } from './graphics/glsl/shaders/mapShader';
+  import { makeCustomWarpShader } from './graphics/glsl/shaders/customWarpShader';
+  import { mapShader } from './graphics/glsl/shaders/mapShader';
+  import type { Program } from './modules/substrates/src/interface/types/program/program';
 
 
   let scene: Distgrids;
@@ -38,6 +38,26 @@ import { mapShader } from './graphics/glsl/shaders/mapShader';
     scene.resize();
     scene.start();
 
+    const updateMaterials = (program: Program | undefined) => {
+      if(!program || !scene) return;
+      scene.updateMaterials(
+        makeCustomWarpShader(
+          program,
+          mapShader
+        )
+      );
+    }
+
+    subscribeToProgram(program => {
+      updateMaterials(program);
+    })
+
+    programHistoryStore$.subscribe(state => {
+      if(state) {
+        updateMaterials(state.program);
+      }
+    });
+
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
@@ -46,17 +66,6 @@ import { mapShader } from './graphics/glsl/shaders/mapShader';
     }
   });
 
-  // subscribeToProgram(program => {
-  programHistoryStore$.subscribe(state => {
-    if(scene && state.program) {
-      scene.updateMaterials(
-        makeCustomWarpShader(
-          state.program,
-          mapShader
-        )
-      );
-    }
-  });
 </script>
 
 <svelte:window on:resize={onResize} />

@@ -6,11 +6,10 @@ import { makeAspectOrthoResizer } from '../../systems/AspectOrthoResizer';
 import { generateTerrain } from './terrain/generateTerrain';
 import { TrackballControls } from '../../examples/TrackballControls';
 import { mapWarpShader } from '../../../glsl/shaders/mapWarpShader';
-import { makeGeometryGrid3d } from '../../procedural/grids/GeometryGrid3d';
-import { getNoise3D } from '../../procedural/noise/noise';
+import { addGUI, addUniforms } from '../../systems/GuiUtils';
 
 export class Distgrids extends AbstractRenderScene {
-  private object: THREE.Object3D;
+  private object: THREE.Object3D<THREE.Mesh>;
   private controls: TrackballControls;
   private gui: dat.GUI;
   private materials: THREE.ShaderMaterial[];
@@ -33,9 +32,19 @@ export class Distgrids extends AbstractRenderScene {
     this.scene.background = this.colors.background;
 
     this.scene.fog = new THREE.Fog(this.scene.background, 5.0, 300);
-    const fogFolder = this.gui.addFolder('fog');
-    fogFolder.add(this.scene.fog, 'near', 0.0, 10);
-    fogFolder.add(this.scene.fog, 'far', 0.0, 1000);
+
+    addGUI(this.gui, this.scene.fog, {
+      'near': {
+        min: 0.0,
+        max: 10,
+        step: 0.01
+      },
+      'far': {
+        min: 0.0,
+        max: 1000,
+        step: 0.01
+      }
+    });
 
     this.controls = new TrackballControls(
       this.camera,
@@ -73,7 +82,7 @@ export class Distgrids extends AbstractRenderScene {
         }
       }, this.materials[i]);
 
-      layer.position.z = (this.layers * this.offset / 2.0) - i * this.offset;
+      layer.position.z = (this.layers * this.offset / 2.0) - i * this.offset + 0.0;
 
       this.object.add(layer);
     }
@@ -86,6 +95,8 @@ export class Distgrids extends AbstractRenderScene {
   public updateMaterials = (shader: THREE.Shader) => {
     const materialTemplate = new THREE.ShaderMaterial(shader);
 
+    const oldMaterials = this.materials;
+
     this.materials = [];
 
     for(let i = 0; i < this.layers; i++) {
@@ -94,20 +105,50 @@ export class Distgrids extends AbstractRenderScene {
       material.extensions.derivatives = true;
       material.side = THREE.DoubleSide;
 
-      material.uniforms.baseColor.value = this.colors.base;
-      material.uniforms.lineColor.value = this.colors.line;
-      material.uniforms.frequency.value = 1.31 * (this.layers - i);
-      material.uniforms.scale.value = new THREE.Vector3(
-        0, 
-        10 + i * 1,
-        0,
-      );
-      material.uniforms.amplitude.value = 0.5;
+      if(i >= oldMaterials.length) {
+        material.uniforms.baseColor.value = this.colors.base;
+        material.uniforms.lineColor.value = this.colors.line;
+        material.uniforms.frequency.value = 1.31 * (this.layers - i);
+        material.uniforms.scale.value = new THREE.Vector3(
+          0, 
+          10 + i * 1,
+          0,
+        );
+        material.uniforms.amplitude.value = 0.5;
+      } else {
+        // material.uniforms = oldMaterials[i].uniforms;
+        Object.keys(oldMaterials[i].uniforms).forEach(uniformName => {
+          if(!material.uniforms[uniformName]) return;
+
+          material.uniforms[uniformName].value = oldMaterials[i].uniforms[uniformName].value;
+        });
+      }
+
+      const folderName = `material_${i}`;
+      if(this.gui.__folders[folderName]) this.gui.removeFolder(this.gui.__folders[folderName])
+      const folder = this.gui.addFolder(folderName);
+      addUniforms(folder, material, {
+        frequency: {
+          min: 0.0,
+          max: 10.0,
+          step: 0.001,
+        },
+        scale: {
+          min: 0.0,
+          max: 10.0,
+          step: 0.001,
+        },
+        amplitude: {
+          min: 0.0,
+          max: 100.0,
+          step: 0.001,
+        },
+      });
 
       this.materials.push(material);
 
       if(i < this.object.children.length) {
-        this.object.children[i].material = material;
+        (this.object.children[i] as THREE.Mesh).material = material;
       }
     }
   }

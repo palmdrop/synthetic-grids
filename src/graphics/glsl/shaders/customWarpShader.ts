@@ -39,15 +39,20 @@ export const makeCustomWarpShader = (
     main: `
       vUv = uv;
 
-      float n = ${programFunction.functionName}(
+      float n = amplitude * ${programFunction.functionName}(
         frequency * position + vec3(0.0, 0.0, time)
       );
 
       vec3 pos = vec3(
         position.x,
         position.y,
-        position.z + n
+        position.z
       );
+
+      // vec3 offsetDir = normalize(pos - vec3(0.0, 0.0, -10.0));
+      // vec3(0.0, 0.0, 1.0);
+
+      pos += normal * n;
 
       vertex = vec4(pos, 1.0) * modelMatrix;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
@@ -67,13 +72,6 @@ export const makeCustomWarpShader = (
   );
 
   shader.fragmentShader = fragmentShader.fragmentShader;
-
-  console.log(
-    shader.vertexShader,
-  );
-  console.log(
-    shader.fragmentShader,
-  );
 
   return shader;
 }

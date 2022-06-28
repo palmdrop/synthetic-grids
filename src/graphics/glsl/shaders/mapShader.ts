@@ -1,8 +1,9 @@
+import type { Uniforms } from '../../../modules/substrates/src/shader/types/core';
 import * as THREE from 'three';
 
 // Based on https://madebyevan.com/shaders/grid/
 
-export const mapShader: THREE.Shader = {
+export const mapShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } = {
   uniforms: {
     'tDiffuse': { value: null, type: 'sampler2D' },
 		'opacity': { value: 1.0, type: 'float' },
