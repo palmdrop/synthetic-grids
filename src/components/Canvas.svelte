@@ -12,8 +12,11 @@
 
 <style>
   canvas {
+    position: fixed;
     width: 100vw;
     height: 100vh;
+
+    inset: 0;
 
     z-index: 2;
   }

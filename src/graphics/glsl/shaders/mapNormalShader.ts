@@ -7,21 +7,14 @@ export const mapShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } 
   uniforms: {
     'tDiffuse': { value: null, type: 'sampler2D' },
 		'opacity': { value: 1.0, type: 'float' },
-    'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
+    // 'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
+    'scale': { value: 10.0, type: 'float' },
     'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ), type: 'vec3' },
     'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ), type: 'vec3' },
     'width': { value: 1.0, type: 'float' },
   },
 
-  vertexShader: /* glsl */`
-		varying vec2 vUv;
-    varying vec4 vertex;
-		void main() {
-			vUv = uv;
-      vertex = vec4(position, 1.0) * modelMatrix;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-		}
-  `,
+  vertexShader: ``,
 
 	fragmentShader: /* glsl */`
 		uniform float opacity;

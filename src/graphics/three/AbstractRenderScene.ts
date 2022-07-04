@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import type * as POSTPROCESSING from 'postprocessing';
 
 import type { AnimationLoop, DataURLCallback, RenderScene, Resizer, VoidCallback } from './core';
 import { SimpleAnimationLoop } from './systems/AnimationLoop';
@@ -16,13 +17,13 @@ export abstract class AbstractRenderScene implements RenderScene {
 
   protected loop : AnimationLoop;
   protected resizer : Resizer;
-  protected resizeables : Resizeable[];
+  resizeables : Resizeable[];
 
-  protected renderer : THREE.WebGLRenderer;
-  protected scene : THREE.Scene;
-  protected camera : THREE.Camera;
+  readonly renderer : THREE.WebGLRenderer;
+  readonly scene : THREE.Scene;
+  readonly camera : THREE.Camera;
 
-  protected composer ?: EffectComposer;
+  protected composer ?: EffectComposer | POSTPROCESSING.EffectComposer;
 
   protected captureNext : boolean;
   protected captureFrameResolutionMultiplier : number;
@@ -130,6 +131,7 @@ export abstract class AbstractRenderScene implements RenderScene {
 
   resize( width ?: number, height ?: number, force ?: boolean ) : void {
     this.resizer.resize( ( width : number, height : number ) => {
+      console.log(width, height)
       this.composer?.setSize( width, height );
       this.resizeables.forEach( resizeable => resizeable.setSize( width, height ) );
     }, width, height, force );

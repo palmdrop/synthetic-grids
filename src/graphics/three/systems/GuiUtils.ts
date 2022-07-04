@@ -1,10 +1,11 @@
+import type * as THREE from 'three';
 import type * as dat from 'dat.gui';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
 
 type PropertySettings = {
   min: number,
   max: number,
-  step: number
+  step?: number
 }
 
 type PropertyMap = {
@@ -53,6 +54,37 @@ export const addUniforms = (
         setUniform(uniformName, value, target)
       });
     }
+  });
+}
+
+export const addThreeColor = (
+  gui: dat.GUI,
+  target: Record<string, any>,
+  property: string,
+  forUniform: boolean = false
+) => {
+  const original = !forUniform 
+    ? target[property]
+    : target.uniforms[property].value;
+
+  gui.addColor(
+    { 
+      [property]: {
+        r: original.r * 255.0,
+        g: original.g * 255.0,
+        b: original.b * 255.0,
+      }
+    }, property 
+  ).onChange(color => {
+    const object: THREE.Color = !forUniform 
+      ? target[property]
+      : target.uniforms[property].value;
+
+    object.setRGB(
+      color.r / 255.0,
+      color.g / 255.0,
+      color.b / 255.0,
+    );
   });
 }
 
