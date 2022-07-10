@@ -1,14 +1,9 @@
 import type { Program } from '../../../../modules/substrates/src/interface/types/program/program';
 import * as THREE from 'three';
-import * as gui from 'dat.gui';
-import { makeCustomWarpShader } from '../../../glsl/shaders/customWarpShader';
 import { addThreeColor, addUniforms } from '../../systems/GuiUtils';
-import { additionalShaderMaterials$ } from '../../../../modules/substrates/src/stores/shaderStore';
-
-export type WarpedMapContext = {
-  object: THREE.Mesh,
-  updateShader: (program: Program) => void
-}
+import { makeCustomNormalWarpShader } from '../../../glsl/shaders/normalWarp/customNormalWarpShader.ts';
+import type { SceneProperties, Synthetic } from '../scene';
+import { setUniform } from '../../../../modules/substrates/src/utils/shader';
 
 const addGUI = (gui: dat.GUI, material: THREE.ShaderMaterial, folderName = 'warpMaterial') => {
   if(gui.__folders[folderName]) gui.removeFolder(gui.__folders[folderName])
@@ -21,7 +16,7 @@ const addGUI = (gui: dat.GUI, material: THREE.ShaderMaterial, folderName = 'warp
     },
     scale: {
       min: 0.0,
-      max: 10.0,
+      max: 20.0,
       step: 0.001,
     },
     amplitude: {
@@ -46,7 +41,7 @@ const addGUI = (gui: dat.GUI, material: THREE.ShaderMaterial, folderName = 'warp
   );
 }
 
-export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THREE.Shader, gui?: dat.GUI): WarpedMapContext => {
+export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THREE.Shader, gui?: dat.GUI): Synthetic<THREE.Mesh> => {
   let material: THREE.ShaderMaterial | undefined = undefined;
 
   const object = new THREE.Mesh(
@@ -57,7 +52,8 @@ export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THRE
   const updateShader = (program: Program) => {
     const oldMaterial = material;
 
-    const shader = makeCustomWarpShader(
+    // const shader = makeCustomWarpShader(
+    const shader = makeCustomNormalWarpShader(
       program,
       coreShader
     );
@@ -66,7 +62,7 @@ export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THRE
     material.side = THREE.DoubleSide;
     material.extensions.derivatives = true;
 
-    additionalShaderMaterials$.set([material as any]);
+    // additionalShaderMaterials$.set([material as any]);
 
     if(oldMaterial) {
       Object.keys(oldMaterial.uniforms).forEach(uniformName => {
@@ -93,9 +89,15 @@ export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THRE
     }
   }
 
-
   return {
     object,
-    updateShader
+    updateShader,
+    update: (properties) => {
+      setUniform(
+        'time',
+        properties.time,
+        material
+      );
+    }
   };
 }

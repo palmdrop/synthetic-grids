@@ -2,17 +2,14 @@
 	import Substrates from './modules/substrates/src/App.svelte';
 	import './global.css';
 
-	import { Distgrids } from "./graphics/three/synthetics/Distgrids";
+	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { programHistoryStore$, subscribeToProgram } from './modules/substrates/src/stores/programStore';
-  import { makeCustomWarpShader } from './graphics/glsl/shaders/customWarpShader';
-  import { mapShader } from './graphics/glsl/shaders/mapShader';
   import type { Program } from './modules/substrates/src/interface/types/program/program';
-import { promptDownload } from './modules/substrates/src/utils/general';
+  import { promptDownload } from './modules/substrates/src/utils/general';
 
-
-  let scene: Distgrids;
+  let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
 
   const onResize = () => {
@@ -47,12 +44,13 @@ import { promptDownload } from './modules/substrates/src/utils/general';
   }
 
   onMount(() => {
-    scene = new Distgrids(canvas);
+    scene = new SyntheticGrids(canvas);
     scene.resize();
     scene.start();
 
     scene.setCaptureFrameResolutionMultiplier(4.0);
 
+    /*
     const updateMaterials = (program: Program | undefined) => {
       if(!program || !scene) return;
       scene.updateMaterials(program);
@@ -67,6 +65,7 @@ import { promptDownload } from './modules/substrates/src/utils/general';
         updateMaterials(state.program);
       }
     });
+    */
 
     window.addEventListener('keydown', onKeyDown);
 

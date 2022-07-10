@@ -3,39 +3,34 @@ import * as dat from 'dat.gui';
 import { AbstractRenderScene } from "../AbstractRenderScene";
 import type { VoidCallback } from "../core";
 import { TrackballControls } from '../examples/TrackballControls';
-import { addGUI, addThreeColor } from '../systems/GuiUtils';
-import { createWarpedMap, WarpedMapContext } from './terrain/warpedMap';
-import { mapShader } from '../../../graphics/glsl/shaders/mapShader';
+import { addGUI } from '../systems/GuiUtils';
 import type { Program } from '../../../modules/substrates/src/interface/types/program/program';
-import { setUniform } from '../../../modules/substrates/src/utils/shader';
 import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
+import { getWarpSpace, SceneProperties, SyntheticSpace } from './scene';
+import { createProgramManager } from './programs/programManager';
 
-export class Distgrids extends AbstractRenderScene {
+export class SyntheticGrids extends AbstractRenderScene {
+  private backgroundRenderTarget: THREE.WebGLRenderTarget;
+
   private controls: TrackballControls;
 
   private gui: dat.GUI;
   private guiVisible: boolean = true;
 
-  private colors: { [name: string]: THREE.Color }
-
-  private warpedMap: WarpedMapContext;
+  private space: SyntheticSpace
+  private properties: SceneProperties;
 
   constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
     super(canvas, onLoad);
 
+    this.backgroundRenderTarget = new THREE.WebGLRenderTarget(
+      canvas.width, canvas.height,
+      {
+      }
+    );
+
     this.gui = new dat.GUI();
-
-    this.colors = {
-      background: new THREE.Color('black'),
-      base: new THREE.Color('black'),
-      line: new THREE.Color('white')
-    }
-
-    this.scene.background = this.colors.background;
-
-    const sceneFolder = this.gui.addFolder('scene');
-    addThreeColor(sceneFolder, this.scene, 'background');
 
     this.controls = new TrackballControls(
       this.camera,
@@ -56,37 +51,21 @@ export class Distgrids extends AbstractRenderScene {
       }
     })
 
-    this.warpedMap = createWarpedMap(
-      /*
-      new THREE.SphereBufferGeometry(
-        10, 1000, 1000
-      ),
-      */
-      /*
-      new THREE.PlaneBufferGeometry(
-        20, 20, 
-        1000, 1000 
-      ),
-      */
-      new THREE.CylinderBufferGeometry(
-        20,
-        20,
-        20,
-        1000,
-        1000,
-        true,
-        Math.PI / 2.0,
-        Math.PI / 2.0,
-      ),
+    this.properties = {
+      time: 0.0
+    };
 
-      mapShader,
+    this.space = getWarpSpace(
+      this.renderer,
+      this.backgroundRenderTarget,
       this.gui
     );
+    this.space.sceneConfigurator(this.scene);
 
-    this.warpedMap.object.geometry.computeVertexNormals();
-    this.warpedMap.object.rotateZ(-Math.PI / 2.0);
-
-    this.scene.add(this.warpedMap.object);
+    this.space.synthetics
+      .forEach(synthetic => {
+        this.scene.add(synthetic.object);
+      });
 
     const {
       composer,
@@ -103,7 +82,13 @@ export class Distgrids extends AbstractRenderScene {
   }
 
   public updateMaterials = (program: Program) => {
-    this.warpedMap.updateShader(program);
+    // this.warpedMap.updateShader(program);
+    this.space.synthetics.forEach(synthetic => {
+      if(synthetic.updateShader) {
+        // TODO: determine WHICH synthetic to update!
+        synthetic.updateShader(program);
+      }
+    })
   }
 
   protected createCamera(): THREE.Camera {
@@ -112,16 +97,19 @@ export class Distgrids extends AbstractRenderScene {
 
   update(delta: number, now: number): void {
     this.controls.update();
+    this.properties.time = now / 10.0;
 
-    setUniform(
-      'time',
-      now / 10.0,
-      this.warpedMap.object.material as THREE.ShaderMaterial
-    )
+    this.space.synthetics.forEach(synthetic => {
+      if(synthetic.update) {
+        synthetic.update(this.properties);
+      }
+    });
+
+    this.space?.backgroundRenderer?.update(this.properties);
   }
 
   resize(width?: number, height?: number, force?: boolean): void {
-         // Workaround for postprocessing pass that seems to disallow automatic resize of canvas
+    // Workaround for postprocessing pass that seems to disallow automatic resize of canvas
     if( !width || !height ) {
       width = this.canvas.parentElement?.clientWidth;
       height = this.canvas.parentElement?.clientHeight;
@@ -129,6 +117,13 @@ export class Distgrids extends AbstractRenderScene {
 
     super.resize( width, height, force );
     // For some reason, automatic resizing does not work when using postprocessing library composer
+
+    this.space?.backgroundRenderer?.setSize(width, height);
+  }
+
+  render(delta: number, now: number): void {
+    super.render(delta, now);
+    this.space?.backgroundRenderer.render();
   }
 
   toggleGUI() {

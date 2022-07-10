@@ -5,7 +5,8 @@ import { setUniform } from '../../../modules/substrates/src/utils/shader';
 type PropertySettings = {
   min: number,
   max: number,
-  step?: number
+  step?: number,
+  displayName?: string
 }
 
 type PropertyMap = {
@@ -32,9 +33,10 @@ export const addUniforms = (
       properties.forEach(property => {
         const subValue = value[property];
         if(property.startsWith('_') || typeof subValue !== 'number') return;
+        const name = settings.displayName ?? property;
         folder.add(
-          { [property]: subValue ?? 0.0 }, 
-          property, 
+          { [name]: subValue ?? 0.0 }, 
+          name, 
           settings.min,
           settings.max,
           settings.step
@@ -44,9 +46,10 @@ export const addUniforms = (
         });
       })
     } else {
+      const name = settings.displayName ?? uniformName;
       gui.add(
-        { [uniformName]: target.uniforms[uniformName].value ?? 0.0 }, 
-        uniformName, 
+        { [name]: target.uniforms[uniformName].value ?? 0.0 }, 
+        name, 
         settings.min,
         settings.max,
         settings.step

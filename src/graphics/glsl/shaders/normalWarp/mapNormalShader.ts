@@ -1,14 +1,14 @@
-import type { Uniforms } from '../../../modules/substrates/src/shader/types/core';
+import type { Uniforms } from '../../../../modules/substrates/src/shader/types/core';
 import * as THREE from 'three';
 
 // Based on https://madebyevan.com/shaders/grid/
 
-export const mapShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } = {
+export const mapNormalShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } = {
   uniforms: {
     'tDiffuse': { value: null, type: 'sampler2D' },
 		'opacity': { value: 1.0, type: 'float' },
-    // 'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
-    'scale': { value: 10.0, type: 'float' },
+    'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
+    // 'scale': { value: 10.0, type: 'float' },
     'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ), type: 'vec3' },
     'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ), type: 'vec3' },
     'width': { value: 1.0, type: 'float' },
@@ -24,11 +24,13 @@ export const mapShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } 
     uniform vec3 lineColor;
     uniform float width;
 		varying vec2 vUv;
-    varying vec4 vertex;
+    // varying vec4 vertex;
+    varying float normalOffset;
 
 		void main() {
       // Pick a coordinate to visualize in a grid
-      float coord = scale.x * vertex.x + scale.y * vertex.y + scale.z * vertex.z;
+      // float coord = scale.x * vertex.x + scale.y * vertex.y + scale.z * vertex.z;
+      float coord = normalOffset * scale.y;
 
       // Compute anti-aliased world-space grid lines
       float line = abs(fract(coord - 0.5) - 0.5) / fwidth(coord);
