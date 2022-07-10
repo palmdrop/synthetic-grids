@@ -5,8 +5,6 @@
 	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
-  import { programHistoryStore$, subscribeToProgram } from './modules/substrates/src/stores/programStore';
-  import type { Program } from './modules/substrates/src/interface/types/program/program';
   import { promptDownload } from './modules/substrates/src/utils/general';
 
   let scene: SyntheticGrids;
@@ -49,23 +47,6 @@
     scene.start();
 
     scene.setCaptureFrameResolutionMultiplier(4.0);
-
-    /*
-    const updateMaterials = (program: Program | undefined) => {
-      if(!program || !scene) return;
-      scene.updateMaterials(program);
-    }
-
-    subscribeToProgram(program => {
-      updateMaterials(program);
-    })
-
-    programHistoryStore$.subscribe(state => {
-      if(state) {
-        updateMaterials(state.program);
-      }
-    });
-    */
 
     window.addEventListener('keydown', onKeyDown);
 

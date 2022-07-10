@@ -81,16 +81,6 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.composer = composer;
   }
 
-  public updateMaterials = (program: Program) => {
-    // this.warpedMap.updateShader(program);
-    this.space.synthetics.forEach(synthetic => {
-      if(synthetic.updateShader) {
-        // TODO: determine WHICH synthetic to update!
-        synthetic.updateShader(program);
-      }
-    })
-  }
-
   protected createCamera(): THREE.Camera {
     return makeCamera(this);
   }

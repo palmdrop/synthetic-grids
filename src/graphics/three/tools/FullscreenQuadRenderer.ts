@@ -78,6 +78,6 @@ export class FullscreenQuadRenderer {
   }
 
   get material() {
-    return this.material;
+    return this.quad.material as THREE.Material;
   }
 }

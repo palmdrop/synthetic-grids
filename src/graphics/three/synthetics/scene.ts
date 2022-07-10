@@ -23,7 +23,7 @@ export type Synthetic<ObjectType = THREE.Object3D> = {
 
 export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
   FullscreenQuadRenderer, 
-  'render' | 'renderTarget' | 'setSize'
+  'render' | 'renderTarget' | 'setSize' | 'material'
 >;
 
 export type SyntheticSpace = {
@@ -50,11 +50,11 @@ const getGridBackgroundRenderer = (
     renderTarget
   ) as unknown as BackgroundRenderer;
 
-  fullscreenRenderer.update = (properties) => {
+  fullscreenRenderer.update = function (properties) {
     setUniform(
       'time',
       properties.time,
-      material 
+      this.quad.material
     );
   }
 
