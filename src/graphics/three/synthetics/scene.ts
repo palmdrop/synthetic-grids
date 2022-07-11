@@ -9,6 +9,9 @@ import { decodeProgram, EncodedProgram } from '../../../modules/substrates/src/s
 import encodedGridProgram from './programs/grid1.json';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
 import { createProgramManager, MaterialObject } from './programs/programManager';
+import { makeFuseShader } from '../../glsl/shaders/fuse/fuseShader';
+import { addNormalWarpGUI, makeCustomNormalWarpShader } from '../../glsl/shaders/normalWarp/customNormalWarpShader.ts';
+import { getBackgroundWall } from './background/wall';
 
 export type SceneProperties = {
   time: number
@@ -32,15 +35,48 @@ export type SyntheticSpace = {
   synthetics: Synthetic[]
 }
 
+export const updateShaderUtil = (
+  object: Synthetic<THREE.Mesh>['object'],
+  shaderMaker: (program: Program) => THREE.Shader,
+  materialCallback: (material: THREE.ShaderMaterial) => void,
+  uniformDefaults: { [name: string]: any },
+) => {
+  let material: THREE.ShaderMaterial | undefined = undefined;
+
+  return (program: Program) => {
+    const oldMaterial = material;
+
+    const shader = shaderMaker(program);
+    material = new THREE.ShaderMaterial(shader);
+
+    if(oldMaterial) {
+      Object.keys(oldMaterial.uniforms).forEach(uniformName => {
+        if(!material.uniforms[uniformName]) return;
+        material.uniforms[uniformName].value = oldMaterial.uniforms[uniformName].value;
+      });
+    } else {
+      Object.entries(uniformDefaults).forEach(([name, value]) => {
+        value = (typeof value === 'object' && typeof value.clone === 'function') 
+          ? value.clone() 
+          : value;
+
+        setUniform(name, value, material);
+      })
+    }
+
+    object.material = material;
+    materialCallback(material);
+  }
+}
+
 // Configurations //
 
 const getGridBackgroundRenderer = (
   renderer: THREE.WebGLRenderer, 
-  renderTarget: THREE.WebGLRenderTarget
+  renderTarget: THREE.WebGLRenderTarget,
+  program: Program
 ) => {
-  const shader = buildProgramShader(decodeProgram(
-    encodedGridProgram as unknown as EncodedProgram
-  ));
+  const shader = buildProgramShader(program);
 
   const material = new THREE.ShaderMaterial(shader);
 
@@ -70,33 +106,6 @@ export const getWarpSpace = (
     new THREE.SphereBufferGeometry(
       10, 1000, 1000
     ),
-    /*
-    new THREE.PlaneBufferGeometry(
-      20, 20, 
-      1000, 1000 
-    ),
-    */
-    /*
-    new THREE.CylinderBufferGeometry(
-      20,
-      20,
-      50,
-      1000,
-      2000,
-      true,
-      Math.PI / 2.0,
-      Math.PI / 2.0,
-    ),
-    */
-   /*
-    new THREE.RingGeometry(
-      0, 35,
-      1000,
-      1000
-    ),
-    */
-
-    // mapShader,
     mapNormalShader,
     gui
   );
@@ -104,7 +113,10 @@ export const getWarpSpace = (
   warpedMap.object.geometry.computeVertexNormals();
   warpedMap.object.rotateZ(-Math.PI / 2.0);
   
-  const backgroundRenderer = getGridBackgroundRenderer(renderer, backgroundRenderTarget);
+  const defaultBackgroundProgram = decodeProgram(encodedGridProgram as unknown as EncodedProgram);
+
+  const backgroundRenderer = getGridBackgroundRenderer(renderer, backgroundRenderTarget, defaultBackgroundProgram);
+  const backgroundWall = getBackgroundWall(defaultBackgroundProgram, gui);
 
   createProgramManager({
     'terrain': {
@@ -115,8 +127,15 @@ export const getWarpSpace = (
       }
     },
     'background': {
-      object: backgroundRenderer as unknown as MaterialObject,
-      defaultProgram: decodeProgram(encodedGridProgram as unknown as EncodedProgram)
+      object: backgroundRenderer as MaterialObject,
+      defaultProgram: defaultBackgroundProgram
+    },
+    'wall': {
+      object: backgroundWall.object as MaterialObject,
+      onChange: (program) => {
+        backgroundWall?.updateShader(program);
+        return backgroundWall.object.material as THREE.ShaderMaterial;
+      }
     }
   }, gui, 'terrain');
 
@@ -126,7 +145,8 @@ export const getWarpSpace = (
     },
     backgroundRenderer, 
     synthetics: [
-      warpedMap
+      warpedMap,
+      backgroundWall
     ]
   }
 }

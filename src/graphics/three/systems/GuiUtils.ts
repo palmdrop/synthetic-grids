@@ -26,6 +26,8 @@ export const addUniforms = (
   if(!target.uniforms) return;
 
   Object.entries(toAdd).forEach(([uniformName, settings]) => {
+    if(!target.uniforms[uniformName]) return;
+
     const value = target.uniforms[uniformName].value;
     if(typeof value === 'object') {
       const folder = gui.addFolder(uniformName);

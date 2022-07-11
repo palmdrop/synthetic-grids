@@ -49,9 +49,6 @@ export const makeCustomWarpShader = (
         position.z
       );
 
-      // vec3 offsetDir = normalize(pos - vec3(0.0, 0.0, -10.0));
-      // vec3(0.0, 0.0, 1.0);
-
       pos += normal * n;
 
       vertex = vec4(pos, 1.0) * modelMatrix;

@@ -2,6 +2,31 @@ import type { Program } from '../../../../modules/substrates/src/interface/types
 import type * as THREE from 'three';
 import { buildProgramFunction } from '../../../../modules/substrates/src/shader/builder/programBuilder';
 import { buildShader } from '../../../../modules/substrates/src/shader/builder/shaderBuilder';
+import { addUniforms } from '../../../three/systems/GuiUtils';
+
+export const addNormalWarpGUI = (gui: dat.GUI, material: THREE.ShaderMaterial, folderName = 'warpMaterial') => {
+  if(gui.__folders[folderName]) gui.removeFolder(gui.__folders[folderName])
+  const folder = gui.addFolder(folderName);
+  addUniforms(folder, material, {
+    frequency: {
+      min: 0.0,
+      max: 10.0,
+      step: 0.001,
+    },
+    scale: {
+      min: 0.0,
+      max: 20.0,
+      step: 0.001,
+    },
+    amplitude: {
+      min: 0.0,
+      max: 100.0,
+      step: 0.001,
+    },
+  });
+
+  return folder;
+}
 
 export const makeCustomNormalWarpShader = (
   program: Program,
@@ -51,7 +76,6 @@ export const makeCustomNormalWarpShader = (
 
       pos += normal * n;
 
-      // vertex = vec4(pos, 1.0) * modelMatrix;
       normalOffset = n;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
     `
@@ -70,6 +94,12 @@ export const makeCustomNormalWarpShader = (
   );
 
   shader.fragmentShader = fragmentShader.fragmentShader;
+
+
+  /*
+  console.log(shader.fragmentShader);
+  console.log(shader.vertexShader);
+  */
 
   return shader;
 }

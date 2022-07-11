@@ -31,6 +31,7 @@ export const createProgramManager = (
   const unsubscribers: Unsubscriber[] = [];
 
   const onChange = (name: string) => {
+    console.log(name);
     let unsubscriber: Unsubscriber;
     while(unsubscriber = unsubscribers.pop()) {
       unsubscriber();
@@ -46,12 +47,12 @@ export const createProgramManager = (
       if(config.onChange) {
         material = config.onChange(program);
       } else {
-        const material = config.createMaterial 
+        material = config.createMaterial 
           ? config.createMaterial(program)
           : new THREE.ShaderMaterial(buildProgramShader(program));
-
-        config.object.material = material;
       }
+
+      config.object.material = material;
 
       config.program = program;
       additionalShaderMaterials$.set([material as any]);
