@@ -24,7 +24,7 @@ const addGUI = (gui: dat.GUI, material: THREE.ShaderMaterial, folderName = 'warp
   );
 }
 
-export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THREE.Shader, gui?: dat.GUI): Synthetic<THREE.Mesh> => {
+export const createWarpedTerrain = (geometry: THREE.BufferGeometry, coreShader: THREE.Shader, gui?: dat.GUI): Synthetic<THREE.Mesh> => {
   const object = new THREE.Mesh(
     geometry,
     new THREE.ShaderMaterial(coreShader)
@@ -36,7 +36,7 @@ export const createWarpedMap = (geometry: THREE.BufferGeometry, coreShader: THRE
     material => {
       material.side = THREE.DoubleSide;
       material.extensions.derivatives = true;
-      if(gui) addGUI(gui, material, 'warped map');
+      if(gui) addGUI(gui, material, 'terrain');
     },
     {
       baseColor: new THREE.Color('black'),

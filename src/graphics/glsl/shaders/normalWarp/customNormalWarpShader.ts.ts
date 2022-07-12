@@ -95,11 +95,5 @@ export const makeCustomNormalWarpShader = (
 
   shader.fragmentShader = fragmentShader.fragmentShader;
 
-
-  /*
-  console.log(shader.fragmentShader);
-  console.log(shader.vertexShader);
-  */
-
   return shader;
 }

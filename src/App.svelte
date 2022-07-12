@@ -22,9 +22,7 @@
   const onKeyDown = (event: KeyboardEvent) => {
     switch(event.key) {
       case 'e': {
-        if(event.ctrlKey) {
-          builderVisible = !builderVisible;
-        }
+        builderVisible = !builderVisible;
       } break;
       case 'h': {
         if(scene) {
