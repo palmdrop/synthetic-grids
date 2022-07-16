@@ -31,7 +31,6 @@ export const createProgramManager = (
   const unsubscribers: Unsubscriber[] = [];
 
   const onChange = (name: string) => {
-    console.log(name);
     let unsubscriber: Unsubscriber;
     while(unsubscriber = unsubscribers.pop()) {
       unsubscriber();

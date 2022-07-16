@@ -59,7 +59,9 @@
 <svelte:window on:resize={onResize} />
 
 <div class='substrates' class:show={builderVisible}>
-  <Substrates />
+  <Substrates 
+    loadFromLocalStorage={false} 
+  />
 </div>
 
 <div class="canvas-container">

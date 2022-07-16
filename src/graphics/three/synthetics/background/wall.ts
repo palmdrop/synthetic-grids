@@ -6,25 +6,19 @@ import { addNormalWarpGUI, makeCustomNormalWarpShader } from "../../../glsl/shad
 import { addUniforms } from '../../systems/GuiUtils';
 import { Synthetic, updateShaderUtil } from "../scene";
 
-
 const images = Object.values(import.meta.globEager('../../../../assets/images/*')).map(module => module.default);
-
 
 export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthetic<THREE.Mesh> => {
   const offset = Math.floor(Math.random() * images.length) + 1.0;
   const pickedImages: string[] = [];
-  for(let i = 1; i <= 3; i++) {
+  for(let i = 1; i <= 5; i++) {
     const index = (i * offset) % images.length;
     pickedImages.push(images[index]);
   }
 
   const textureLoader = new THREE.TextureLoader();
   const textures = pickedImages.map(image => (
-    textureLoader.load(image, t => {
-      console.log(t);
-    }, undefined, (err) => {
-      console.log(err, image);
-    })
+    textureLoader.load(image)
   ));
 
   const buildShader = (program: Program) => {
@@ -38,9 +32,11 @@ export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthe
     return makeCustomNormalWarpShader(program, fuseShaderData);
   }
 
-  const geometry = new THREE.PlaneBufferGeometry(
-    40, 60, 1000, 1000
-  );
+  const geometry = 
+    // new THREE.SphereBufferGeometry(50, 1000, 1000);
+    new THREE.PlaneBufferGeometry(
+      60, 100, 1000, 1000
+    );
 
   const mesh = new THREE.Mesh(
     geometry,
@@ -77,8 +73,8 @@ export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthe
       }
     },
     {
-      frequency: 0.25,
-      amplitude: 1.0
+      frequency: 0.063,
+      amplitude: 2.0
     }
   );
 

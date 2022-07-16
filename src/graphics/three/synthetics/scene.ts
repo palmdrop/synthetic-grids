@@ -6,7 +6,8 @@ import { mapNormalShader } from '../../../graphics/glsl/shaders/normalWarp/mapNo
 import { FullscreenQuadRenderer } from '../tools/FullscreenQuadRenderer';
 import { buildProgramShader } from '../../../modules/substrates/src/shader/builder/programBuilder';
 import { decodeProgram, EncodedProgram } from '../../../modules/substrates/src/stores/programStore';
-import encodedGridProgram from './programs/grid1.json';
+import encodedGridProgram from './programs/grid2.json';
+import encodedGateProgram from './programs/gate1.json';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
 import { createProgramManager, MaterialObject } from './programs/programManager';
 import { getBackgroundWall } from './background/wall';
@@ -101,24 +102,35 @@ export const getWarpSpace = (
   gui: dat.GUI
 ): SyntheticSpace => {
   const terrain = createWarpedTerrain(
+    /*
     new THREE.SphereBufferGeometry(
       10, 1000, 1000
+    ),
+    */
+    new THREE.PlaneBufferGeometry(
+      20, 20, 1000, 1000
     ),
     mapNormalShader,
     gui
   );
 
   terrain.object.geometry.computeVertexNormals();
-  terrain.object.rotateZ(-Math.PI / 2.0);
+  // terrain.object.rotateZ(-Math.PI / 2.0);
+  terrain.object.rotateX(-Math.PI / 2.0 + THREE.MathUtils.randFloat(0.3, 1.0));
+  terrain.object.rotateZ(THREE.MathUtils.randFloatSpread(0.5));
+
+  terrain.object.position.y += -20;
   
   const defaultBackgroundProgram = decodeProgram(encodedGridProgram as unknown as EncodedProgram);
+  const defaultWallProgram = decodeProgram(encodedGateProgram as unknown as EncodedProgram);
 
   const backgroundRenderer = getGridBackgroundRenderer(renderer, backgroundRenderTarget, defaultBackgroundProgram);
-  const backgroundWall = getBackgroundWall(defaultBackgroundProgram, gui);
+  const backgroundWall = getBackgroundWall(defaultWallProgram, gui);
 
   createProgramManager({
     'terrain': {
       object: terrain.object as MaterialObject,
+      defaultProgram: defaultWallProgram,
       onChange: (program) => {
         terrain.updateShader(program);
         return terrain.object.material as THREE.ShaderMaterial;
@@ -134,20 +146,16 @@ export const getWarpSpace = (
         backgroundWall?.updateShader(program);
         return backgroundWall.object.material as THREE.ShaderMaterial;
       }
+    },
+    'combined': {
+      object: { material: new THREE.MeshBasicMaterial() },
+      onChange: (program) => {
+        terrain.updateShader(program);
+        backgroundWall.updateShader(program);
+        return terrain.object.material as THREE.ShaderMaterial;
+      }
     }
   }, gui, 'terrain');
-
-  const testObject: Synthetic = {
-    object: new THREE.Mesh(
-      new THREE.PlaneBufferGeometry(30, 30),
-      new THREE.MeshBasicMaterial({
-        map: new THREE.TextureLoader().load('/src/assets/images/bush1.png', 
-          t => console.log(t),
-          e => console.log(e)
-        )
-      })
-    )
-  }
 
   return {
     sceneConfigurator: (scene: THREE.Scene) => {
@@ -155,7 +163,7 @@ export const getWarpSpace = (
     },
     backgroundRenderer, 
     synthetics: [
-      // terrain,
+      terrain,
       // testObject,
       backgroundWall
     ]

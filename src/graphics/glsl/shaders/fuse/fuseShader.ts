@@ -1,7 +1,4 @@
-import type { Program } from '../../../../modules/substrates/src/interface/types/program/program';
 import type * as THREE from 'three';
-import { buildProgramFunction } from '../../../../modules/substrates/src/shader/builder/programBuilder';
-import { buildShader } from '../../../../modules/substrates/src/shader/builder/shaderBuilder';
 import type { Attributes, GLSL, Uniforms } from '../../../../modules/substrates/src/shader/types/core';
 import { attributesToGLSL, uniformsToGLSL } from '../../../../modules/substrates/src/shader/builder/utils/shader';
 
@@ -54,8 +51,6 @@ export const makeFuseShader = (
       gl_FragColor = color;
 		}
   `;
-
-  console.log("AAAAAAAAAA", fragmentShader);
 
   return {
     uniforms,
