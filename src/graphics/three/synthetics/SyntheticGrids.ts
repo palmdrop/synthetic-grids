@@ -4,11 +4,10 @@ import { AbstractRenderScene } from "../AbstractRenderScene";
 import type { VoidCallback } from "../core";
 import { TrackballControls } from '../examples/TrackballControls';
 import { addGUI } from '../systems/GuiUtils';
-import type { Program } from '../../../modules/substrates/src/interface/types/program/program';
 import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
-import { getWarpSpace, SceneProperties, SyntheticSpace } from './scene';
-import { createProgramManager } from './programs/programManager';
+import type { SceneProperties, SyntheticSpace } from './scene';
+import { getLandscapeMap } from './spaces/landscapeMap';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -20,6 +19,8 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   private space: SyntheticSpace
   private properties: SceneProperties;
+
+  private mouseLocked = false;
 
   constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
     super(canvas, onLoad);
@@ -52,10 +53,12 @@ export class SyntheticGrids extends AbstractRenderScene {
     })
 
     this.properties = {
-      time: 0.0
+      time: 0.0,
+      mousePosition: new THREE.Vector2(),
+      dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height)
     };
 
-    this.space = getWarpSpace(
+    this.space = getLandscapeMap(
       this.renderer,
       this.backgroundRenderTarget,
       this.gui
@@ -98,6 +101,12 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.space?.backgroundRenderer?.update(this.properties);
   }
 
+  onMouseMove(x: number, y: number): void {
+    if(!this.mouseLocked) {
+      this.properties.mousePosition.set(x, y);
+    }
+  }
+
   resize(width?: number, height?: number, force?: boolean): void {
     // Workaround for postprocessing pass that seems to disallow automatic resize of canvas
     if( !width || !height ) {
@@ -109,6 +118,7 @@ export class SyntheticGrids extends AbstractRenderScene {
     // For some reason, automatic resizing does not work when using postprocessing library composer
 
     this.space?.backgroundRenderer?.setSize(width, height);
+    this.properties.dimensions.set(width, height);
   }
 
   render(delta: number, now: number): void {
@@ -124,5 +134,9 @@ export class SyntheticGrids extends AbstractRenderScene {
     }
 
     this.guiVisible = !this.guiVisible;
+  }
+
+  toggleMouseLocked() {
+    this.mouseLocked = !this.mouseLocked;
   }
 }

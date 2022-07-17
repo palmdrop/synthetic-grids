@@ -8,7 +8,7 @@ import { Synthetic, updateShaderUtil } from "../scene";
 
 const images = Object.values(import.meta.globEager('../../../../assets/images/*')).map(module => module.default);
 
-export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthetic<THREE.Mesh> => {
+export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): { synthetic: Synthetic<THREE.Object3D>, materialObject: THREE.Mesh } => {
   const offset = Math.floor(Math.random() * images.length) + 1.0;
   const pickedImages: string[] = [];
   for(let i = 1; i <= 5; i++) {
@@ -47,6 +47,9 @@ export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthe
     0, 0, -30
   );
 
+  const object = new THREE.Object3D();
+  object.add(mesh);
+
   const update = (properties) => {
     setUniform(
       'time',
@@ -75,14 +78,22 @@ export const getBackgroundWall = (defaultProgram: Program, gui: dat.GUI): Synthe
     {
       frequency: 0.063,
       amplitude: 2.0
+    },
+    material => {
+      mesh.material = material;
     }
   );
 
   updateShader(defaultProgram);
 
-  return {
-    object: mesh,
+  const synthetic = {
+    object,
     updateShader,
     update
+  };
+
+  return {
+    synthetic,
+    materialObject: mesh
   }
 }

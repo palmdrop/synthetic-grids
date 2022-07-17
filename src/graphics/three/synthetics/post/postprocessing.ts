@@ -20,7 +20,7 @@ export const getComposer = (
   {
     const bloomEffect = new POSTPROCESSING.BloomEffect( {
       luminanceThreshold: 0.82,
-      intensity: 1.5,
+      intensity: 0.1,
       kernelSize: POSTPROCESSING.KernelSize.LARGE
     } );
     effects.push( bloomEffect );

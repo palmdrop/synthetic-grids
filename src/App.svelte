@@ -36,7 +36,19 @@
           })
         }
       } break;
+      case 'm': {
+        if(scene) {
+          scene.toggleMouseLocked();
+        }
+      }
     }
+  }
+
+  const onMouseMove = (event: MouseEvent) => {
+    if(!scene) return;  
+    scene.onMouseMove(
+      event.clientX, event.clientY
+    );
   }
 
   onMount(() => {
@@ -46,17 +58,18 @@
 
     scene.setCaptureFrameResolutionMultiplier(4.0);
 
-    window.addEventListener('keydown', onKeyDown);
-
     return () => {
       scene.stop();
-      window.removeEventListener('keydown', onKeyDown);
     }
   });
 
 </script>
 
-<svelte:window on:resize={onResize} />
+<svelte:window 
+  on:resize={onResize} 
+  on:keydown={onKeyDown}
+  on:mousemove={onMouseMove}
+/>
 
 <div class='substrates' class:show={builderVisible}>
   <Substrates 
