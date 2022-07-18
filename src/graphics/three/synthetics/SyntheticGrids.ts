@@ -8,6 +8,7 @@ import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 import { getLandscapeMap } from './spaces/landscapeMap';
+import { getWeeds } from './spaces/weeds';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -58,7 +59,15 @@ export class SyntheticGrids extends AbstractRenderScene {
       dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height)
     };
 
+    /*
     this.space = getLandscapeMap(
+      this.renderer,
+      this.backgroundRenderTarget,
+      this.gui
+    );
+    this.space.sceneConfigurator(this.scene);
+    */
+    this.space = getWeeds(
       this.renderer,
       this.backgroundRenderTarget,
       this.gui
@@ -123,7 +132,7 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   render(delta: number, now: number): void {
     super.render(delta, now);
-    this.space?.backgroundRenderer.render();
+    this.space?.backgroundRenderer?.render();
   }
 
   toggleGUI() {
