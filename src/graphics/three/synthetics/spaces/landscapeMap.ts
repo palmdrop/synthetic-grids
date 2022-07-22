@@ -60,9 +60,8 @@ export const getLandscapeMap = (
 
   terrain.object.position.y += -20;
   
-  const defaultBackgroundProgram = decodeProgram(encodedGridProgram as unknown as EncodedProgram);
   const defaultWallProgram = decodeProgram(encodedGateProgram as unknown as EncodedProgram);
-
+  const defaultBackgroundProgram = decodeProgram(encodedGridProgram as unknown as EncodedProgram);
   const backgroundRenderer = getBackgroundRenderer(renderer, backgroundRenderTarget, defaultBackgroundProgram);
   const { synthetic: backgroundWall, materialObject: wallObject } = getBackgroundWall(defaultWallProgram, gui);
 

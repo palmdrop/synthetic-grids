@@ -21,7 +21,7 @@ export type ProgramConfig = {
 export const createProgramManager = (
   configs: { [name: string]: ProgramConfig },
   gui: dat.GUI,
-  defaultConfig: string | undefined,
+  defaultConfig: keyof typeof configs | undefined,
   propertyName: string = 'programs'
 ) => {
   const configEntries = Object.entries(configs) as [string, ProgramConfig][];
@@ -30,7 +30,7 @@ export const createProgramManager = (
 
   const unsubscribers: Unsubscriber[] = [];
 
-  const onChange = (name: string) => {
+  const onChange = (name: typeof defaultConfig) => {
     let unsubscriber: Unsubscriber;
     while(unsubscriber = unsubscribers.pop()) {
       unsubscriber();

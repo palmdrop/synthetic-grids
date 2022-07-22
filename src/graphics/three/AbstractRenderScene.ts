@@ -61,8 +61,10 @@ export abstract class AbstractRenderScene implements RenderScene {
   protected createRenderer() : THREE.WebGLRenderer {
     const renderer = new THREE.WebGLRenderer( {
       canvas: this.canvas,
-      antialias: true,
-      alpha: true
+      powerPreference: 'high-performance',
+      antialias: false,
+      stencil: false,
+      alpha: false
     } );
 
     renderer.setClearColor( new THREE.Color( '#000000' ), 0.0 );

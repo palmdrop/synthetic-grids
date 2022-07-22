@@ -8,7 +8,7 @@ import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 import { getLandscapeMap } from './spaces/landscapeMap';
-import { getWeeds } from './spaces/weeds';
+import { getWeedsSpace } from './spaces/weeds';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -67,12 +67,12 @@ export class SyntheticGrids extends AbstractRenderScene {
     );
     this.space.sceneConfigurator(this.scene);
     */
-    this.space = getWeeds(
+    this.space = getWeedsSpace(
       this.renderer,
       this.backgroundRenderTarget,
       this.gui
     );
-    this.space.sceneConfigurator(this.scene);
+    this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
     this.space.synthetics
       .forEach(synthetic => {
@@ -127,12 +127,13 @@ export class SyntheticGrids extends AbstractRenderScene {
     // For some reason, automatic resizing does not work when using postprocessing library composer
 
     this.space?.backgroundRenderer?.setSize(width, height);
+    this.space?.backgroundRenderer?.render();
     this.properties.dimensions.set(width, height);
   }
 
   render(delta: number, now: number): void {
-    super.render(delta, now);
     this.space?.backgroundRenderer?.render();
+    super.render(delta, now);
   }
 
   toggleGUI() {

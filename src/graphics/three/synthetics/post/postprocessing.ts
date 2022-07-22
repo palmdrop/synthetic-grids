@@ -162,9 +162,9 @@ export const getComposer = (
 
     // TODO should wait for image load before creating effect
     // https://github.com/vanruesc/postprocessing/wiki/Antialiasing#smaa-lookup-tables
-    const smaaEffect = new POSTPROCESSING.SMAAEffect(
+    const smaaEffect = new POSTPROCESSING.SMAAEffect({
       // searchImage, areaImage
-    );
+    });
 
     effects.push( smaaEffect );
   }

@@ -22,7 +22,7 @@ export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
 >;
 
 export type SyntheticSpace = {
-  sceneConfigurator: (scene: THREE.Scene) => void, 
+  sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void, 
   backgroundRenderer?: BackgroundRenderer,
   synthetics: Synthetic[]
 }
