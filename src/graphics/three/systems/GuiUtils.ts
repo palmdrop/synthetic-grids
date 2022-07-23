@@ -112,3 +112,18 @@ export const addGUI = (
     }
   });
 }
+
+export const addDirectionalLight = (gui: dat.GUI, target: THREE.DirectionalLight) => {
+  addGUI(gui, target, {
+    intensity: {
+      min: 0, max: 20
+    },
+    position: {
+      x: { min: -50, max: 50 },
+      y: { min: -50, max: 50 },
+      z: { min: -50, max: 50 },
+    }
+  });
+
+  addThreeColor(gui, target, 'color');
+}

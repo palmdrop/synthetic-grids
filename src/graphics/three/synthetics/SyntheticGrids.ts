@@ -8,7 +8,7 @@ import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 import { getLandscapeMap } from './spaces/landscapeMap';
-import { getWeedsSpace } from './spaces/weeds';
+import { getWeedsSpace } from './spaces/weedsSpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -39,8 +39,8 @@ export class SyntheticGrids extends AbstractRenderScene {
       canvas
     );
 
-    this.controls.panSpeed = 1;
-    this.controls.zoomSpeed = 0.5;
+    this.controls.panSpeed = 1.8;
+    this.controls.zoomSpeed = 1.5;
 
     addGUI(this.gui.addFolder('controls'), this.controls, {
       'panSpeed': {
@@ -56,7 +56,8 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.properties = {
       time: 0.0,
       mousePosition: new THREE.Vector2(),
-      dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height)
+      dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height),
+      scale: 1.0
     };
 
     /*
@@ -98,7 +99,7 @@ export class SyntheticGrids extends AbstractRenderScene {
   }
 
   update(delta: number, now: number): void {
-    this.controls.update();
+    this.controls?.update();
     this.properties.time = now / 10.0;
 
     this.space.synthetics.forEach(synthetic => {
@@ -129,6 +130,18 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.space?.backgroundRenderer?.setSize(width, height);
     this.space?.backgroundRenderer?.render();
     this.properties.dimensions.set(width, height);
+  }
+
+  protected beforeRender(): void {
+    super.beforeRender();
+    if(this.captureNext) {
+      this.properties.scale = 1.0 / this.captureFrameResolutionMultiplier;
+    }
+  }
+
+  protected afterRender(): void {
+    super.afterRender();
+    this.properties.scale = 1.0;
   }
 
   render(delta: number, now: number): void {

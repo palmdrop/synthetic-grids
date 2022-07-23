@@ -6,7 +6,8 @@ import { setUniform } from '../../../modules/substrates/src/utils/shader';
 export type SceneProperties = {
   time: number,
   mousePosition: THREE.Vector2,
-  dimensions: THREE.Vector2
+  dimensions: THREE.Vector2,
+  scale: number
 }
 
 export type Synthetic<ObjectType = THREE.Object3D> = {

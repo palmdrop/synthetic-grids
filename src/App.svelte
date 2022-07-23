@@ -56,7 +56,7 @@
     scene.resize();
     scene.start();
 
-    scene.setCaptureFrameResolutionMultiplier(4.0);
+    scene.setCaptureFrameResolutionMultiplier(2.0);
 
     return () => {
       scene.stop();

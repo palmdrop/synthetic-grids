@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getNoise3D } from '../noise/noise';
 
 import normalTexturePath from '../../../../assets/normal/normal-texture1_x2.jpg';
+import type { Synthetic } from '../../synthetics/scene';
 
 type NoiseSettings = {
   frequency: number,
@@ -17,11 +18,23 @@ type Forces = {
   random: number
 }
 
+export type GridConfig = {
+  cells: {
+    x: number,
+    y: number,
+    z: number
+  },
+  padding?: number,
+  scaleToFit?: boolean
+}
+
 export type StrawConfig = {
   width: number,
   height: number,
   widthSegments: number,
   heightSegments: number,
+
+  widthNoiseSettings?: NoiseSettings,
 
   bend: number,
 
@@ -29,11 +42,16 @@ export type StrawConfig = {
 
   noiseOffsetMultiplier: number,
 
+  startDirection?: THREE.Vector3 | (() => THREE.Vector3),
   directionNoiseSettings: NoiseSettings,
   twistNoiseSettings: NoiseSettings,
 
-  forces: Forces
+  forces: Forces,
+
+  materialGenerator?: (index: number, position: THREE.Vector3) => THREE.Material,
 }
+
+export type ConfigGenerator = (position: THREE.Vector3, index: number, cell: number) => StrawConfig;
 
 type Segment = {
   position: THREE.Vector3,
@@ -56,9 +74,15 @@ const createStrawSkeleton = (
   const segmentLength = config.height / config.heightSegments;
   const skeleton: Segment[] = [];
 
+  const startDirection = !config.startDirection 
+    ? gravity.clone().multiplyScalar(-1)
+    : typeof config.startDirection === 'function'
+      ? config.startDirection()
+      : config.startDirection;
+
   let currentSegment: Segment = {
     position: startPosition,
-    direction: gravity.clone().multiplyScalar(-1),
+    direction: startDirection,
     rotation: 0
   };
 
@@ -134,7 +158,14 @@ const warpGeometry = (
       direction
     } = skeleton[sy];
 
-    const thickness = config.thicknessController(1.0 - sy / (skeleton.length - 1.0));
+    const widthVariation = config.widthNoiseSettings 
+      ? getNoise3D(position, {
+          offset: new THREE.Vector3(-41.31, 0.31, -131.3), 
+          ...config.widthNoiseSettings
+        }) 
+      : 1.0;
+
+    const thickness = widthVariation * config.thicknessController(1.0 - sy / (skeleton.length - 1.0));
 
     const widthOffset = thickness * config.width / 2.0;
     const widthStep = thickness * config.width / config.widthSegments;
@@ -168,59 +199,154 @@ const warpGeometry = (
 }
 
 
-const c1 = new THREE.Color('#3e3f22');
-const c2 = new THREE.Color('#202c10');
-const normalMap = new THREE.TextureLoader().load(normalTexturePath);
-normalMap.wrapS = THREE.RepeatWrapping;
-normalMap.wrapT = THREE.RepeatWrapping;
+const c1 = new THREE.Color('#555500');
+const c2 = new THREE.Color('#00331a');
+export const defaultNormalMap = new THREE.TextureLoader().load(normalTexturePath);
 
 const mapScale = 10;
 
 export const getStraw = (
   config: StrawConfig,
-  noiseOffset = new THREE.Vector3()
+  noiseOffset = new THREE.Vector3(),
+  index?: number
 ) => {
   // TODO: do not set every time, move to weeds function
+  const normalMap = defaultNormalMap;
+  normalMap.wrapS = THREE.RepeatWrapping;
+  normalMap.wrapT = THREE.RepeatWrapping;
+
   normalMap.repeat.set(
     mapScale * (config.width / config.height), mapScale
   );
 
-  const strawMesh = new THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial | THREE.ShaderMaterial>(
+  const strawMesh = new THREE.Mesh<THREE.PlaneGeometry, THREE.Material>(
     new THREE.PlaneGeometry(
       config.width, config.height,
       config.widthSegments - 1, config.heightSegments - 1
     ),
-    new THREE.MeshStandardMaterial({
-      color: new THREE.Color().lerpColors(c1, c2, Math.random()),
-      metalness: 0.2,
-      roughness: 0.4,
-      side: THREE.DoubleSide,
-      normalMap,
-      normalScale: new THREE.Vector2(1, 1).multiplyScalar(0.5)
-    })
+    config.materialGenerator 
+      ? new THREE.MeshBasicMaterial({})
+      : new THREE.MeshStandardMaterial({
+        color: new THREE.Color().lerpColors(c1, c2, Math.random()),
+        metalness: 0.0,
+        roughness: 0.5,
+        side: THREE.DoubleSide,
+        normalMap,
+        normalScale: new THREE.Vector2(1, 1).multiplyScalar(0.2)
+      })
   );
 
   const skeleton = createStrawSkeleton(config, strawMesh.position, noiseOffset);
 
   warpGeometry(strawMesh, skeleton, config);
 
+  if(config.materialGenerator) {
+    const center = new THREE.Box3().setFromObject(strawMesh).getCenter(new THREE.Vector3());
+    strawMesh.material = config.materialGenerator(index ?? 0, center);
+  }
+
   return strawMesh;
 }
 
-export const getWeeds = (
-  config: StrawConfig,
+export const getWeedsGrid = (
+  config: StrawConfig | ConfigGenerator,
   count: number,
-  spawner: (index: number) => THREE.Vector3
-) => {
-  const object = new THREE.Object3D();
+  spawner: (index: number) => THREE.Vector3,
+  boxColor: THREE.ColorRepresentation | undefined = undefined,
+  gridConfig: GridConfig
+): Synthetic => {
+  const weedsObject = new THREE.Object3D();
+  const objects: { 
+    cell: THREE.Vector3, 
+    object: THREE.Object3D,
+    box: THREE.Box3
+  }[] = [];
+  const cells = gridConfig.cells;
 
-  for(let i = 0; i < count; i++) {
-    const position = spawner(i);
+  const getIndex = (x: number, y: number, z: number) => {
+    return x + cells.x * (y + cells.y * z);
+  }
+
+  let maxBox: THREE.Box3 = new THREE.Box3();
+  for(let x = 0; x < gridConfig.cells.x; x++) 
+  for(let y = 0; y < gridConfig.cells.y; y++) 
+  for(let z = 0; z < gridConfig.cells.z; z++) {
+    const index = getIndex(x, y, z);
+    const cell = new THREE.Vector3(x, y, z);
+
+    const object = getWeeds(
+      config,
+      count,
+      spawner,
+      undefined,
+      cell,
+      index
+    );
+
+    const box = new THREE.Box3().setFromObject(object);
+    maxBox.union(box);
+
+    objects[index] = {
+      object,
+      cell,
+      box
+    };
+  }
+
+  const maxBoxValues = new THREE.Vector3(
+    Math.max(Math.abs(maxBox.min.x), Math.abs(maxBox.max.x)),
+    Math.max(Math.abs(maxBox.min.y), Math.abs(maxBox.max.y)),
+    Math.max(Math.abs(maxBox.min.z), Math.abs(maxBox.max.z))
+  );
+
+  maxBox.max.copy(maxBoxValues);
+  maxBox.min.copy(maxBoxValues).multiplyScalar(-1);
+
+  const cellDimensions = maxBox.getSize(new THREE.Vector3());
+
+  objects.forEach(({ object, cell, box }) => {
+    object.position
+      .copy(cell)
+      .sub(new THREE.Vector3(
+        Math.floor(cells.x / 2.0), 
+        Math.floor(cells.y / 2.0),
+        Math.floor(cells.z / 2.0)
+      ))
+      .multiply(cellDimensions);
+    
+    weedsObject.add(object);
+
+    object.add(
+      new THREE.Box3Helper(maxBox, boxColor)
+    );
+  });
+
+  return {
+    object: weedsObject
+  }
+}
+
+export const getWeeds = (
+  config: StrawConfig | ConfigGenerator,
+  count: number,
+  spawner: (index: number) => THREE.Vector3,
+  boxColor: THREE.ColorRepresentation | undefined = undefined,
+  offset?: THREE.Vector3,
+  cell?: number
+): THREE.Object3D => {
+  const object = new THREE.Object3D();
+  for(let j = 0; j < count; j++) {
+    const position = spawner(j);
+    const strawConfig = typeof config === 'function'
+      ? config(position, j, cell ?? 0)
+      : config;
+
     const straw = getStraw(
-      config, 
+      strawConfig, 
       position.clone().multiplyScalar(
-        config.directionNoiseSettings.frequency * config.noiseOffsetMultiplier
-      )
+        strawConfig.directionNoiseSettings.frequency * strawConfig.noiseOffsetMultiplier
+      ).add(offset ?? new THREE.Vector3()),
+      j
     );
 
     straw.position.copy(position);
@@ -231,7 +357,16 @@ export const getWeeds = (
     object.add(straw);
   }
 
-  return {
-    object
+  const box = new THREE.Box3().setFromObject(object);
+
+  if(boxColor) {
+    const boxHelper = new THREE.BoxHelper(
+      object,
+      boxColor
+    );
+
+    boxHelper.update();
   }
+
+  return object;
 }
