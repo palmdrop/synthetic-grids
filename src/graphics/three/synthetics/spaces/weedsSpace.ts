@@ -17,7 +17,7 @@ export const getWeedsSpace = (
   gui: dat.GUI
 ): SyntheticSpace => {
   const config: ConfigGenerator = (position, index, cell) => ({
-    width: 0.08, 
+    width: 1.05, 
     height: 10,
     widthSegments: 5, 
     heightSegments: 50,
@@ -30,17 +30,17 @@ export const getWeedsSpace = (
     )
     ,
 
-    noiseOffsetMultiplier: 4 - cell,
+    noiseOffsetMultiplier: 1.0,
     startDirection: () => new THREE.Vector3().randomDirection(),
 
     widthNoiseSettings: {
-      frequency: 0.5,
+      frequency: Math.random() * 0.5 + 0.2,
       min: 0.001,
       max: 3.5
     },
 
     directionNoiseSettings: {
-      frequency: 0.03 * cell + 0.05,
+      frequency: 0.4,
       min: -1.0,
       max: 1.0
     },
@@ -51,19 +51,19 @@ export const getWeedsSpace = (
     },
 
     forces: {
-      gravity: -0.05,
-      twist: 1.0,
+      gravity: 0.44,
+      twist: 0.0,
       turn: new THREE.Vector3(1, 1, 1)
-        .multiplyScalar(0.4),
-      direction: 0.1,
+        .multiplyScalar(0.6),
+      direction: 0.2,
       random: 0.1
     },
 
     materialGenerator: (index, position) => {
       return new THREE.MeshStandardMaterial({
         // color: new THREE.Color().lerpColors(c1, c2, Math.random()),
-        color: '#9cad88',
-        metalness: 0.0,
+        color: '#8f7e51',
+        metalness: 0.1,
         roughness: 0.8,
         side: THREE.DoubleSide,
         normalMap: defaultNormalMap,
@@ -73,29 +73,28 @@ export const getWeedsSpace = (
   });
 
 
+  const dataColor = '#00fff2';
+
   const weeds = getWeedsGrid(
     config,
-    300,
+    50,
     () => new THREE.Vector3().randomDirection().multiply(
       new THREE.Vector3(1.0, 0.5, 1.0).multiplyScalar(1)
     ),
-    'yellow',
+    dataColor,
     {
       cells: {
-        x: 2,
-        y: 2,
+        x: 1,
+        y: 3,
         z: 2
-      }
+      },
+      padding: 0.3
     }
   );
 
-  weeds.object.rotateY(Math.PI / 2.0);
-  weeds.object.position.set(0, -15, 0);
-
-  weeds.object.rotateY(Math.PI / 2.0);
 
   weeds.update = (properties) => {
-    // weeds.object.rotateY(0.005);
+    weeds.object.rotateY(0.005);
   }
 
   // Background
@@ -123,7 +122,7 @@ export const getWeedsSpace = (
 
       const ambientLight = new THREE.AmbientLight('white', 1.5)
 
-      const directionalLight = new THREE.DirectionalLight('white', 4.8);
+      const directionalLight = new THREE.DirectionalLight('white', 3.8);
       directionalLight.position.set(0, 8, 50);
       directionalLight.castShadow = true;
       directionalLight.shadow.bias = -0.001;
@@ -140,23 +139,19 @@ export const getWeedsSpace = (
 
       addDirectionalLight(gui.addFolder('directional light'), directionalLight);
 
-      const pointLight = new THREE.PointLight('red', 15);
-      pointLight.position.set(0, 40, 0);
-
-      const plane = new THREE.Mesh(
-        new THREE.PlaneBufferGeometry(100, 140),
-        new THREE.MeshStandardMaterial({ color: '#111100' })
-      );
-
-      plane.receiveShadow = true;
-
-      plane.position.set(0, 0, -80);
+      const pointLightColor = dataColor;
+      const pointLight = new THREE.PointLight(pointLightColor, 20);
+      pointLight.position.set(0, 0, 0);
 
       scene.add(
         ambientLight,
         directionalLight,
         pointLight,
         // plane
+        new THREE.Mesh(
+          new THREE.SphereBufferGeometry(2, 40, 40),
+          new THREE.MeshBasicMaterial({ color: pointLightColor })
+        )
       );
     },
     // backgroundRenderer, 

@@ -3,6 +3,7 @@ import { getNoise3D } from '../noise/noise';
 
 import normalTexturePath from '../../../../assets/normal/normal-texture1_x2.jpg';
 import type { Synthetic } from '../../synthetics/scene';
+import { box3ToBoxGeometry } from '../../tools/geometryTools';
 
 type NoiseSettings = {
   frequency: number,
@@ -248,6 +249,60 @@ export const getStraw = (
   return strawMesh;
 }
 
+export const getWeeds = (
+  config: StrawConfig | ConfigGenerator,
+  count: number,
+  spawner: (index: number) => THREE.Vector3,
+  boxColor: THREE.ColorRepresentation | undefined = undefined,
+  offset?: THREE.Vector3,
+  cell?: number,
+  center: boolean = true
+): THREE.Object3D => {
+  const object = new THREE.Object3D();
+  for(let j = 0; j < count; j++) {
+    const position = spawner(j);
+    const strawConfig = typeof config === 'function'
+      ? config(position, j, cell ?? 0)
+      : config;
+
+    const straw = getStraw(
+      strawConfig, 
+      position.clone().multiplyScalar(
+        strawConfig.directionNoiseSettings.frequency * strawConfig.noiseOffsetMultiplier
+      ).add(offset ?? new THREE.Vector3()),
+      j
+    );
+
+    straw.position.copy(position);
+
+    straw.castShadow = true;
+    straw.receiveShadow = true;
+
+    object.add(straw);
+  }
+
+  if(boxColor) {
+    const boxHelper = new THREE.BoxHelper(
+      object,
+      boxColor
+    );
+
+    boxHelper.update();
+  }
+
+  if(center) {
+    const box = new THREE.Box3().setFromObject(object);
+    const centerPoint = box.getCenter(new THREE.Vector3());
+
+    object.children.forEach(child => {
+      child.position.sub(centerPoint);
+    });
+  }
+
+
+  return object;
+}
+
 export const getWeedsGrid = (
   config: StrawConfig | ConfigGenerator,
   count: number,
@@ -299,8 +354,8 @@ export const getWeedsGrid = (
     Math.max(Math.abs(maxBox.min.z), Math.abs(maxBox.max.z))
   );
 
-  maxBox.max.copy(maxBoxValues);
-  maxBox.min.copy(maxBoxValues).multiplyScalar(-1);
+  maxBox.max.copy(maxBoxValues).multiplyScalar(1 + (gridConfig.padding ?? 0));
+  maxBox.min.copy(maxBoxValues).multiplyScalar(-(1 + (gridConfig.padding ?? 0)));
 
   const cellDimensions = maxBox.getSize(new THREE.Vector3());
 
@@ -308,65 +363,20 @@ export const getWeedsGrid = (
     object.position
       .copy(cell)
       .sub(new THREE.Vector3(
-        Math.floor(cells.x / 2.0), 
-        Math.floor(cells.y / 2.0),
-        Math.floor(cells.z / 2.0)
+        (cells.x - 1.0) / 2.0,
+        (cells.y - 1.0) / 2.0,
+        (cells.z - 1.0) / 2.0
       ))
       .multiply(cellDimensions);
     
     weedsObject.add(object);
 
     object.add(
-      new THREE.Box3Helper(maxBox, boxColor)
+      new THREE.Box3Helper(maxBox, new THREE.Color(boxColor))
     );
   });
 
   return {
     object: weedsObject
   }
-}
-
-export const getWeeds = (
-  config: StrawConfig | ConfigGenerator,
-  count: number,
-  spawner: (index: number) => THREE.Vector3,
-  boxColor: THREE.ColorRepresentation | undefined = undefined,
-  offset?: THREE.Vector3,
-  cell?: number
-): THREE.Object3D => {
-  const object = new THREE.Object3D();
-  for(let j = 0; j < count; j++) {
-    const position = spawner(j);
-    const strawConfig = typeof config === 'function'
-      ? config(position, j, cell ?? 0)
-      : config;
-
-    const straw = getStraw(
-      strawConfig, 
-      position.clone().multiplyScalar(
-        strawConfig.directionNoiseSettings.frequency * strawConfig.noiseOffsetMultiplier
-      ).add(offset ?? new THREE.Vector3()),
-      j
-    );
-
-    straw.position.copy(position);
-
-    straw.castShadow = true;
-    straw.receiveShadow = true;
-
-    object.add(straw);
-  }
-
-  const box = new THREE.Box3().setFromObject(object);
-
-  if(boxColor) {
-    const boxHelper = new THREE.BoxHelper(
-      object,
-      boxColor
-    );
-
-    boxHelper.update();
-  }
-
-  return object;
 }

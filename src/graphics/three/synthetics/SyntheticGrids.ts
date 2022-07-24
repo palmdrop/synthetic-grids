@@ -123,7 +123,6 @@ export class SyntheticGrids extends AbstractRenderScene {
       width = this.canvas.parentElement?.clientWidth;
       height = this.canvas.parentElement?.clientHeight;
     }
-
     super.resize( width, height, force );
     // For some reason, automatic resizing does not work when using postprocessing library composer
 
