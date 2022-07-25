@@ -78,3 +78,11 @@ export function easeInOutBack(x: number): number {
     : (pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
   
 }
+
+export function easeOutCirc(x: number): number {
+  return sqrt(1 - pow(x - 1, 2));
+}
+
+export function easeOutCubic(x: number): number {
+  return 1 - pow(1 - x, 3);
+}  

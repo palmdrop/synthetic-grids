@@ -39,6 +39,7 @@ export type StrawConfig = {
 
   bend: number,
 
+  bendController: (n: number) => number,
   thicknessController: (n: number) => number,
 
   noiseOffsetMultiplier: number,
@@ -128,7 +129,7 @@ const createStrawSkeleton = (
       + getNoise3D(currentSegment.position, {
         offset: new THREE.Vector3(15, 415, 31.6),
         ...config.twistNoiseSettings
-      });
+      }) * config.forces.twist;
 
     const nextSegment: Segment = {
       direction,
@@ -183,7 +184,9 @@ const warpGeometry = (
     for(let sx = 0; sx < config.widthSegments; sx++) {
       const bendAmount = 
         config.bend * 
-        Math.abs(sx - (config.widthSegments - 1) / 2.0) / ((config.widthSegments - 1.0 ) / 2.0);
+        config.bendController(
+          Math.abs(sx - (config.widthSegments - 1) / 2.0) / ((config.widthSegments - 1.0 ) / 2.0)
+        );
 
       const point = position.clone()
         .add(
@@ -371,9 +374,11 @@ export const getWeedsGrid = (
     
     weedsObject.add(object);
 
-    object.add(
-      new THREE.Box3Helper(maxBox, new THREE.Color(boxColor))
-    );
+    if(boxColor) {
+      object.add(
+        new THREE.Box3Helper(maxBox, new THREE.Color(boxColor))
+      );
+    }
   });
 
   return {

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type * as dat from 'dat.gui';
 
 import type { SyntheticSpace } from '../scene';
@@ -10,6 +11,7 @@ import { getBackgroundRenderer } from '../background/background';
 import encodedBackgroundProgram from '../programs/grid4.json';
 import { createProgramManager, MaterialObject } from '../programs/programManager';
 import { addDirectionalLight } from '../../systems/GuiUtils';
+import { Matrix4 } from 'three';
 
 export const getWeedsSpace = (
   renderer: THREE.WebGLRenderer,
@@ -17,16 +19,19 @@ export const getWeedsSpace = (
   gui: dat.GUI
 ): SyntheticSpace => {
   const config: ConfigGenerator = (position, index, cell) => ({
-    width: 1.05, 
-    height: 10,
-    widthSegments: 5, 
+    width: Math.random() + 0.9,
+    height: 50,
+    widthSegments: 3, 
     heightSegments: 50,
 
-    bend: -0.7,
+    bend: 0.3,
+    bendController: (n) => (
+      1.0 - EASING.easeOutCubic(1.0 - n)
+    ),
     
     thicknessController: (n) => (
-      EASING.easeOutElastic(n) *
-      EASING.easeOutElastic(1.0 - n * n)
+      EASING.easeOutCirc(n) *
+      EASING.easeOutBack(1.0 - n * n)
     )
     ,
 
@@ -35,12 +40,12 @@ export const getWeedsSpace = (
 
     widthNoiseSettings: {
       frequency: Math.random() * 0.5 + 0.2,
-      min: 0.001,
-      max: 3.5
+      min: 1.0,
+      max: 1.0
     },
 
     directionNoiseSettings: {
-      frequency: 0.4,
+      frequency: 0.05,
       min: -1.0,
       max: 1.0
     },
@@ -51,12 +56,12 @@ export const getWeedsSpace = (
     },
 
     forces: {
-      gravity: 0.44,
+      gravity: 0.1,
       twist: 0.0,
       turn: new THREE.Vector3(1, 1, 1)
-        .multiplyScalar(0.6),
+        .multiplyScalar(0.4),
       direction: 0.2,
-      random: 0.1
+      random: 0.0
     },
 
     materialGenerator: (index, position) => {
@@ -77,25 +82,57 @@ export const getWeedsSpace = (
 
   const weeds = getWeedsGrid(
     config,
-    50,
+    1000,
     () => new THREE.Vector3().randomDirection().multiply(
-      new THREE.Vector3(1.0, 0.5, 1.0).multiplyScalar(1)
+      new THREE.Vector3(1.0, 0.0, 1.0).multiplyScalar(50)
     ),
-    dataColor,
+    undefined, // dataColor,
     {
       cells: {
         x: 1,
-        y: 3,
-        z: 2
+        y: 1,
+        z: 1
       },
-      padding: 0.3
+      padding: -0.0
     }
   );
 
-
   weeds.update = (properties) => {
-    weeds.object.rotateY(0.005);
+    weeds.object.rotateY(0.002);
   }
+
+  const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
+    (weeds.object.children[0].children as THREE.Mesh[]).map(
+      child => {
+        child.geometry.applyMatrix4(
+          child.matrix
+        );
+
+        return child.geometry;
+      }
+    ).filter(geometry => !!geometry)
+  );
+
+  const instancedMesh = new THREE.InstancedMesh(
+    mergedGeometry,
+    (weeds.object.children[0].children[0] as THREE.Mesh).material,
+    4
+  );
+
+  for(let i = 0; i < instancedMesh.count; i++) {
+    const matrix = weeds.object.matrix.clone();
+    matrix.makeRotationY(
+      0.2 * 
+      i * Math.PI * 2.0 / instancedMesh.count
+    );
+    instancedMesh.setMatrixAt(i, matrix);
+    instancedMesh.setColorAt(i, new THREE.Color(0.3, i / instancedMesh.count + 0.5, 0.4));
+  }
+
+  weeds.object = instancedMesh;
+
+  weeds.object.rotateY(Math.PI / 2.0);
+
 
   // Background
   const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
@@ -146,12 +183,14 @@ export const getWeedsSpace = (
       scene.add(
         ambientLight,
         directionalLight,
-        pointLight,
+        // pointLight,
         // plane
+        /*
         new THREE.Mesh(
           new THREE.SphereBufferGeometry(2, 40, 40),
           new THREE.MeshBasicMaterial({ color: pointLightColor })
         )
+        */
       );
     },
     // backgroundRenderer, 
