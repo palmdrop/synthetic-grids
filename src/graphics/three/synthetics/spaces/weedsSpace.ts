@@ -82,16 +82,16 @@ export const getWeedsSpace = (
 
   const weeds = getWeedsGrid(
     config,
-    1000,
+    300,
     () => new THREE.Vector3().randomDirection().multiply(
-      new THREE.Vector3(1.0, 0.0, 1.0).multiplyScalar(50)
+      new THREE.Vector3(1.0, 0.0, 1.0).multiplyScalar(1)
     ),
-    undefined, // dataColor,
+    dataColor,
     {
       cells: {
-        x: 1,
-        y: 1,
-        z: 1
+        x: 2,
+        y: 2,
+        z: 2
       },
       padding: -0.0
     }
@@ -100,39 +100,6 @@ export const getWeedsSpace = (
   weeds.update = (properties) => {
     weeds.object.rotateY(0.002);
   }
-
-  const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
-    (weeds.object.children[0].children as THREE.Mesh[]).map(
-      child => {
-        child.geometry.applyMatrix4(
-          child.matrix
-        );
-
-        return child.geometry;
-      }
-    ).filter(geometry => !!geometry)
-  );
-
-  const instancedMesh = new THREE.InstancedMesh(
-    mergedGeometry,
-    (weeds.object.children[0].children[0] as THREE.Mesh).material,
-    4
-  );
-
-  for(let i = 0; i < instancedMesh.count; i++) {
-    const matrix = weeds.object.matrix.clone();
-    matrix.makeRotationY(
-      0.2 * 
-      i * Math.PI * 2.0 / instancedMesh.count
-    );
-    instancedMesh.setMatrixAt(i, matrix);
-    instancedMesh.setColorAt(i, new THREE.Color(0.3, i / instancedMesh.count + 0.5, 0.4));
-  }
-
-  weeds.object = instancedMesh;
-
-  weeds.object.rotateY(Math.PI / 2.0);
-
 
   // Background
   const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
