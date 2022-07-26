@@ -127,7 +127,7 @@ export const getWeedsSpace = (
       const ambientLight = new THREE.AmbientLight('white', 1.5)
 
       const directionalLight = new THREE.DirectionalLight('white', 3.8);
-      directionalLight.position.set(0, 8, 50);
+      directionalLight.position.set(0, 1, 20);
       directionalLight.castShadow = true;
       directionalLight.shadow.bias = -0.001;
 
@@ -136,10 +136,12 @@ export const getWeedsSpace = (
       directionalLight.shadow.camera.near = 0.0;
       directionalLight.shadow.camera.far = 1024;
 
-      directionalLight.shadow.camera.left = -50 * 5;
+      directionalLight.shadow.camera.left = -50;
       directionalLight.shadow.camera.right = 50;
       directionalLight.shadow.camera.top = 50;
       directionalLight.shadow.camera.bottom = -50;
+
+      const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
 
       addDirectionalLight(gui.addFolder('directional light'), directionalLight);
 
@@ -150,6 +152,7 @@ export const getWeedsSpace = (
       scene.add(
         ambientLight,
         directionalLight,
+        // shadowHelper
         // pointLight,
         // plane
         /*

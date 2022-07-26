@@ -4,6 +4,10 @@ import { getNoise3D } from '../noise/noise';
 import normalTexturePath from '../../../../assets/normal/normal-texture1_x2.jpg';
 import type { Synthetic } from '../../synthetics/scene';
 import { box3ToBoxGeometry } from '../../tools/geometryTools';
+import { Line2 } from 'three/examples/jsm/lines/Line2';
+import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { createLineBox } from '../../../utils/lines';
 
 type NoiseSettings = {
   frequency: number,
@@ -360,6 +364,8 @@ export const getWeedsGrid = (
   maxBox.max.copy(maxBoxValues).multiplyScalar(1 + (gridConfig.padding ?? 0));
   maxBox.min.copy(maxBoxValues).multiplyScalar(-(1 + (gridConfig.padding ?? 0)));
 
+  // const boxLineGeometry = 
+
   const cellDimensions = maxBox.getSize(new THREE.Vector3());
 
   objects.forEach(({ object, cell, box }) => {
@@ -375,8 +381,14 @@ export const getWeedsGrid = (
     weedsObject.add(object);
 
     if(boxColor) {
+      const line = createLineBox(maxBox, new LineMaterial({
+        color: new THREE.Color(boxColor).getHex(),
+        linewidth: 0.001,
+      }))
+
       object.add(
-        new THREE.Box3Helper(maxBox, new THREE.Color(boxColor))
+        line
+        // boxHelper
       );
     }
   });
