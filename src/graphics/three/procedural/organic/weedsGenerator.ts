@@ -2,10 +2,6 @@ import * as THREE from 'three';
 import { getNoise3D } from '../noise/noise';
 
 import normalTexturePath from '../../../../assets/normal/normal-texture1_x2.jpg';
-import type { Synthetic } from '../../synthetics/scene';
-import { box3ToBoxGeometry } from '../../tools/geometryTools';
-import { Line2 } from 'three/examples/jsm/lines/Line2';
-import type { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { createLineBox } from '../../../utils/lines';
 
@@ -30,7 +26,8 @@ export type GridConfig = {
     z: number
   },
   padding?: number,
-  scaleToFit?: boolean
+  scaleToFit?: boolean,
+  color?: THREE.ColorRepresentation
 }
 
 export type StrawConfig = {
@@ -314,9 +311,9 @@ export const getWeedsGrid = (
   config: StrawConfig | ConfigGenerator,
   count: number,
   spawner: (index: number) => THREE.Vector3,
-  boxColor: THREE.ColorRepresentation | undefined = undefined,
-  gridConfig: GridConfig
-): Synthetic => {
+  gridConfig: GridConfig,
+  gui?: dat.GUI
+): THREE.Object3D => {
   const weedsObject = new THREE.Object3D();
   const objects: { 
     cell: THREE.Vector3, 
@@ -324,6 +321,7 @@ export const getWeedsGrid = (
     box: THREE.Box3
   }[] = [];
   const cells = gridConfig.cells;
+  const offset = new THREE.Vector3(new Date().getMilliseconds(), 0, 0);
 
   const getIndex = (x: number, y: number, z: number) => {
     return x + cells.x * (y + cells.y * z);
@@ -341,7 +339,8 @@ export const getWeedsGrid = (
       count,
       spawner,
       undefined,
-      cell,
+      // offset,
+      cell.clone().add(offset),
       index
     );
 
@@ -364,11 +363,22 @@ export const getWeedsGrid = (
   maxBox.max.copy(maxBoxValues).multiplyScalar(1 + (gridConfig.padding ?? 0));
   maxBox.min.copy(maxBoxValues).multiplyScalar(-(1 + (gridConfig.padding ?? 0)));
 
-  // const boxLineGeometry = 
-
   const cellDimensions = maxBox.getSize(new THREE.Vector3());
 
-  objects.forEach(({ object, cell, box }) => {
+  const lineMaterial = new LineMaterial({
+    color: new THREE.Color(gridConfig.color).getHex(),
+    linewidth: 0.002,
+  });
+
+  if(gui) {
+    // gui.removeFolder('lineMaterial');
+    const folder = gui.__folders['lineMaterial'];
+    if(folder) gui.removeFolder(folder);
+    const lineMaterialFolder = gui.addFolder('lineMaterial');
+    lineMaterialFolder.add(lineMaterial, 'linewidth', 0.0, 0.1);
+  }
+
+  objects.forEach(({ object, cell }) => {
     object.position
       .copy(cell)
       .sub(new THREE.Vector3(
@@ -380,20 +390,15 @@ export const getWeedsGrid = (
     
     weedsObject.add(object);
 
-    if(boxColor) {
-      const line = createLineBox(maxBox, new LineMaterial({
-        color: new THREE.Color(boxColor).getHex(),
-        linewidth: 0.001,
-      }))
+    if(gridConfig.color) {
+      const lineBox = createLineBox(maxBox, lineMaterial);
+      lineBox.position.copy(object.position);
 
-      object.add(
-        line
-        // boxHelper
+      weedsObject.add(
+        lineBox
       );
     }
   });
 
-  return {
-    object: weedsObject
-  }
+  return weedsObject;
 }

@@ -8,7 +8,7 @@ import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 import { getLandscapeMap } from './spaces/landscapeMap';
-import { getWeedsSpace } from './spaces/weedsSpace';
+import { getWeedsSpace } from './spaces/weeds/weedsSpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;

@@ -9,12 +9,26 @@ type PropertySettings = {
   displayName?: string
 }
 
-type PropertyMap = {
+export type PropertyMap = {
   [properties: string]: PropertyMap | PropertySettings
 };
 
-export const isPropertyMap = (value: PropertyMap | PropertySettings): value is PropertyMap => {
-  return value.max === undefined && value.min === undefined && value.step === undefined;
+export const isPropertySettings = (value: PropertyMap | PropertySettings): value is PropertySettings => {
+  // return !(value)
+  // value.max === undefined && value.min === undefined && value.step === undefined;
+  const keys = Object.keys(value);
+  const correctCount = keys.length >= 2 && keys.length <= 4;
+  if(!correctCount) return false;
+
+  const correctKeys = keys.every(key => (['min', 'max', 'step', 'displayName'].includes(key)));
+  if(!correctKeys) return false;
+
+  const correctTypes = keys.every(key => {
+    if(key === 'displayName') return value[key] === 'string';
+    return typeof value[key] === 'number';
+  });
+
+  return correctTypes;
 }
 
 // TODO: add support for object uniforms
@@ -101,7 +115,8 @@ export const addGUI = (
   if(!target || !properties || !gui) return;
   
   Object.entries(properties).forEach(([property, value]) => {
-    if(isPropertyMap(value)) {
+    debugger
+    if(!isPropertySettings(value)) {
       const folder = gui.addFolder(property);
       addGUI(folder, target[property], value);
     } else {
@@ -122,6 +137,24 @@ export const addDirectionalLight = (gui: dat.GUI, target: THREE.DirectionalLight
       x: { min: -50, max: 50 },
       y: { min: -50, max: 50 },
       z: { min: -50, max: 50 },
+    }
+  });
+
+  addThreeColor(gui, target, 'color');
+}
+
+export const addPointLight = (gui: dat.GUI, target: THREE.PointLight) => {
+  addGUI(gui, target, {
+    intensity: {
+      min: 0, max: 100
+    },
+    position: {
+      x: { min: -50, max: 50 },
+      y: { min: -50, max: 50 },
+      z: { min: -50, max: 50 },
+    },
+    distance: {
+      min: 0, max: 300
     }
   });
 
