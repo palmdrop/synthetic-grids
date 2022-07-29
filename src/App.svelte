@@ -44,9 +44,24 @@
     }
   }
 
+  let mouseMoving = false;
+
   const onMouseMove = (event: MouseEvent) => {
     if(!scene) return;  
     scene.onMouseMove(
+      event.clientX, event.clientY
+    );
+
+    mouseMoving = true;
+  }
+
+  const onMouseDown = () => {
+    mouseMoving = false;
+  }
+
+  const onMouseUp = (event: MouseEvent) => {
+    if(!scene || mouseMoving) return;
+    scene.onMouseClick(
       event.clientX, event.clientY
     );
   }
@@ -56,7 +71,7 @@
     scene.resize();
     scene.start();
 
-    scene.setCaptureFrameResolutionMultiplier(2.0);
+    scene.setCaptureFrameResolutionMultiplier(3.0);
 
     return () => {
       scene.stop();
@@ -69,6 +84,8 @@
   on:resize={onResize} 
   on:keydown={onKeyDown}
   on:mousemove={onMouseMove}
+  on:mousedown={onMouseDown}
+  on:mouseup={onMouseUp}
 />
 
 <div class='substrates' class:show={builderVisible}>

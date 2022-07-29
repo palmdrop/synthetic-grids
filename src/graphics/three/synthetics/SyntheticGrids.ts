@@ -40,7 +40,7 @@ export class SyntheticGrids extends AbstractRenderScene {
     );
 
     this.controls.panSpeed = 1.8;
-    this.controls.zoomSpeed = 1.5;
+    this.controls.zoomSpeed = 0.5;
 
     addGUI(this.gui.addFolder('controls'), this.controls, {
       'panSpeed': {
@@ -80,6 +80,7 @@ export class SyntheticGrids extends AbstractRenderScene {
         this.scene.add(synthetic.object);
       });
 
+    /*
     const {
       composer,
       // update: updateComposer
@@ -92,6 +93,7 @@ export class SyntheticGrids extends AbstractRenderScene {
     );
 
     this.composer = composer;
+    */
   }
 
   protected createCamera(): THREE.Camera {
@@ -160,5 +162,11 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   toggleMouseLocked() {
     this.mouseLocked = !this.mouseLocked;
+  }
+
+  onMouseClick(mouseX: number, mouseY: number) {
+    const x = (mouseX / window.innerWidth) * 2 - 1;
+	  const y = -(mouseY / window.innerHeight) * 2 + 1;
+    this.space?.onClick?.(new THREE.Vector2(x, y), this);
   }
 }

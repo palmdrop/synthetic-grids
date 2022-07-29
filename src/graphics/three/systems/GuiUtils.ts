@@ -115,7 +115,6 @@ export const addGUI = (
   if(!target || !properties || !gui) return;
   
   Object.entries(properties).forEach(([property, value]) => {
-    debugger
     if(!isPropertySettings(value)) {
       const folder = gui.addFolder(property);
       addGUI(folder, target[property], value);

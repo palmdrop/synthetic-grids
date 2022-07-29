@@ -14,7 +14,7 @@ type NoiseSettings = {
 type Forces = {
   gravity: number,
   twist: number,
-  turn: THREE.Vector3,
+  turn: number,
   direction: number,
   random: number
 }
@@ -54,7 +54,8 @@ export type StrawConfig = {
   materialGenerator?: (index: number, position: THREE.Vector3) => THREE.Material,
 }
 
-export type ConfigGenerator = (position: THREE.Vector3, index: number, cell: number) => StrawConfig;
+export type StrawConfigGenerator = (position: THREE.Vector3, index: number, cell: number) => StrawConfig;
+export type GridConfigGenerator = () => GridConfig;
 
 type Segment = {
   position: THREE.Vector3,
@@ -111,7 +112,7 @@ const createStrawSkeleton = (
       currentSegment.direction.clone()
         .multiplyScalar(forces.direction)
         .add(
-          directionNoise.multiply(forces.turn)
+          directionNoise.multiplyScalar(forces.turn)
         )
         .add(
           gravity.clone().multiplyScalar(-forces.gravity)
@@ -254,7 +255,7 @@ export const getStraw = (
 }
 
 export const getWeeds = (
-  config: StrawConfig | ConfigGenerator,
+  config: StrawConfig | StrawConfigGenerator,
   count: number,
   spawner: (index: number) => THREE.Vector3,
   boxColor: THREE.ColorRepresentation | undefined = undefined,
@@ -307,19 +308,38 @@ export const getWeeds = (
   return object;
 }
 
-export const getWeedsGrid = (
-  config: StrawConfig | ConfigGenerator,
+export type WeedsGridConfig = {
+  strawConfig: StrawConfig | StrawConfigGenerator,
+  strawCount: number,
+  strawSpawner: (index: number) => THREE.Vector3,
+  gridConfig: GridConfig
+}
+
+export type CellData = { 
+  box: THREE.Box3, 
+  object: THREE.Object3D, 
+  index: number,
   count: number,
-  spawner: (index: number) => THREE.Vector3,
-  gridConfig: GridConfig,
+  config: StrawConfig,
+};
+
+export const getWeedsGrid = (
+  config: WeedsGridConfig | (() => WeedsGridConfig),
   gui?: dat.GUI
-): THREE.Object3D => {
+): { 
+  object: THREE.Object3D, 
+  cellsData: CellData[]
+} => {
   const weedsObject = new THREE.Object3D();
   const objects: { 
     cell: THREE.Vector3, 
     object: THREE.Object3D,
-    box: THREE.Box3
+    box: THREE.Box3,
+    config: StrawConfig
   }[] = [];
+  const { strawConfig, strawCount, strawSpawner: spawner, gridConfig } = 
+    typeof config === 'function' ? config() : config;
+
   const cells = gridConfig.cells;
   const offset = new THREE.Vector3(new Date().getMilliseconds(), 0, 0);
 
@@ -334,9 +354,10 @@ export const getWeedsGrid = (
     const index = getIndex(x, y, z);
     const cell = new THREE.Vector3(x, y, z);
 
+    const config = typeof strawConfig === 'function' ? strawConfig(cell, 0, index) : strawConfig;
     const object = getWeeds(
       config,
-      count,
+      strawCount,
       spawner,
       undefined,
       // offset,
@@ -350,7 +371,8 @@ export const getWeedsGrid = (
     objects[index] = {
       object,
       cell,
-      box
+      box,
+      config
     };
   }
 
@@ -367,7 +389,7 @@ export const getWeedsGrid = (
 
   const lineMaterial = new LineMaterial({
     color: new THREE.Color(gridConfig.color).getHex(),
-    linewidth: 0.002,
+    linewidth: 0.001,
   });
 
   if(gui) {
@@ -378,7 +400,9 @@ export const getWeedsGrid = (
     lineMaterialFolder.add(lineMaterial, 'linewidth', 0.0, 0.1);
   }
 
-  objects.forEach(({ object, cell }) => {
+  const cellsData: CellData[] = [];
+
+  objects.forEach(({ object, cell, config }) => {
     object.position
       .copy(cell)
       .sub(new THREE.Vector3(
@@ -390,6 +414,14 @@ export const getWeedsGrid = (
     
     weedsObject.add(object);
 
+    cellsData.push({
+      object,
+      index: getIndex(cell.x, cell.y, cell.z),
+      box: new THREE.Box3().copy(maxBox).translate(object.position),
+      count: strawCount,
+      config 
+    });
+
     if(gridConfig.color) {
       const lineBox = createLineBox(maxBox, lineMaterial);
       lineBox.position.copy(object.position);
@@ -400,5 +432,8 @@ export const getWeedsGrid = (
     }
   });
 
-  return weedsObject;
+  return {
+    object: weedsObject,
+    cellsData
+  }
 }

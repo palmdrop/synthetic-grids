@@ -2,6 +2,7 @@ import type { Program } from '../../../modules/substrates/src/interface/types/pr
 import * as THREE from 'three';
 import type { FullscreenQuadRenderer } from '../tools/FullscreenQuadRenderer';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
+import type { AbstractRenderScene } from '../AbstractRenderScene';
 
 export type SceneProperties = {
   time: number,
@@ -14,7 +15,8 @@ export type Synthetic<ObjectType = THREE.Object3D> = {
   object: ObjectType,
   updateShader?: (program?: Program) => void,
   update?: (sceneProperties: SceneProperties) => void,
-  resize?: (width: number, height: number) => void
+  resize?: (width: number, height: number) => void,
+  metadata?: Record<string, any>
 }
 
 export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
@@ -24,6 +26,7 @@ export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
 
 export type SyntheticSpace = {
   sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void, 
+  onClick?: (mousePosition: THREE.Vector2, renderScene: AbstractRenderScene) => void,
   backgroundRenderer?: BackgroundRenderer,
   synthetics: Synthetic[]
 }

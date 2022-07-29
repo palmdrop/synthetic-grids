@@ -12,7 +12,7 @@ export const makeCamera = (renderScene: AbstractRenderScene): THREE.Camera => {
   camera.position.set( 0, 0, 100 );
 
   renderScene.resizeables.push(makeAspectOrthoResizer(
-    camera as THREE.OrthographicCamera, 100.4 
+    camera as THREE.OrthographicCamera, 190.4 
   ));
 
   return camera;
