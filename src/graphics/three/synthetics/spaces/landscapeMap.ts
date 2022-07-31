@@ -41,6 +41,10 @@ const rotateObjectWithMouse = (
   }
 }
 
+export const spaceMetadata = {
+  postProcessing: true
+}
+
 export const getLandscapeMap = (
   renderer: THREE.WebGLRenderer,
   backgroundRenderTarget: THREE.WebGLRenderTarget,
@@ -116,6 +120,7 @@ export const getLandscapeMap = (
     synthetics: [
       terrain,
       backgroundWall
-    ]
+    ],
+    postProcessing: true
   }
 }

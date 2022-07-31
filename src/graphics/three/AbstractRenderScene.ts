@@ -19,9 +19,9 @@ export abstract class AbstractRenderScene implements RenderScene {
   protected resizer : Resizer;
   resizeables : Resizeable[];
 
-  readonly renderer : THREE.WebGLRenderer;
-  readonly scene : THREE.Scene;
-  readonly camera : THREE.Camera;
+  public renderer : THREE.WebGLRenderer;
+  public scene : THREE.Scene;
+  public camera : THREE.Camera;
 
   protected composer ?: EffectComposer | POSTPROCESSING.EffectComposer;
 
@@ -29,13 +29,13 @@ export abstract class AbstractRenderScene implements RenderScene {
   protected captureFrameResolutionMultiplier : number;
   protected dataCallback ?: DataURLCallback;
 
-  constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
+  constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback, postProcessing ?: boolean ) {
     this.canvas = canvas;
     this.onLoad = onLoad;
     this.resizeables = [];
     this.loop = this.createLoop();
 
-    this.renderer = this.createRenderer();
+    this.renderer = this.createRenderer(postProcessing);
     this.scene = this.createScene();
     this.camera = this.createCamera();
     this.resizer = this.createResizer();
@@ -58,11 +58,11 @@ export abstract class AbstractRenderScene implements RenderScene {
     } );
   }
 
-  protected createRenderer() : THREE.WebGLRenderer {
+  protected createRenderer(postProcessing?: boolean) : THREE.WebGLRenderer {
     const renderer = new THREE.WebGLRenderer( {
       canvas: this.canvas,
       powerPreference: 'high-performance',
-      antialias: true,
+      antialias: !postProcessing,
       stencil: false,
       alpha: false
     } );

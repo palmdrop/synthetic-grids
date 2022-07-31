@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type * as dat from 'dat.gui';
 import * as EASING from '../../../../utils/easing';
-import { defaultNormalMap, WeedsGridConfig } from '../../../procedural/organic/weedsGenerator';
+import type { WeedsGridConfig } from '../../../procedural/organic/weedsGenerator';
 import { addGUI, PropertyMap } from '../../../systems/GuiUtils';
 import { mutate, MutationParameters } from '../../../procedural/genetic/geneticGenerator';
 
@@ -13,9 +13,20 @@ export const colors = {
   grid: '#70ad00'
   */
 
+  /*
   plant: '#70aa4f',
   background: '#2d3517',
   grid: '#ffe600'
+  */
+
+  /*
+  plant: '#9fd7ca',
+  background: '#000000',
+  grid: '#9a0000'
+  */
+  plant: '#c7c89b',
+  background: '#000000',
+  grid: '#27d400'
 }
 
 export const defaultMutationParameters: MutationParameters = {
@@ -153,8 +164,6 @@ export const configMaker = (): WeedsGridConfig => {
           clearcoat: 0.5,
           clearcoatRoughness: 0.1,
           side: THREE.DoubleSide,
-          normalMap: defaultNormalMap,
-          normalScale: new THREE.Vector2(1, 1).multiplyScalar(0.2)
         });
       }
     },
@@ -169,7 +178,8 @@ export const configMaker = (): WeedsGridConfig => {
         z: 1
       },
       padding: -0.1,
-      color: colors.grid
+      color: colors.grid,
+      lineWidth: 0.0017
     },
   }
 

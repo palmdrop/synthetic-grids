@@ -8,7 +8,7 @@ import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 import { getLandscapeMap } from './spaces/landscapeMap';
-import { getWeedsSpace } from './spaces/weeds/weedsSpace';
+import { getWeedsSpace, spaceMetadata } from './spaces/weeds/weedsSpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -24,7 +24,7 @@ export class SyntheticGrids extends AbstractRenderScene {
   private mouseLocked = false;
 
   constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
-    super(canvas, onLoad);
+    super(canvas, onLoad, spaceMetadata.postProcessing);
 
     this.backgroundRenderTarget = new THREE.WebGLRenderTarget(
       canvas.width, canvas.height,
@@ -73,6 +73,9 @@ export class SyntheticGrids extends AbstractRenderScene {
       this.backgroundRenderTarget,
       this.gui
     );
+
+    // this.renderer = this.createRenderer(this.space.postProcessing);
+
     this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
     this.space.synthetics
@@ -80,20 +83,20 @@ export class SyntheticGrids extends AbstractRenderScene {
         this.scene.add(synthetic.object);
       });
 
-    /*
-    const {
-      composer,
-      // update: updateComposer
-    } = getComposer(
-      this.renderer,
-      this.scene,
-      this.camera,
-      20,
-      this.gui.addFolder('postprocessing')
-    );
+    if(this.space.postProcessing) {
+      const {
+        composer,
+        // update: updateComposer
+      } = getComposer(
+        this.renderer,
+        this.scene,
+        this.camera,
+        20,
+        this.gui.addFolder('postprocessing')
+      );
 
-    this.composer = composer;
-    */
+      this.composer = composer;
+    }
   }
 
   protected createCamera(): THREE.Camera {

@@ -26,8 +26,8 @@ export type GridConfig = {
     z: number
   },
   padding?: number,
-  scaleToFit?: boolean,
   color?: THREE.ColorRepresentation
+  lineWidth?: number
 }
 
 export type StrawConfig = {
@@ -389,7 +389,7 @@ export const getWeedsGrid = (
 
   const lineMaterial = new LineMaterial({
     color: new THREE.Color(gridConfig.color).getHex(),
-    linewidth: 0.001,
+    linewidth: gridConfig.lineWidth ?? 0.001
   });
 
   if(gui) {

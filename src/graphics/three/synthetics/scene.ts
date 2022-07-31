@@ -28,7 +28,8 @@ export type SyntheticSpace = {
   sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void, 
   onClick?: (mousePosition: THREE.Vector2, renderScene: AbstractRenderScene) => void,
   backgroundRenderer?: BackgroundRenderer,
-  synthetics: Synthetic[]
+  synthetics: Synthetic[],
+  postProcessing: boolean,
 }
 
 export const updateShaderUtil = (

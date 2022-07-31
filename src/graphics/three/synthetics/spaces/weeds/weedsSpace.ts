@@ -34,6 +34,10 @@ const updateWeeds = (
   return weedsSynthetic;
 }
 
+export const spaceMetadata = {
+  postProcessing: false
+}
+
 export const getWeedsSpace = (
   renderer: THREE.WebGLRenderer,
   backgroundRenderTarget: THREE.WebGLRenderTarget,
@@ -157,6 +161,7 @@ export const getWeedsSpace = (
       /*
       terrain,
       */
-    ]
+    ],
+    postProcessing: false
   }
 }
