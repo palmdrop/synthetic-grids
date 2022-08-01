@@ -7,8 +7,9 @@ import { addGUI } from '../systems/GuiUtils';
 import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
-import { getLandscapeMap } from './spaces/landscapeMap';
-import { getWeedsSpace, spaceMetadata } from './spaces/weeds/weedsSpace';
+// import { getLandscapeMap } from './spaces/landscapeMap';
+// import { getWeedsSpace, spaceMetadata } from './spaces/weeds/weedsSpace';
+import { getMappingSpace, spaceMetadata } from './spaces/mapping/mappingSpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -68,7 +69,8 @@ export class SyntheticGrids extends AbstractRenderScene {
     );
     this.space.sceneConfigurator(this.scene);
     */
-    this.space = getWeedsSpace(
+    // this.space = getWeedsSpace(
+    this.space = getMappingSpace(
       this.renderer,
       this.backgroundRenderTarget,
       this.gui

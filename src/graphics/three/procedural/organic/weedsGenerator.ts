@@ -5,18 +5,26 @@ import normalTexturePath from '../../../../assets/normal/normal-texture1_x2.jpg'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { createLineBox } from '../../../utils/lines';
 
+type DynamicValue<T> = T | ((delta: number) => T);
+type DynamicNumber = DynamicValue<number>;
+
+const getDynamicValue = <T>(dynamicValue: DynamicValue<T>, delta: number) => {
+  if(typeof dynamicValue !== 'function') return dynamicValue;
+  else return (dynamicValue as ((delta: number) => T))(delta);
+}
+
 type NoiseSettings = {
-  frequency: number,
+  frequency: DynamicNumber,
   min: number,
   max: number
 }
 
 type Forces = {
-  gravity: number,
-  twist: number,
-  turn: number,
-  direction: number,
-  random: number
+  gravity: DynamicNumber,
+  twist: DynamicNumber,
+  turn: DynamicNumber,
+  direction: DynamicNumber,
+  random: DynamicNumber
 }
 
 export type GridConfig = {
@@ -38,7 +46,7 @@ export type StrawConfig = {
 
   widthNoiseSettings?: NoiseSettings,
 
-  bend: number,
+  bend: DynamicNumber,
 
   bendController: (n: number) => number,
   thicknessController: (n: number) => number,
@@ -67,6 +75,14 @@ type Segment = {
 const gravity = new THREE.Vector3(0, -1, 0);
 const right = new THREE.Vector3(1, 0, 0);
 
+const evaluateDynamicNoiseSettings = (noiseSettings: NoiseSettings, delta: number) => {
+  return {
+    frequency: getDynamicValue(noiseSettings.frequency, delta),
+    min: noiseSettings.min,
+    max: noiseSettings.max
+  }
+}
+
 const createStrawSkeleton = (
   config: StrawConfig, 
   startPosition: THREE.Vector3,
@@ -93,32 +109,36 @@ const createStrawSkeleton = (
   skeleton.push(currentSegment);
 
   for(let i = 1; i < config.heightSegments; i++) {
+    const delta = i / config.heightSegments;
+
     const directionNoise = new THREE.Vector3(
       getNoise3D(currentSegment.position, {
         offset: new THREE.Vector3(0, 1000, 0).add(noiseOffset),
-        ...config.directionNoiseSettings
+        ...evaluateDynamicNoiseSettings(config.directionNoiseSettings, delta)
       }),
       getNoise3D(currentSegment.position, {
         offset: new THREE.Vector3(0, 0, 0).add(noiseOffset),
-        ...config.directionNoiseSettings
+        ...evaluateDynamicNoiseSettings(config.directionNoiseSettings, delta)
       }),
       getNoise3D(currentSegment.position, {
         offset: new THREE.Vector3(-315, 0, 0).add(noiseOffset),
-        ...config.directionNoiseSettings
+        ...evaluateDynamicNoiseSettings(config.directionNoiseSettings, delta)
       }),
     );
 
+    console.log(getDynamicValue(forces.gravity, delta));
+
     const direction = 
       currentSegment.direction.clone()
-        .multiplyScalar(forces.direction)
+        .multiplyScalar(getDynamicValue(forces.direction, delta))
         .add(
-          directionNoise.multiplyScalar(forces.turn)
+          directionNoise.multiplyScalar(getDynamicValue(forces.turn, delta))
         )
         .add(
-          gravity.clone().multiplyScalar(-forces.gravity)
+          gravity.clone().multiplyScalar(-getDynamicValue(forces.gravity, delta))
         )
         .add(
-          new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * config.forces.random)
+          new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * getDynamicValue(config.forces.random, delta))
         )
         .normalize();
 
@@ -130,8 +150,8 @@ const createStrawSkeleton = (
     const rotation = currentSegment.rotation
       + getNoise3D(currentSegment.position, {
         offset: new THREE.Vector3(15, 415, 31.6),
-        ...config.twistNoiseSettings
-      }) * config.forces.twist;
+        ...evaluateDynamicNoiseSettings(config.twistNoiseSettings, delta)
+      }) * getDynamicValue(config.forces.twist, delta);
 
     const nextSegment: Segment = {
       direction,
@@ -162,10 +182,12 @@ const warpGeometry = (
       direction
     } = skeleton[sy];
 
+    const delta = sy / skeleton.length;
+
     const widthVariation = config.widthNoiseSettings 
       ? getNoise3D(position, {
           offset: new THREE.Vector3(-41.31, 0.31, -131.3), 
-          ...config.widthNoiseSettings
+          ...evaluateDynamicNoiseSettings(config.widthNoiseSettings, delta)
         }) 
       : 1.0;
 
@@ -185,7 +207,7 @@ const warpGeometry = (
 
     for(let sx = 0; sx < config.widthSegments; sx++) {
       const bendAmount = 
-        config.bend * 
+        getDynamicValue(config.bend, delta) * 
         config.bendController(
           Math.abs(sx - (config.widthSegments - 1) / 2.0) / ((config.widthSegments - 1.0 ) / 2.0)
         );
@@ -273,7 +295,8 @@ export const getWeeds = (
     const straw = getStraw(
       strawConfig, 
       position.clone().multiplyScalar(
-        strawConfig.directionNoiseSettings.frequency * strawConfig.noiseOffsetMultiplier
+        getDynamicValue(strawConfig.directionNoiseSettings.frequency, 0) * 
+        strawConfig.noiseOffsetMultiplier
       ).add(offset ?? new THREE.Vector3()),
       j
     );
