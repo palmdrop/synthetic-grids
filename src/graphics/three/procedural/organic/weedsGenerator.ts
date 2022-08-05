@@ -65,6 +65,17 @@ export type StrawConfig = {
 export type StrawConfigGenerator = (position: THREE.Vector3, index: number, cell: number) => StrawConfig;
 export type GridConfigGenerator = () => GridConfig;
 
+export type WeedsConfig = {
+  strawConfig: StrawConfig | StrawConfigGenerator,
+  count: number,
+  spawner: (index: number) => THREE.Vector3,
+  colors?: {
+    plant: THREE.ColorRepresentation,
+    light: THREE.ColorRepresentation,
+    background: THREE.ColorRepresentation,
+  }
+}
+
 type Segment = {
   position: THREE.Vector3,
   direction: THREE.Vector3,
@@ -274,6 +285,12 @@ export const getStraw = (
   }
 
   return strawMesh;
+}
+
+export const getWeedsFromConfig = (
+  config: WeedsConfig
+) => {
+  return getWeeds(config.strawConfig, config.count, config.spawner);
 }
 
 export const getWeeds = (

@@ -2,36 +2,56 @@ import * as THREE from 'three';
 import type * as dat from 'dat.gui';
 
 import type { Synthetic, SyntheticSpace } from '../../scene';
-import { CellData, getWeeds, getWeedsGrid, StrawConfigGenerator, WeedsGridConfig } from '../../../procedural/organic/weedsGenerator';
+import { getWeedsFromConfig } from '../../../procedural/organic/weedsGenerator';
 import { decodeProgram, EncodedProgram } from '../../../../../modules/substrates/src/stores/programStore';
 import { getBackgroundRenderer } from '../../background/background';
 
 import encodedBackgroundProgram from '../../programs/grid4.json';
 import { createProgramManager, MaterialObject } from '../../programs/programManager';
 import { addDirectionalLight, addPointLight } from '../../../systems/GuiUtils';
-import { colors, completeWeedsConfig } from './defaultConfig';
-
-const updateWeeds = (
-  weedsSynthetic: Synthetic, 
-  gui: dat.GUI
-): Synthetic => {
-  weedsSynthetic.metadata = {};
-  weedsSynthetic.object.children = [];
-
-  const weedsObject = getWeeds(
-    completeWeedsConfig.configGenerator,
-    completeWeedsConfig.count,
-    completeWeedsConfig.spawner
-  );
-
-  weedsSynthetic.object.add(weedsObject);
-  // weedsSynthetic.metadata['cellsData'] = cellsData;
-
-  return weedsSynthetic;
-}
+import { completeWeedsConfig } from './defaultConfig';
+import { textureNormalMapShader } from '../../../../glsl/shaders/normalWarp/textureNormalMapShader';
 
 export const spaceMetadata = {
-  postProcessing: false
+  postProcessing: true
+}
+
+const getMapRenderer = (weedsObject: THREE.Object3D): Synthetic => {
+  const renderTarget = new THREE.WebGLRenderTarget(1920, 1920, {
+  });
+
+  const mapMaterial = new THREE.ShaderMaterial(
+    textureNormalMapShader
+  );
+
+  mapMaterial.uniforms['tDiffuse'].value = renderTarget.texture;
+
+  const map = new THREE.Mesh(
+    new THREE.PlaneBufferGeometry(100, 100),
+    mapMaterial
+  );
+
+  map.position.set(0, 0, -50)
+
+  const camera = new THREE.OrthographicCamera(
+    -20, 20,
+    20, -20,
+    -100, 1000
+  );
+
+  camera.position.set(0, 0, 80);
+  camera.lookAt(0, 0, 0);
+  
+  return {
+    object: map,
+    update: (_, renderScene) => {
+      weedsObject.visible = true;
+      renderScene.renderer.setRenderTarget(renderTarget);
+      renderScene.renderer.render(renderScene.scene, camera);
+      weedsObject.visible = false;
+      renderScene.renderer.setRenderTarget(null);
+    }
+  }
 }
 
 export const getMappingSpace = (
@@ -40,16 +60,24 @@ export const getMappingSpace = (
   gui: dat.GUI
 ): SyntheticSpace => {
   const weedsParent = new THREE.Object3D();
+
+  const weedsObject = getWeedsFromConfig(
+    completeWeedsConfig
+  );
+
+  weedsParent.add(weedsObject);
+
   const weedsSynthetic: Synthetic = {
     object: weedsParent,
     metadata: {}
   };
 
-  updateWeeds(weedsSynthetic, gui);
-
   weedsSynthetic.update = (properties) => {
-    weedsParent.rotateY(0.01);
+    weedsParent.rotateY(0.003);
   }
+
+  // Map
+  const mapSynthetic = getMapRenderer(weedsObject);
 
   // Background
   const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
@@ -73,7 +101,7 @@ export const getMappingSpace = (
       camera.position.set(0, 0, 80);
 
       // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color(colors.background);
+      scene.background = new THREE.Color(completeWeedsConfig!.colors.background);
 
       const ambientLight = new THREE.AmbientLight('white', 1.0)
 
@@ -94,7 +122,7 @@ export const getMappingSpace = (
 
       addDirectionalLight(gui.addFolder('directional light'), directionalLight);
 
-      const pointLightColor = colors.light;
+      const pointLightColor = completeWeedsConfig!.colors.light;
       const pointLight = new THREE.PointLight(pointLightColor, 100);
       pointLight.position.set(0, 0, 0);
 
@@ -109,10 +137,7 @@ export const getMappingSpace = (
     // backgroundRenderer, 
     synthetics: [
       weedsSynthetic,
-      // backgroundWall
-      /*
-      terrain,
-      */
+      mapSynthetic,
     ],
     postProcessing: false
   }

@@ -24,12 +24,10 @@ export const mapNormalShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Unifo
     uniform vec3 lineColor;
     uniform float width;
 		varying vec2 vUv;
-    // varying vec4 vertex;
     varying float normalOffset;
 
 		void main() {
       // Pick a coordinate to visualize in a grid
-      // float coord = scale.x * vertex.x + scale.y * vertex.y + scale.z * vertex.z;
       float coord = normalOffset * scale.y;
 
       // Compute anti-aliased world-space grid lines

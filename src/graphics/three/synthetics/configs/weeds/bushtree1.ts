@@ -3,25 +3,22 @@ import * as EASING from '../../../../utils/easing';
 import type { WeedsConfig } from '../../../procedural/organic/weedsGenerator';
 
 const colors = {
-  plant: '#79a500',
-  light: '#951c11',
-  background: '#475a2c',
+  plant: '#9fd900',
+  light: '#630000',
+  background: '#686868',
 }
 
 export const completeWeedsConfig: WeedsConfig = {
-  count: 300,
+  count: 1000,
   colors,
-  spawner: () => new THREE.Vector3()
-    .randomDirection()
-    .multiply(new THREE.Vector3(1, 1, 1))
-    .multiplyScalar(2),
+  spawner: () => new THREE.Vector3().randomDirection().multiply(new THREE.Vector3(7, 10, 7)),
   strawConfig: (position, index, cell) => ({
-    width: 1.7,
+    width: 0.7,
     height: 100,
     widthSegments: 3, 
-    heightSegments: 200,
+    heightSegments: 150,
 
-    bend: -0.5,
+    bend: 0.3,
     bendController: (n) => (
       1.0 - EASING.easeOutCubic(1.0 - n)
     ),
@@ -32,7 +29,7 @@ export const completeWeedsConfig: WeedsConfig = {
     )
     ,
 
-    noiseOffsetMultiplier: 5.0,
+    noiseOffsetMultiplier: 1.0,
     startDirection: () => new THREE.Vector3().randomDirection(),
 
     widthNoiseSettings: {
@@ -42,7 +39,7 @@ export const completeWeedsConfig: WeedsConfig = {
     },
 
     directionNoiseSettings: {
-      frequency: n => 0.02 + Math.sqrt(n) * 0.08,
+      frequency: n => 0.05 + n * 0.2,
       min: -1.0,
       max: 1.0
     },
@@ -53,11 +50,11 @@ export const completeWeedsConfig: WeedsConfig = {
     },
 
     forces: {
-      gravity: n => THREE.MathUtils.mapLinear(Math.pow(n, 3), 0, 1, 0.02, -0.1),
+      gravity: n => THREE.MathUtils.mapLinear(Math.pow(n, 3), 0, 1, 0.15, -0.3),
       twist: 0.2,
-      turn: n => 0.2,
-      direction: 0.2, 
-      random: 0.10
+      turn: n => n * 0.1 + 0.3,
+      direction: n => 0.2, 
+      random: 0.05
     },
 
     materialGenerator: (index, position) => {

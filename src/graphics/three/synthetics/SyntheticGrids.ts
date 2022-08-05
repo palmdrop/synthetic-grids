@@ -111,11 +111,11 @@ export class SyntheticGrids extends AbstractRenderScene {
 
     this.space.synthetics.forEach(synthetic => {
       if(synthetic.update) {
-        synthetic.update(this.properties);
+        synthetic.update(this.properties, this);
       }
     });
 
-    this.space?.backgroundRenderer?.update(this.properties);
+    this.space?.backgroundRenderer?.update(this.properties, this);
   }
 
   onMouseMove(x: number, y: number): void {
