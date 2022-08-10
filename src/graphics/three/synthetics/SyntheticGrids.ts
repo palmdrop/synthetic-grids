@@ -94,7 +94,9 @@ export class SyntheticGrids extends AbstractRenderScene {
         this.scene,
         this.camera,
         20,
-        this.gui.addFolder('postprocessing')
+        this.gui.addFolder('postprocessing'),
+        this.space.defaultPasses ?? true,
+        this.space.additionalPasses
       );
 
       this.composer = composer;

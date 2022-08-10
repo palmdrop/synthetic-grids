@@ -23,6 +23,7 @@ fragmentShader = fragmentShader.replace(
 export const textureNormalMapShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Uniforms } = {
   vertexShader: CopyShader.vertexShader,
   fragmentShader,
+  // fragmentShader: CopyShader.fragmentShader,
   uniforms: {
     ...mapNormalShader.uniforms
   }

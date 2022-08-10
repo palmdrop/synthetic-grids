@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as POSTPROCESSING from 'postprocessing';
 import type * as dat from 'dat.gui';
 
 import type { Synthetic, SyntheticSpace } from '../../scene';
@@ -8,51 +9,14 @@ import { getBackgroundRenderer } from '../../background/background';
 
 import encodedBackgroundProgram from '../../programs/grid4.json';
 import { createProgramManager, MaterialObject } from '../../programs/programManager';
-import { addDirectionalLight, addPointLight } from '../../../systems/GuiUtils';
-import { completeWeedsConfig } from './defaultConfig';
-import { textureNormalMapShader } from '../../../../glsl/shaders/normalWarp/textureNormalMapShader';
+import { addDirectionalLight, addPointLight, addThreeColor, addUniforms } from '../../../systems/GuiUtils';
+import { getWeedsConfig, weedsMaterial } from './defaultConfig';
 
 export const spaceMetadata = {
   postProcessing: true
 }
 
-const getMapRenderer = (weedsObject: THREE.Object3D): Synthetic => {
-  const renderTarget = new THREE.WebGLRenderTarget(1920, 1920, {
-  });
-
-  const mapMaterial = new THREE.ShaderMaterial(
-    textureNormalMapShader
-  );
-
-  mapMaterial.uniforms['tDiffuse'].value = renderTarget.texture;
-
-  const map = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(100, 100),
-    mapMaterial
-  );
-
-  map.position.set(0, 0, -50)
-
-  const camera = new THREE.OrthographicCamera(
-    -20, 20,
-    20, -20,
-    -100, 1000
-  );
-
-  camera.position.set(0, 0, 80);
-  camera.lookAt(0, 0, 0);
-  
-  return {
-    object: map,
-    update: (_, renderScene) => {
-      weedsObject.visible = true;
-      renderScene.renderer.setRenderTarget(renderTarget);
-      renderScene.renderer.render(renderScene.scene, camera);
-      weedsObject.visible = false;
-      renderScene.renderer.setRenderTarget(null);
-    }
-  }
-}
+const weedsConfig = getWeedsConfig(weedsMaterial);
 
 export const getMappingSpace = (
   renderer: THREE.WebGLRenderer,
@@ -62,7 +26,7 @@ export const getMappingSpace = (
   const weedsParent = new THREE.Object3D();
 
   const weedsObject = getWeedsFromConfig(
-    completeWeedsConfig
+    weedsConfig
   );
 
   weedsParent.add(weedsObject);
@@ -77,7 +41,36 @@ export const getMappingSpace = (
   }
 
   // Map
-  const mapSynthetic = getMapRenderer(weedsObject);
+  // const mapMaterial = new THREE.ShaderMaterial(textureNormalMapShader);
+  const mapMaterial = weedsMaterial;
+  mapMaterial.uniforms['baseColor'].value = new THREE.Color(weedsConfig.colors!.plant);
+  mapMaterial.uniforms['lineColor'].value = new THREE.Color(weedsConfig.colors!.lines);
+  mapMaterial.uniforms['scale'].value.set(0, 0, 3.5);
+
+  const mapPass = new POSTPROCESSING.ShaderPass(mapMaterial, 'tDiffuse');
+
+  const materialFolder = gui.addFolder('map material');
+  addUniforms(materialFolder, mapMaterial, {
+    width: {
+      min: 0.01,
+      max: 10.0,
+      step: 0.001,
+    },
+    scale: {
+      min: 0.00,
+      max: 10.0,
+      step: 0.0001
+    }
+  });
+
+  addThreeColor(
+    materialFolder, mapMaterial, 'baseColor',
+    true
+  );
+  addThreeColor(
+    materialFolder, mapMaterial, 'lineColor',
+    true
+  );
 
   // Background
   const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
@@ -101,7 +94,9 @@ export const getMappingSpace = (
       camera.position.set(0, 0, 80);
 
       // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color(completeWeedsConfig!.colors.background);
+      scene.background = new THREE.Color(weedsConfig!.colors.background);
+
+      addThreeColor(gui, scene, 'background');
 
       const ambientLight = new THREE.AmbientLight('white', 1.0)
 
@@ -115,14 +110,14 @@ export const getMappingSpace = (
       directionalLight.shadow.camera.near = 0.0;
       directionalLight.shadow.camera.far = 1024;
 
-      directionalLight.shadow.camera.left = -75;
-      directionalLight.shadow.camera.right = 75;
-      directionalLight.shadow.camera.top = 75;
-      directionalLight.shadow.camera.bottom = -75;
+      directionalLight.shadow.camera.left = -25;
+      directionalLight.shadow.camera.right = 25;
+      directionalLight.shadow.camera.top = 25;
+      directionalLight.shadow.camera.bottom = -25;
 
       addDirectionalLight(gui.addFolder('directional light'), directionalLight);
 
-      const pointLightColor = completeWeedsConfig!.colors.light;
+      const pointLightColor = weedsConfig!.colors.light;
       const pointLight = new THREE.PointLight(pointLightColor, 100);
       pointLight.position.set(0, 0, 0);
 
@@ -137,8 +132,12 @@ export const getMappingSpace = (
     // backgroundRenderer, 
     synthetics: [
       weedsSynthetic,
-      mapSynthetic,
+      // mapSynthetic,
     ],
-    postProcessing: false
+    postProcessing: true,
+    defaultPasses: false,
+    additionalPasses: [
+      // mapPass
+    ]
   }
 }

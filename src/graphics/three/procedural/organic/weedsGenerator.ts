@@ -72,6 +72,7 @@ export type WeedsConfig = {
   colors?: {
     plant: THREE.ColorRepresentation,
     light: THREE.ColorRepresentation,
+    lines?: THREE.ColorRepresentation,
     background: THREE.ColorRepresentation,
   }
 }
@@ -136,8 +137,6 @@ const createStrawSkeleton = (
         ...evaluateDynamicNoiseSettings(config.directionNoiseSettings, delta)
       }),
     );
-
-    console.log(getDynamicValue(forces.gravity, delta));
 
     const direction = 
       currentSegment.direction.clone()

@@ -1,5 +1,6 @@
 import type { Program } from '../../../modules/substrates/src/interface/types/program/program';
 import * as THREE from 'three';
+import type * as POSTPROCESSING from 'postprocessing';
 import type { FullscreenQuadRenderer } from '../tools/FullscreenQuadRenderer';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
 import type { AbstractRenderScene } from '../AbstractRenderScene';
@@ -16,7 +17,7 @@ export type Synthetic<ObjectType = THREE.Object3D> = {
   updateShader?: (program?: Program) => void,
   update?: (sceneProperties: SceneProperties, renderScene: AbstractRenderScene) => void,
   resize?: (width: number, height: number) => void,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 }
 
 export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
@@ -30,6 +31,8 @@ export type SyntheticSpace = {
   backgroundRenderer?: BackgroundRenderer,
   synthetics: Synthetic[],
   postProcessing: boolean,
+  defaultPasses?: boolean,
+  additionalPasses?: POSTPROCESSING.Pass[]
 }
 
 export const updateShaderUtil = (
