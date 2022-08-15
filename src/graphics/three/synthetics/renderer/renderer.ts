@@ -6,9 +6,10 @@ export const createRenderer = (
     const renderer = new THREE.WebGLRenderer( {
       canvas,
       powerPreference: 'high-performance',
-      antialias: false,
+      antialias: true,
       stencil: false,
-      depth: false
+      depth: false,
+      alpha: true
     } );
 
     renderer.setClearColor( new THREE.Color( '#000000' ), 0.0 );

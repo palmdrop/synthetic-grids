@@ -1,15 +1,27 @@
 import * as THREE from 'three';
-import { mapShader } from '../../../../glsl/shaders/mapShader';
 import * as EASING from '../../../../utils/easing';
 import type { WeedsConfig } from '../../../procedural/organic/weedsGenerator';
 
-const primaryColor = '#364208';
+/*
+const lines = '#def0a3';
+const background = '#77856b';
+const light = '#951c11';
+const plant = '#2a3a00';
+const glow = '#73f600';
+*/
+const light = '#951c11';
+
+const lines = '#ffea00';
+const background = '#909789';
+const plant = '#7bab00';
+const glow = '#315c04';
 
 const colors = {
-  light: '#951c11',
-  lines: '#e7e8da',
-  plant: primaryColor,
-  background: primaryColor
+  light,
+  lines,
+  plant,
+  background,
+  glow
 }
 
 const getVariedRandomRange = (min: number, max: number, minVariation: number, maxVariation?: number | undefined) => {
@@ -36,50 +48,51 @@ const randomInRange = (range: { min: number, max: number }) => {
 }
 
 export const getGardenConfig = (material: THREE.Material): WeedsConfig => {
-  const count = Math.floor(Math.pow(Math.random(), 0.5) * 500);
+  const count = Math.floor(Math.pow(Math.random(), 0.5) * 500) + 100;
 
   const spawnRange = randomInRange({ 
-    min: 3, 
-    max: count / 12 + 3
+    min: 2, 
+    max: count / 20 + 2
   });
 
   const width = getVariedRandomRange(
-    3.0, 8,
+    2.0, 8,
     0.05, 0.2
   );
 
   const height = getVariedRandomRange(
-    100, 200,
+    100, 120,
     0.1, 0.25
   );
 
   const bend = getVariedRandomRange(
-    -0.1, -0.3,
+    -0.2, -0.4,
     0.2
   );
 
   const thicknessPow = THREE.MathUtils.randFloat(0.5, 0.9);
-  const thicknessRootMin = THREE.MathUtils.randFloat(0.1, 0.3);
+  const thicknessRootMin = THREE.MathUtils.randFloat(0.2, 0.4);
   const thicknessRootFalloff = THREE.MathUtils.randFloat(1.0, 3.0);
 
-  const noiseOffsetMultiplier = THREE.MathUtils.randFloat(1.5, 10);
+  const noiseOffsetMultiplier = THREE.MathUtils.randFloat(1.5, 3);
 
-  const directionalNoiseFrequency = THREE.MathUtils.randFloat(0.01, 0.08);
+  const directionalNoiseFrequency = Math.pow(Math.random(), 1.5) * 0.08 + 0.005;
+  // THREE.MathUtils.randFloat(0.001, 0.08);
   const twistNoiseFrequency = THREE.MathUtils.randFloat(0.0, 0.1);
 
-  const gravity = Math.pow(Math.random(), 2.0) * 0.20 + Math.random() * 0.05;
+  const gravity = Math.pow(Math.random(), 2.0) * 0.20 + Math.random() * 0.10;
   const twist = THREE.MathUtils.randFloat(0.0, 0.25);
-  const turn = THREE.MathUtils.randFloat(0.15, 0.3);
+  const turn = THREE.MathUtils.randFloat(0.15, 0.3) + gravity / 2.0;
   const direction = THREE.MathUtils.randFloat(0.05, 0.3);
-  const random = Math.pow(Math.random(), 2.0) * 0.2;
+  const random = Math.pow(Math.random(), 2.0) * 0.1;
 
   return {
-    count: Math.floor(Math.pow(Math.random(), 0.5) * 500),
+    count,
     colors,
 
     spawner: () => new THREE.Vector3()
       .randomDirection()
-      .multiply(new THREE.Vector3(1, 0.3, 1))
+      .multiply(new THREE.Vector3(1, 1, 1))
       .multiplyScalar(spawnRange),
 
     strawConfig: () => ({
@@ -129,18 +142,6 @@ export const getGardenConfig = (material: THREE.Material): WeedsConfig => {
       materialGenerator: () => {
         return material;
       }
-      /*
-        return new THREE.MeshPhysicalMaterial({
-          color: colors.plant,
-          metalness: 0.1,
-          roughness: 0.6,
-          reflectivity: 1.0,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.1,
-          side: THREE.DoubleSide,
-        });
-      }
-      */
     })
   }
 };

@@ -9,7 +9,7 @@ import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 // import { getLandscapeMap } from './spaces/landscapeMap';
 // import { getWeedsSpace, spaceMetadata } from './spaces/weeds/weedsSpace';
-import { getMappingSpace, spaceMetadata } from './spaces/mapping/mappingSpace';
+import { getTaxonomySpace, spaceMetadata } from './spaces/taxonomy/taxonomySpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -35,6 +35,7 @@ export class SyntheticGrids extends AbstractRenderScene {
 
     this.gui = new dat.GUI();
 
+    /*
     this.controls = new TrackballControls(
       this.camera,
       canvas
@@ -42,17 +43,20 @@ export class SyntheticGrids extends AbstractRenderScene {
 
     this.controls.panSpeed = 1.8;
     this.controls.zoomSpeed = 0.5;
+    */
 
-    addGUI(this.gui.addFolder('controls'), this.controls, {
-      'panSpeed': {
-        min: 0.0,
-        max: 50
-      },
-      'zoomSpeed': {
-        min: 0,
-        max: 10
-      }
-    })
+    if(this.controls) {
+      addGUI(this.gui.addFolder('controls'), this.controls, {
+        'panSpeed': {
+          min: 0.0,
+          max: 50
+        },
+        'zoomSpeed': {
+          min: 0,
+          max: 10
+        }
+      })
+    }
 
     this.properties = {
       time: 0.0,
@@ -70,10 +74,8 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.space.sceneConfigurator(this.scene);
     */
     // this.space = getWeedsSpace(
-    this.space = getMappingSpace(
-      this.renderer,
-      this.backgroundRenderTarget,
-      this.gui
+    this.space = getTaxonomySpace(
+      this
     );
 
     // this.renderer = this.createRenderer(this.space.postProcessing);
@@ -137,6 +139,7 @@ export class SyntheticGrids extends AbstractRenderScene {
 
     this.space?.backgroundRenderer?.setSize(width, height);
     this.space?.backgroundRenderer?.render();
+    this.space?.onResize?.(width, height, this);
     this.properties.dimensions.set(width, height);
   }
 
@@ -174,6 +177,17 @@ export class SyntheticGrids extends AbstractRenderScene {
   onMouseClick(mouseX: number, mouseY: number) {
     const x = (mouseX / window.innerWidth) * 2 - 1;
 	  const y = -(mouseY / window.innerHeight) * 2 + 1;
+
     this.space?.onClick?.(new THREE.Vector2(x, y), this);
+  }
+
+  getSpace() {
+    return this.space;
+  }
+
+  regenerate() {
+    if(!this.space.regenerate) return false;
+    this.space.regenerate(this);
+    return true;
   }
 }

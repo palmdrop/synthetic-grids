@@ -3,7 +3,8 @@ import type * as THREE from 'three';
 export const makeAspectOrthoResizer = (
   camera: THREE.OrthographicCamera,
   frustumSize: number
-) => ({
+) => (
+  {
     setSize: (width: number, height: number) => {
       const aspect = height / width;
 

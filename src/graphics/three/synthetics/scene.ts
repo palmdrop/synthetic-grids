@@ -28,11 +28,14 @@ export type BackgroundRenderer = { update: Synthetic['update'] } & Pick<
 export type SyntheticSpace = {
   sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => void, 
   onClick?: (mousePosition: THREE.Vector2, renderScene: AbstractRenderScene) => void,
+  regenerate?: (renderScene: AbstractRenderScene) => void,
+  onResize?: (width: number, height: number, renderScene: AbstractRenderScene) => void,
   backgroundRenderer?: BackgroundRenderer,
   synthetics: Synthetic[],
   postProcessing: boolean,
   defaultPasses?: boolean,
-  additionalPasses?: POSTPROCESSING.Pass[]
+  additionalPasses?: POSTPROCESSING.Pass[],
+  data?: Record<string, any>
 }
 
 export const updateShaderUtil = (
