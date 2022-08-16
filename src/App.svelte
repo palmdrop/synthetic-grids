@@ -6,6 +6,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
+  import { getTaxonomySpace, spaceMetadata } from './graphics/three/synthetics/spaces/taxonomy/taxonomySpace';
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
@@ -67,7 +68,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas);
+    scene = new SyntheticGrids(canvas, getTaxonomySpace, spaceMetadata);
     scene.resize();
     scene.start();
 

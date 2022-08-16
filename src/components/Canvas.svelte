@@ -1,5 +1,6 @@
 <script lang="ts">
   export let onMountCallback: ((canvas: HTMLCanvasElement) => void) | undefined;
+  export let style = "";
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
     onMountCallback?.(canvas);
@@ -7,6 +8,7 @@
 </script>
 
 <canvas 
+  style={style}
   use:useCanvas
 />
 

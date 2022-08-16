@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type * as dat from 'dat.gui';
 
 import type { Synthetic, SyntheticSpace } from '../../scene';
-import { getWeedsFromConfig } from '../../../procedural/organic/weedsGenerator';
+import { getWeedsFromConfig, WeedsConfig } from '../../../procedural/organic/weedsGenerator';
 
 import { addDirectionalLight, addThreeColor, addUniforms } from '../../../systems/GuiUtils';
 import { getWeedsConfig, weedsMaterial } from './defaultConfig';
@@ -34,30 +34,34 @@ const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderSc
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const updateWeeds = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+const updateWeeds = (parent: THREE.Object3D, renderScene: AbstractRenderScene, space: SyntheticSpace) => {
   parent.clear();
 
   const config = getWeedsConfig(weedsMaterial);
 
-  const weedsObject = getWeedsFromConfig(
-    config 
-  );
-
+  const weedsObject = getWeedsFromConfig(config);
   weedsObject.rotateZ(THREE.MathUtils.randFloatSpread(Math.PI / 4.0));
-
   parent.add(weedsObject);
 
-  updateCamera(weedsObject, renderScene);
-}
+  space.data = {
+    ...space.data ?? {},
+    colors: config.colors,
+    config
+  };
 
-const weedsConfig = getWeedsConfig(weedsMaterial);
+  updateCamera(weedsObject, renderScene);
+
+  weedsMaterial.uniforms['baseColor'].value = new THREE.Color(config.colors!.plant);
+  weedsMaterial.uniforms['lineColor'].value = new THREE.Color(config.colors!.lines);
+  weedsMaterial.uniforms['scale'].value.set(0.05, 0.4, 0.6);
+
+  return config;
+}
 
 export const getTaxonomySpace = (
   renderScene: AbstractRenderScene
 ): SyntheticSpace => {
   const weedsParent = new THREE.Object3D();
-
-  updateWeeds(weedsParent, renderScene);
 
   const weedsSynthetic: Synthetic = {
     object: weedsParent,
@@ -68,15 +72,9 @@ export const getTaxonomySpace = (
     weedsParent.children[0].rotateY(0.001);
   }
 
-  // Map
-  const mapMaterial = weedsMaterial;
-  mapMaterial.uniforms['baseColor'].value = new THREE.Color(weedsConfig.colors!.plant);
-  mapMaterial.uniforms['lineColor'].value = new THREE.Color(weedsConfig.colors!.lines);
-  mapMaterial.uniforms['scale'].value.set(0.05, 0.4, 0.6);
-
-  return {
+  const space = {
     regenerate: (renderScene) => {
-      updateWeeds(weedsParent, renderScene);
+      updateWeeds(weedsParent, renderScene, space);
     },
     onResize: (width, height, renderScene) => {
       updateCamera(weedsParent.children[0], renderScene);
@@ -90,7 +88,7 @@ export const getTaxonomySpace = (
       camera.position.set(0, 0, 80);
 
       const directionalLight = new THREE.DirectionalLight('white', 2.2);
-      directionalLight.position.set(-1, 1, 100);
+      directionalLight.position.set(-0, 1, 100);
       directionalLight.castShadow = true;
       directionalLight.shadow.bias = -0.001;
 
@@ -125,8 +123,15 @@ export const getTaxonomySpace = (
     ],
     postProcessing: false,
     defaultPasses: false,
+    controls: false,
     data: {
-      colors: weedsConfig.colors
+      colors: {} as { [name: string]: string },
+      config: undefined as undefined | WeedsConfig
     }
-  }
+  };
+
+  const weedsConfig = updateWeeds(weedsParent, renderScene, space);
+
+ 
+  return space;
 }

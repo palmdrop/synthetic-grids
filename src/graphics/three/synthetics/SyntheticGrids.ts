@@ -7,9 +7,6 @@ import { addGUI } from '../systems/GuiUtils';
 import { makeCamera } from './camera/cameraManager';
 import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
-// import { getLandscapeMap } from './spaces/landscapeMap';
-// import { getWeedsSpace, spaceMetadata } from './spaces/weeds/weedsSpace';
-import { getTaxonomySpace, spaceMetadata } from './spaces/taxonomy/taxonomySpace';
 
 export class SyntheticGrids extends AbstractRenderScene {
   private backgroundRenderTarget: THREE.WebGLRenderTarget;
@@ -24,26 +21,32 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   private mouseLocked = false;
 
-  constructor( canvas : HTMLCanvasElement, onLoad ?: VoidCallback ) {
+  constructor(
+    canvas: HTMLCanvasElement, 
+    spaceCreator: (renderScene: AbstractRenderScene) => SyntheticSpace,
+    spaceMetadata: Record<string, any>,
+    onLoad?: VoidCallback,
+  ) {
     super(canvas, onLoad, spaceMetadata.postProcessing);
 
     this.backgroundRenderTarget = new THREE.WebGLRenderTarget(
-      canvas.width, canvas.height,
-      {
-      }
+      canvas.width, canvas.height, {}
     );
 
     this.gui = new dat.GUI();
 
-    /*
-    this.controls = new TrackballControls(
-      this.camera,
-      canvas
-    );
+    this.space = spaceCreator(this);
+    this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
-    this.controls.panSpeed = 1.8;
-    this.controls.zoomSpeed = 0.5;
-    */
+    if(this.space.controls ?? true) {
+      this.controls = new TrackballControls(
+        this.camera,
+        canvas
+      );
+
+      this.controls.panSpeed = 1.8;
+      this.controls.zoomSpeed = 0.5;
+    }
 
     if(this.controls) {
       addGUI(this.gui.addFolder('controls'), this.controls, {
@@ -64,23 +67,6 @@ export class SyntheticGrids extends AbstractRenderScene {
       dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height),
       scale: 1.0
     };
-
-    /*
-    this.space = getLandscapeMap(
-      this.renderer,
-      this.backgroundRenderTarget,
-      this.gui
-    );
-    this.space.sceneConfigurator(this.scene);
-    */
-    // this.space = getWeedsSpace(
-    this.space = getTaxonomySpace(
-      this
-    );
-
-    // this.renderer = this.createRenderer(this.space.postProcessing);
-
-    this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
     this.space.synthetics
       .forEach(synthetic => {

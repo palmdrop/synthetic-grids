@@ -6,11 +6,13 @@
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
   import NoiseOverlay from './components/NoiseOverlay.svelte';
+  import { getTaxonomySpace, spaceMetadata } from './graphics/three/synthetics/spaces/taxonomy/taxonomySpace';
+  import type { WeedsConfig } from './graphics/three/procedural/organic/weedsGenerator';
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
   let colors: Record<string, string>;
-  let images: string[] = [];
+  let plantData: { image: string, config: WeedsConfig }[] = [];
 
   const updateSpeed = 3000;
 
@@ -49,7 +51,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas);
+    scene = new SyntheticGrids(canvas, getTaxonomySpace, spaceMetadata);
     scene.resize();
     scene.start();
 
@@ -60,8 +62,9 @@
     colors = scene.getSpace().data['colors'];
 
     const updateScene = () => {
-      scene.captureFrame(data => {
-        images = [...images, data];
+      const config: WeedsConfig = scene.getSpace().data.config;
+      scene.captureFrame(image => {
+        plantData = [...plantData, { image, config }];
       });
 
       setTimeout(() => {
@@ -101,12 +104,15 @@
   <div
     class="images-container"
   >
-    {#each images as image, i}
+    {#each plantData as { image, config }, i}
       <img
         width={300}  
         height={300}  
         src={image}
         alt=""
+        on:click={() => {
+          // promptDownload(config, `plant${i + 1}.json`);
+        }}
       />
     {/each}
   </div>
@@ -125,7 +131,7 @@
 
 <NoiseOverlay 
   style="
-    opacity: 0.5;
+    opacity: 0.9;
   "
 />
 
@@ -164,7 +170,7 @@
 
   .shadow {
     position: fixed;
-    top: 55%;
+    top: 60%;
     left: 50%;
     transform: translate(-50%, -50%);
 
@@ -188,23 +194,28 @@
     height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
+
+    display: flex;
+    justify-content: center;
   }
 
   .images-container {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+
+    max-width: 1200px;
   }
 
   img {
     object-fit: cover;
 
     margin: 8px;
-    /*border: 1px solid var(--fgFaint);
-    */
-    border: 1px solid #00000022;
+    border: 2px solid #00000022;
 
     flex-grow: 1;
-    max-width: 500px;
+    max-width: 330px;
   }
 
   img:hover {

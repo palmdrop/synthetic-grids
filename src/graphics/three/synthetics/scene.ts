@@ -34,6 +34,7 @@ export type SyntheticSpace = {
   synthetics: Synthetic[],
   postProcessing: boolean,
   defaultPasses?: boolean,
+  controls?: boolean,
   additionalPasses?: POSTPROCESSING.Pass[],
   data?: Record<string, any>
 }
