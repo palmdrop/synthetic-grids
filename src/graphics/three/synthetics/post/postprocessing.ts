@@ -9,7 +9,8 @@ export const getComposer = (
   focalLength : number,
   gui : dat.GUI,
   defaultPasses?: boolean,
-  additionalPasses?: POSTPROCESSING.Pass[]
+  additionalPasses?: POSTPROCESSING.Pass[],
+  defaultSettings?: Record<string, Record<string, any>>
 ) => {
   const composer = new POSTPROCESSING.EffectComposer( renderer );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,8 +22,8 @@ export const getComposer = (
 
   {
     const bloomEffect = new POSTPROCESSING.BloomEffect( {
-      luminanceThreshold: 0.82,
-      intensity: 0.1,
+      luminanceThreshold: defaultSettings?.bloom?.threshold ?? 0.82,
+      intensity: defaultSettings?.bloom?.intensity ?? 0.1,
       kernelSize: POSTPROCESSING.KernelSize.LARGE
     } );
     effects.push( bloomEffect );

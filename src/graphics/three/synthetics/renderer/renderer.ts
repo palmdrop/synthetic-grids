@@ -8,7 +8,6 @@ export const createRenderer = (
       powerPreference: 'high-performance',
       antialias: true,
       stencil: false,
-      depth: false,
       alpha: true
     } );
 
