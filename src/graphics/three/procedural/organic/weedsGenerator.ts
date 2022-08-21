@@ -70,10 +70,10 @@ export type WeedsConfig = {
   count: number,
   spawner: (index: number) => THREE.Vector3,
   colors?: {
-    plant: THREE.ColorRepresentation,
-    light: THREE.ColorRepresentation,
+    plant?: THREE.ColorRepresentation,
+    light?: THREE.ColorRepresentation,
     lines?: THREE.ColorRepresentation,
-    background: THREE.ColorRepresentation,
+    background?: THREE.ColorRepresentation,
   }
 }
 
@@ -289,7 +289,7 @@ export const getStraw = (
 export const getWeedsFromConfig = (
   config: WeedsConfig
 ) => {
-  return getWeeds(config.strawConfig, config.count, config.spawner);
+  return getWeeds(config.strawConfig, config.count, config.spawner, undefined, new THREE.Vector3().random().multiplyScalar(Math.random() * 100));
 }
 
 export const getWeeds = (

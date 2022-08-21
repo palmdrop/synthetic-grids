@@ -35,6 +35,12 @@ export const getBackgroundRenderer = (
       properties.scale,
       this.quad.material
     );
+
+    setUniform(
+      'viewport',
+      properties.dimensions,
+      this.quad.material
+    );
   }
 
   return fullscreenRenderer;

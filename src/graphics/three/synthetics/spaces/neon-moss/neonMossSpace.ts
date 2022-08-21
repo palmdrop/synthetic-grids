@@ -3,14 +3,20 @@ import * as THREE from 'three';
 import type { Synthetic, SyntheticSpace } from '../../scene';
 import { getWeedsFromConfig, WeedsConfig } from '../../../procedural/organic/weedsGenerator';
 
+import encodedBackgroundProgram from '../../programs/moss-structure9.json';
 import { getWeedsConfig, weedsMaterial } from './defaultConfig';
 import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
 import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
+import { decodeProgram, EncodedProgram } from '../../../../../modules/substrates/src/stores/programStore';
+import { getBackgroundRenderer } from '../../background/background';
+import { createProgramManager, MaterialObject } from '../../programs/programManager';
 
 export const spaceMetadata = {
   postProcessing: true
 }
+
+const cameraMargin = -0.0;
 
 const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
@@ -48,26 +54,27 @@ const updateWeeds = (parent: THREE.Object3D, renderScene: AbstractRenderScene, s
     config
   };
 
-  updateCamera(weedsObject, renderScene);
+  updateCamera(weedsObject, renderScene, cameraMargin);
 
-  setUniform(
-    'baseColor', new THREE.Color(config.colors!.plant),
-    weedsMaterial
-  );
   setUniform(
     'lineColor', new THREE.Color(config.colors!.lines),
     weedsMaterial
   );
   setUniform(
-    'scale', new THREE.Vector3(0.0, 0.0, 0.4),
+    'scale', new THREE.Vector3(0.0, 0.15, 0.25),
+    weedsMaterial
+  );
+  setUniform(
+    'width', 1.0,
     weedsMaterial
   );
 
   return config;
 }
 
-export const getTaxonomySpace = (
-  renderScene: AbstractRenderScene
+export const getNeonMossSpace = (
+  renderScene: AbstractRenderScene,
+  interactive?: boolean
 ): SyntheticSpace => {
   const weedsParent = new THREE.Object3D();
 
@@ -80,15 +87,39 @@ export const getTaxonomySpace = (
     weedsParent.children[0].rotateY(0.001);
   }
 
-  const space = {
+  // Background
+  const backgroundRenderTarget = new THREE.WebGLRenderTarget(
+    renderScene.canvas.width, renderScene.canvas.height, {}
+  );
+  const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
+  const backgroundRenderer = getBackgroundRenderer(renderScene.renderer, backgroundRenderTarget, defaultBackgroundProgram);
+
+  renderScene.resizeables.push(backgroundRenderer);
+
+  if(interactive) {
+    createProgramManager({
+      'background': {
+        object: backgroundRenderer as MaterialObject,
+        defaultProgram: defaultBackgroundProgram
+      },
+    }, renderScene.gui, 'background');
+  }
+
+  const scale = defaultBackgroundProgram.rootNode.fields['scale'].value as number;
+
+  const space: SyntheticSpace = {
     regenerate: (renderScene) => {
       updateWeeds(weedsParent, renderScene, space);
     },
     onResize: (width, height, renderScene) => {
-      updateCamera(weedsParent.children[0], renderScene);
+      updateCamera(weedsParent.children[0], renderScene, cameraMargin);
+    },
+    onClick: () => {
+      updateWeeds(weedsParent, renderScene, space);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
-      // scene.background = backgroundRenderTarget.texture;
+      scene.background = backgroundRenderTarget.texture;
+
       // renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.setClearColor(0x000000, 0);
@@ -131,17 +162,21 @@ export const getTaxonomySpace = (
     ],
     postProcessing: true,
     defaultPasses: true,
-    controls: false,
+    controls: interactive,
     postProcessingPassSettings: {
       bloom: {
-        threshold: 0,
-        intensity: 1.6,
-        smoothing: 0.03
+        threshold: 0.4,
+        intensity: 2.0,
+        smoothing: 0.1
       }
     },
+    backgroundRenderer,
     data: {
       colors: {} as { [name: string]: string },
       config: undefined as undefined | WeedsConfig
+    },
+    defaultSceneProperties: {
+      scale
     }
   };
 

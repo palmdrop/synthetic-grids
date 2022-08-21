@@ -37,7 +37,8 @@ export type SyntheticSpace = {
   controls?: boolean,
   additionalPasses?: POSTPROCESSING.Pass[],
   postProcessingPassSettings?: Record<string, Record<string, any>>,
-  data?: Record<string, any>
+  data?: Record<string, any>,
+  defaultSceneProperties?: Partial<SceneProperties>
 }
 
 export const updateShaderUtil = (

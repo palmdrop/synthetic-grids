@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as dat from 'dat.gui';
 
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import type * as POSTPROCESSING from 'postprocessing';
@@ -22,6 +23,7 @@ export abstract class AbstractRenderScene implements RenderScene {
   public renderer : THREE.WebGLRenderer;
   public scene : THREE.Scene;
   public camera : THREE.Camera;
+  public gui : dat.GUI;
 
   protected composer ?: EffectComposer | POSTPROCESSING.EffectComposer;
 
@@ -43,6 +45,9 @@ export abstract class AbstractRenderScene implements RenderScene {
     this.captureNext = false;
     this.dataCallback = undefined;
     this.captureFrameResolutionMultiplier = 2.0;
+
+    this.gui = new dat.GUI();
+    this.gui.hide();
   }
 
   private createLoop() : AnimationLoop {

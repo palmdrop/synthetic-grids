@@ -13,7 +13,6 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   private controls: TrackballControls;
 
-  private gui: dat.GUI;
   private guiVisible: boolean = true;
 
   private space: SyntheticSpace
@@ -23,9 +22,10 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   constructor(
     canvas: HTMLCanvasElement, 
-    spaceCreator: (renderScene: AbstractRenderScene) => SyntheticSpace,
+    spaceCreator: (renderScene: AbstractRenderScene, interactive?: boolean) => SyntheticSpace,
     spaceMetadata: Record<string, any>,
-    onLoad?: VoidCallback,
+    onLoad?: VoidCallback | undefined,
+    interactive = true
   ) {
     super(canvas, onLoad, spaceMetadata.postProcessing);
 
@@ -33,9 +33,7 @@ export class SyntheticGrids extends AbstractRenderScene {
       canvas.width, canvas.height, {}
     );
 
-    this.gui = new dat.GUI();
-
-    this.space = spaceCreator(this);
+    this.space = spaceCreator(this, interactive);
     this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
     if(this.space.controls ?? true) {
@@ -48,7 +46,7 @@ export class SyntheticGrids extends AbstractRenderScene {
       this.controls.zoomSpeed = 0.5;
     }
 
-    if(this.controls) {
+    if(this.controls && interactive) {
       addGUI(this.gui.addFolder('controls'), this.controls, {
         'panSpeed': {
           min: 0.0,
@@ -65,7 +63,8 @@ export class SyntheticGrids extends AbstractRenderScene {
       time: 0.0,
       mousePosition: new THREE.Vector2(),
       dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height),
-      scale: 1.0
+      scale: 1.0,
+      ...this.space.defaultSceneProperties ?? {}
     };
 
     this.space.synthetics
@@ -133,13 +132,13 @@ export class SyntheticGrids extends AbstractRenderScene {
   protected beforeRender(): void {
     super.beforeRender();
     if(this.captureNext) {
-      this.properties.scale = 1.0 / this.captureFrameResolutionMultiplier;
+      this.properties.scale /= this.captureFrameResolutionMultiplier;
     }
   }
 
   protected afterRender(): void {
     super.afterRender();
-    this.properties.scale = 1.0;
+    this.properties.scale *= this.captureFrameResolutionMultiplier;
   }
 
   render(delta: number, now: number): void {
