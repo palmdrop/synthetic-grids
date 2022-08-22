@@ -1,6 +1,4 @@
 <script lang="ts">
-	import './global.css';
-
 	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
@@ -67,13 +65,14 @@
 
 <svelte:window 
   on:resize={onResize} 
+/>
+
+<div
   on:keydown={onKeyDown}
   on:mousemove={onMouseMove}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}
-/>
-
-<div>
+>
   <Canvas
     onMountCallback={setupCanvas}
   />
@@ -81,6 +80,8 @@
 
 <style>
   div {
+    position: relative;
+    z-index: 0;
     min-width: 100vw;
     height: 100vh;
     overflow-x: hidden;
@@ -88,5 +89,9 @@
 
     display: flex;
     justify-content: center;
+    
+    cursor: pointer;
+
+    overflow: hidden;
   }
 </style>
