@@ -1,14 +1,10 @@
 <script lang="ts">
-	import Substrates from './modules/substrates/src/App.svelte';
-	import './global.css';
-
 	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
-  import { getTaxonomySpace, spaceMetadata } from './graphics/three/synthetics/spaces/taxonomy/taxonomySpace';
-import { getLandscapeMap } from './graphics/three/synthetics/spaces/landscapeMap';
-import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpace';
+  import { getNeonMossSpace, spaceMetadata } from './graphics/three/synthetics/spaces/neon-moss/neonMossSpace';
+import { getBoulderTunnelSpace } from "./graphics/three/synthetics/spaces/formations/formationsSpace";
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
@@ -21,17 +17,8 @@ import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpa
     canvas = canvasElement;
   }
 
-  let builderVisible = false;
   const onKeyDown = (event: KeyboardEvent) => {
     switch(event.key) {
-      case 'e': {
-        builderVisible = !builderVisible;
-      } break;
-      case 'h': {
-        if(scene) {
-          scene.toggleGUI();
-        }
-      } break;
       case 'c': {
         if(scene) {
           scene.captureFrame(data => {
@@ -39,11 +26,6 @@ import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpa
           })
         }
       } break;
-      case 'm': {
-        if(scene) {
-          scene.toggleMouseLocked();
-        }
-      }
     }
   }
 
@@ -70,58 +52,47 @@ import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpa
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getLandscapeMap, spaceMetadata);
+    scene = new SyntheticGrids(canvas, getBoulderTunnelSpace, spaceMetadata, undefined, true);
     scene.resize();
     scene.start();
 
-    scene.setCaptureFrameResolutionMultiplier(3.0);
+    scene.setCaptureFrameResolutionMultiplier(1.0);
 
     return () => {
       scene.stop();
     }
   });
-
 </script>
 
 <svelte:window 
   on:resize={onResize} 
+/>
+
+<div
   on:keydown={onKeyDown}
   on:mousemove={onMouseMove}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}
-/>
-
-<div class='substrates' class:show={builderVisible}>
-  <Substrates 
-    loadFromLocalStorage={false} 
-  />
-</div>
-
-<div class="canvas-container">
+>
   <Canvas
     onMountCallback={setupCanvas}
   />
 </div>
 
 <style>
-  .substrates {
-    position: absolute;
-    visibility: hidden;
-
-    z-index: 10;
-  }
-
-  .show {
-    visibility: visible;
-  }
-
-
-  .canvas-container {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    inset: 0;
-
+  div {
+    position: relative;
     z-index: 0;
+    min-width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    display: flex;
+    justify-content: center;
+    
+    cursor: pointer;
+
+    overflow: hidden;
   }
 </style>

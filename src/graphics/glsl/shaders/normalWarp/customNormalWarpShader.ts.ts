@@ -94,6 +94,7 @@ export const makeCustomNormalWarpShader = (
   );
 
   shader.fragmentShader = fragmentShader.fragmentShader;
+  shader.vertexShader = shader.vertexShader.replaceAll('gl_FragCoord', 'point');
 
   return shader;
 }

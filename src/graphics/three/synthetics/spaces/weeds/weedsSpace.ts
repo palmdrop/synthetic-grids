@@ -12,6 +12,7 @@ import { addDirectionalLight, addPointLight } from '../../../systems/GuiUtils';
 import { Line2 } from 'three/examples/jsm/lines/Line2';
 import { colors, configMaker, defaultMutationParameters } from './defaultConfig';
 import { mutate } from '../../../procedural/genetic/geneticGenerator';
+import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 
 const updateWeeds = (
   weedsSynthetic: Synthetic, 
@@ -39,10 +40,13 @@ export const spaceMetadata = {
 }
 
 export const getWeedsSpace = (
-  renderer: THREE.WebGLRenderer,
-  backgroundRenderTarget: THREE.WebGLRenderTarget,
-  gui: dat.GUI
+  renderScene: AbstractRenderScene,
+  interactive?: boolean
 ): SyntheticSpace => {
+  const gui = renderScene.gui;
+  const renderer = renderScene.renderer;
+  const size = renderer.getSize(new THREE.Vector2());
+
   const weedsParent = new THREE.Object3D();
   const weedsSynthetic: Synthetic = {
     object: weedsParent,
@@ -68,22 +72,13 @@ export const getWeedsSpace = (
     config,
     gui
   );
-
-  gui.add({ generate: () => updateWeeds(weedsSynthetic, config, gui) }, 'generate');
-  window.addEventListener('keydown', event => {
-    if(event.key === 'g') updateWeeds(weedsSynthetic, config, gui);
-  });
   
-  // Background
-  const defaultBackgroundProgram = decodeProgram(encodedBackgroundProgram as unknown as EncodedProgram);
-  const backgroundRenderer = getBackgroundRenderer(renderer, backgroundRenderTarget, defaultBackgroundProgram);
-
-  createProgramManager({
-    'background': {
-      object: backgroundRenderer as MaterialObject,
-      defaultProgram: defaultBackgroundProgram
-    },
-  }, gui, 'background');
+  if(interactive ?? true) {
+    gui.add({ generate: () => updateWeeds(weedsSynthetic, config, gui) }, 'generate');
+    window.addEventListener('keydown', event => {
+      if(event.key === 'g') updateWeeds(weedsSynthetic, config, gui);
+    });
+  }
 
   return {
     onClick: (mousePosition, renderScene) => {
@@ -105,14 +100,11 @@ export const getWeedsSpace = (
       });
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
-      // scene.background = backgroundRenderTarget.texture;
-     
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       camera.position.set(0, 0, 80);
 
-      // scene.background = backgroundRenderTarget.texture;
       scene.background = new THREE.Color(colors.background);
 
       const ambientLight = new THREE.AmbientLight('white', 1.5)
@@ -143,25 +135,13 @@ export const getWeedsSpace = (
       scene.add(
         ambientLight,
         directionalLight,
-        // shadowHelper
         pointLight,
-        // plane
-        /*
-        new THREE.Mesh(
-          new THREE.SphereBufferGeometry(2, 40, 40),
-          new THREE.MeshBasicMaterial({ color: pointLightColor })
-        )
-        */
       );
     },
-    // backgroundRenderer, 
     synthetics: [
       weedsSynthetic,
-      // backgroundWall
-      /*
-      terrain,
-      */
     ],
-    postProcessing: false
+    defaultPasses: true,
+    postProcessing: true
   }
 }

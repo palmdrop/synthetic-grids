@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import type * as dat from 'dat.gui';
 import { createWarpedTerrain } from '../terrain/warpedTerrain';
 import { mapNormalShader } from '../../../glsl/shaders/normalWarp/mapNormalShader';
 import { decodeProgram, EncodedProgram } from '../../../../modules/substrates/src/stores/programStore';
@@ -9,6 +8,7 @@ import { createProgramManager, MaterialObject } from '../programs/programManager
 import { getBackgroundWall } from '../background/wall';
 import { getBackgroundRenderer } from '../background/background';
 import type { SceneProperties, Synthetic, SyntheticSpace } from '../scene';
+import type { AbstractRenderScene } from '../../AbstractRenderScene';
 
 const getNormalizedMousePosition = (properties: SceneProperties) => {
   const nx = properties.mousePosition.x / properties.dimensions.x;
@@ -46,10 +46,14 @@ export const spaceMetadata = {
 }
 
 export const getLandscapeMap = (
-  renderer: THREE.WebGLRenderer,
-  backgroundRenderTarget: THREE.WebGLRenderTarget,
-  gui: dat.GUI
+  renderScene: AbstractRenderScene,
+  interactive?: boolean
 ): SyntheticSpace => {
+  const gui = renderScene.gui;
+  const renderer = renderScene.renderer;
+  const size = renderer.getSize(new THREE.Vector2());
+  const backgroundRenderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {});
+
   const terrain = createWarpedTerrain(
     new THREE.PlaneBufferGeometry(
       20, 20, 1000, 1000
@@ -81,36 +85,38 @@ export const getLandscapeMap = (
   );
 
 
-  // Programs
-  createProgramManager({
-    'terrain': {
-      object: terrain.object as MaterialObject,
-      defaultProgram: defaultWallProgram,
-      onChange: (program) => {
-        terrain.updateShader(program);
-        return terrain.object.material as THREE.ShaderMaterial;
+  if(interactive ?? true) {
+    // Programs
+    createProgramManager({
+      'terrain': {
+        object: terrain.object as MaterialObject,
+        defaultProgram: defaultWallProgram,
+        onChange: (program) => {
+          terrain.updateShader(program);
+          return terrain.object.material as THREE.ShaderMaterial;
+        }
+      },
+      'background': {
+        object: backgroundRenderer as MaterialObject,
+        defaultProgram: defaultBackgroundProgram
+      },
+      'wall': {
+        object: wallObject as MaterialObject,
+        onChange: (program) => {
+          backgroundWall?.updateShader(program);
+          return wallObject.material as THREE.ShaderMaterial;
+        }
+      },
+      'combined': {
+        object: { material: new THREE.MeshBasicMaterial() },
+        onChange: (program) => {
+          terrain.updateShader(program);
+          backgroundWall.updateShader(program);
+          return terrain.object.material as THREE.ShaderMaterial;
+        }
       }
-    },
-    'background': {
-      object: backgroundRenderer as MaterialObject,
-      defaultProgram: defaultBackgroundProgram
-    },
-    'wall': {
-      object: wallObject as MaterialObject,
-      onChange: (program) => {
-        backgroundWall?.updateShader(program);
-        return wallObject.material as THREE.ShaderMaterial;
-      }
-    },
-    'combined': {
-      object: { material: new THREE.MeshBasicMaterial() },
-      onChange: (program) => {
-        terrain.updateShader(program);
-        backgroundWall.updateShader(program);
-        return terrain.object.material as THREE.ShaderMaterial;
-      }
-    }
-  }, gui, 'terrain');
+    }, gui, 'terrain');
+  }
 
   return {
     sceneConfigurator: (scene: THREE.Scene) => {
