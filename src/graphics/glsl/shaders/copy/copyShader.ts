@@ -1,5 +1,3 @@
-import type * as THREE from 'three';
-
 export const CopyShader = {
 	uniforms: {
 

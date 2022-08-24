@@ -3,8 +3,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
-  import { getNeonMossSpace, spaceMetadata } from './graphics/three/synthetics/spaces/neon-moss/neonMossSpace';
-import { getBoulderTunnelSpace } from "./graphics/three/synthetics/spaces/formations/formationsSpace";
+  import { getFormationsSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/formations/formationsSpace";
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
@@ -52,7 +51,7 @@ import { getBoulderTunnelSpace } from "./graphics/three/synthetics/spaces/format
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getBoulderTunnelSpace, spaceMetadata, undefined, true);
+    scene = new SyntheticGrids(canvas, getFormationsSpace, spaceMetadata, undefined, true);
     scene.resize();
     scene.start();
 

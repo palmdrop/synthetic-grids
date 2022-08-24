@@ -432,7 +432,6 @@ export const getWeedsGrid = (
   });
 
   if(gui) {
-    // gui.removeFolder('lineMaterial');
     const folder = gui.__folders['lineMaterial'];
     if(folder) gui.removeFolder(folder);
     const lineMaterialFolder = gui.addFolder('lineMaterial');

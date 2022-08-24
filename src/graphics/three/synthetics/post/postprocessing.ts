@@ -38,9 +38,9 @@ export const getComposer = (
   {
     const depthOfFieldEffect = new POSTPROCESSING.DepthOfFieldEffect(
       camera, {
-        focusDistance: 0.0,
-        focalLength,
-        bokehScale: 4.0,
+        focusDistance: defaultSettings?.depthOfField.focusDistance ?? 0.0,
+        focalLength: defaultSettings?.depthOfField.focalLength ?? focalLength,
+        bokehScale: defaultSettings?.depthOfField.bokehScale ?? 4.0,
       }
     );
     effects.push( depthOfFieldEffect );
@@ -83,7 +83,7 @@ export const getComposer = (
     const vignetteEffect = new POSTPROCESSING.VignetteEffect( {
       eskil: false,
       offset: 0.5,
-      darkness: 0.4
+      darkness: defaultSettings?.vignette?.darkness ?? 0.4
     } );
     effects.push( vignetteEffect );
 

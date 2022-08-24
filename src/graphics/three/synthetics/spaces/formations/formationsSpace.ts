@@ -2,13 +2,13 @@ import * as THREE from 'three';
 
 import type { Synthetic, SyntheticSpace } from '../../scene';
 
-import encodedBackgroundProgram from '../../programs/moss-structure9.json';
 import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
-import { decodeProgram, EncodedProgram } from '../../../../../modules/substrates/src/stores/programStore';
-import { getBackgroundRenderer } from '../../background/background';
-import { createProgramManager, MaterialObject } from '../../programs/programManager';
-import { createBoulder } from './formation';
+import { createFormation } from './formation';
+import { getRockConfig, getSharpConfig, getStairsConfig } from './configs';
+import { createLineBox } from '../../../../utils/lines';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { createBackgroundRenderer } from './background';
 
 export const spaceMetadata = {
   postProcessing: true
@@ -36,18 +36,31 @@ const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderSc
 }
 
 
-export const getBoulderTunnelSpace = (
+export const getFormationsSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
   const parent = new THREE.Object3D();
 
-  const boulder = createBoulder();
+  const boulder = createFormation(
+    // getSharpConfig()
+    // getRockConfig()
+    getStairsConfig()
+  );
+
   boulder.receiveShadow = true;
   boulder.castShadow = true;
 
   parent.add(boulder);
   updateCamera(boulder, renderScene);
+
+  const lineBox = createLineBox(new THREE.Box3().setFromObject(boulder), new LineMaterial({
+    color: new THREE.Color('#779988').getHex(),
+    linewidth: 0.002
+  }));
+
+  lineBox.position.copy(boulder.position);
+  // boulder.add(lineBox);
 
   const synthetic: Synthetic = {
     object: parent,
@@ -59,12 +72,12 @@ export const getBoulderTunnelSpace = (
   }
 
   // Background
-  const backgroundRenderTarget = new THREE.WebGLRenderTarget(
-    renderScene.canvas.width, renderScene.canvas.height, {}
-  );
+  const {
+    backgroundRenderer,
+    renderTarget: backgroundRenderTarget
+  } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
 
-  // const backgroundRenderer = getBackgroundRenderer(renderScene.renderer, backgroundRenderTarget, defaultBackgroundProgram);
-  // renderScene.resizeables.push(backgroundRenderer);
+  renderScene.resizeables.push(backgroundRenderer);
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
@@ -74,39 +87,51 @@ export const getBoulderTunnelSpace = (
 
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
-      // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color('black');
+      scene.background = backgroundRenderTarget.texture;
+      // scene.background = new THREE.Color('gray');
 
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       camera.position.set(0, 0, 80);
 
-      const directionalLight = new THREE.DirectionalLight('white', 3.2);
+      const directionalLight = new THREE.DirectionalLight('white', 3.8);
       directionalLight.position.set(-10, 5, 10);
       directionalLight.castShadow = true;
 
       const ambientLight = new THREE.AmbientLight('white', 1.3);
 
+      const pointLight = new THREE.PointLight('red', 200.0, 1000, 1.1);
+      pointLight.position.set(0, -100, 0);
+
       scene.add(
         directionalLight,
-        ambientLight
+        ambientLight,
+        pointLight
       );
     },
     synthetics: [
       synthetic,
     ],
-    postProcessing: false,
+    postProcessing: true,
     defaultPasses: true,
     controls: interactive,
     postProcessingPassSettings: {
       bloom: {
-        threshold: 0.4,
+        threshold: 0.55,
         intensity: 2.0,
         smoothing: 0.1
+      },
+      depthOfField: {
+        bokehScale: 5,
+        focusDistance: 0.01,
+        focalLength: 0.005
+      },
+      vignette: {
+        darkness: 0.2
       }
     },
-    // backgroundRenderer,
+    backgroundRenderer,
     defaultSceneProperties: {
       scale: 1.0
     }

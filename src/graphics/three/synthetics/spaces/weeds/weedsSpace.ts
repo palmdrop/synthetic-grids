@@ -3,11 +3,6 @@ import type * as dat from 'dat.gui';
 
 import type { Synthetic, SyntheticSpace } from '../../scene';
 import { CellData, getWeedsGrid, WeedsGridConfig } from '../../../procedural/organic/weedsGenerator';
-import { decodeProgram, EncodedProgram } from '../../../../../modules/substrates/src/stores/programStore';
-import { getBackgroundRenderer } from '../../background/background';
-
-import encodedBackgroundProgram from '../../programs/grid4.json';
-import { createProgramManager, MaterialObject } from '../../programs/programManager';
 import { addDirectionalLight, addPointLight } from '../../../systems/GuiUtils';
 import { Line2 } from 'three/examples/jsm/lines/Line2';
 import { colors, configMaker, defaultMutationParameters } from './defaultConfig';
@@ -20,8 +15,6 @@ const updateWeeds = (
   gui: dat.GUI
 ): Synthetic => {
   weedsSynthetic.metadata = {};
-  //makeConfigGUI(gui, config);
-  // mutate(config, defaultMutationParameters);
   weedsSynthetic.object.children = [];
 
   const { object: weeds, cellsData } = getWeedsGrid(

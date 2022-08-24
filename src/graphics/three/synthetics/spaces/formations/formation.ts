@@ -5,46 +5,37 @@ import normalTexturePath from '../../../../../assets/normal/normal-texture1.jpg'
 import mapTexturePath from '../../../../../assets/normal/normal-texture1-grayscale.jpg';
 import { lerpColors } from '../../../../utils/color';
 
-export const createBoulder = () => {
-  const octaves = 5;
-  const size = 50;
-  const detail = 400;
-  const amount = 30;
+export type FormationConfig = {
+  size: number,
+  detail: number,
+  amount: number,
   // TODO: distorted rocks with low step count
   // TODO: and also low detail... make grid
-  const minSteps = 3;
-  const maxSteps = 1000;
+  minSteps: number,
+  maxSteps: number,
 
-  const scale = {
-    x: THREE.MathUtils.randFloat(0.8, 1.5),
-    y: THREE.MathUtils.randFloat(0.8, 1.5),
-    z: THREE.MathUtils.randFloat(0.8, 1.5),
-  };
+  scale: { x: number, y: number, z: number },
 
-  const colors = [
-    new THREE.Color('#a3adad'),
-    new THREE.Color('#dad9cc'),
-    new THREE.Color('#b9b9b5'),
-    new THREE.Color('#d9f2e1'),
-  ];
+  colors: THREE.Color[],
 
-  const defaultRoughness = 0.8;
-  const defaultMetalness = 0.15;
-  const normalScale = 3.0;
+  defaultRoughness: number,
+  defaultMetalness: number,
+  normalScale: number,
 
-  const textureRepeat = 10;
+  textureRepeat: number,
 
-  const noiseSettings = {
-    frequency: 0.008,
-    min: -1.0,
-    max: 1.0,
-    lacunarity: 1.49,
-    persistance: 0.35,
+  noiseSettings: {
+    octaves: number,
+    frequency: number,
+    min: number,
+    max: number,
+    lacunarity: number,
+    persistance: number,
   }
+}
 
-  // TODO: add scale to object! scale in diff direction, then rotate
-  const geometry = new THREE.SphereBufferGeometry(size, detail, detail);
-  // const geometry = new THREE.BoxBufferGeometry(size, size, size, detail, 10, detail);
+export const createFormation = (config: FormationConfig) => {
+  const geometry = new THREE.SphereBufferGeometry(config.size, config.detail, config.detail);
   const positionAttribute = geometry.getAttribute('position');
 
   const material = new THREE.MeshStandardMaterial({
@@ -57,12 +48,6 @@ export const createBoulder = () => {
   });
 
 
-  /*
-  const geometry = new THREE.BoxBufferGeometry(
-    50, 50, 50,
-    detail, detail, detail
-  );
-  */
   geometry.setAttribute(
     'color',
     new THREE.BufferAttribute( new Float32Array( positionAttribute.count * 3 ), 3 )
@@ -73,18 +58,18 @@ export const createBoulder = () => {
   const getNoise = (position: THREE.Vector3, offset: THREE.Vector3 | undefined) => {
     const settings = {
       offset,
-      ...noiseSettings
+      ...config.noiseSettings
     };
 
     let value = 0.0;
-    for(let i = 0; i < octaves; i++) {
+    for(let i = 0; i < config.noiseSettings.octaves; i++) {
       let n = getNoise3D(position, settings);
       settings.min *= settings.persistance;
       settings.max *= settings.persistance;
       settings.frequency *= settings.lacunarity;
       settings.frequency *= settings.lacunarity;
 
-      n = amount * quantize(n, Math.floor(THREE.MathUtils.mapLinear(i, 0, octaves, minSteps, maxSteps)));
+      n = config.amount * quantize(n, Math.floor(THREE.MathUtils.mapLinear(i, 0, config.noiseSettings.octaves, config.minSteps, config.maxSteps)));
 
       value += n;
     }
@@ -110,6 +95,7 @@ export const createBoulder = () => {
     return new THREE.Vector3(x, y, z);
   }
     
+  const averageOffset = new THREE.Vector3();
   for(let i = 0; i < positionAttribute.count; i++) {
     const x = positionAttribute.getX(i);
     const y = positionAttribute.getY(i);
@@ -120,26 +106,24 @@ export const createBoulder = () => {
     const offset = getOffset(position);
 
     positionAttribute.setXYZ(i, 
-      (x + offset.x) * scale.x, 
-      (y + offset.y) * scale.y, 
-      (z + offset.z) * scale.z
+      (x + offset.x) * config.scale.x, 
+      (y + offset.y) * config.scale.y, 
+      (z + offset.z) * config.scale.z
     );
 
-    /*
-    const color = new THREE.Color().lerpColors(
-      startColor, 
-      endColor, 
-      Math.abs(0.3 * (offset.x + offset.z * offset.y) / amount + Math.random() * 0.5) % 1.0
-    );
-    */
     const color = lerpColors(
-      colors,
-      0.8 * Math.abs(0.3 * (offset.x + offset.z * offset.y) / amount + Math.random() * 0.5) % 1.0
+      config.colors,
+      0.8 * Math.abs(0.3 * (offset.x + offset.z * offset.y) / config.amount + Math.random() * 0.5) % 1.0
     );
 
     colorAttribute.setXYZ(i, color.r, color.g, color.b);
+
+    averageOffset.add(new THREE.Vector3().copy(offset).multiplyScalar(1.0 / positionAttribute.count))
   }
 
+  geometry.applyMatrix4(
+    new THREE.Matrix4().makeTranslation(-averageOffset.x, -averageOffset.y, -averageOffset.z)
+  );
   geometry.computeVertexNormals();
 
   // Texture
@@ -148,26 +132,26 @@ export const createBoulder = () => {
   normalMap.wrapT = THREE.RepeatWrapping;
 
   normalMap.repeat.set(
-    textureRepeat, textureRepeat
+    config.textureRepeat, config.textureRepeat
   );
 
   material.normalMap = normalMap;
-  material.normalScale = new THREE.Vector2(1.0, 1.0).multiplyScalar(normalScale);
+  material.normalScale = new THREE.Vector2(1.0, 1.0).multiplyScalar(config.normalScale);
 
   const map = new THREE.TextureLoader().load(mapTexturePath);
   map.wrapS = THREE.RepeatWrapping;
   map.wrapT = THREE.RepeatWrapping;
 
   map.repeat.set(
-    textureRepeat, textureRepeat
+    config.textureRepeat, config.textureRepeat
   );
 
   material.map = map;
 
   const defaultRoughnessMetalness = new THREE.Color(
     1.0,
-    defaultRoughness,
-    defaultMetalness,
+    config.defaultRoughness,
+    config.defaultMetalness,
   );
 
   const roughnessMetalnessMap = textureFromSmoothGeometry(
@@ -179,8 +163,8 @@ export const createBoulder = () => {
 
       return new THREE.Color(
         1.0,
-        defaultRoughness - 0.1 * r - b * 0.15,
-        defaultMetalness + 0.2 * g - b * 0.3,
+        config.defaultRoughness - 0.1 * r - b * 0.15,
+        config.defaultMetalness + 0.2 * g - b * 0.3,
       );
     },
     defaultRoughnessMetalness
@@ -189,12 +173,20 @@ export const createBoulder = () => {
   material.metalnessMap = roughnessMetalnessMap;
   material.roughnessMap = roughnessMetalnessMap;
 
+  geometry.rotateX(
+    THREE.MathUtils.randFloatSpread(Math.PI)
+  );
+  geometry.rotateY(
+    THREE.MathUtils.randFloatSpread(Math.PI)
+  );
+  geometry.rotateZ(
+    THREE.MathUtils.randFloatSpread(Math.PI)
+  );
 
   const mesh = new THREE.Mesh(
     geometry,
     material
   );
-
 
   return mesh;
 }
