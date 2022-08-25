@@ -94,7 +94,7 @@ export const getFormationsSpace = (
 
       camera.position.set(0, 0, 80);
 
-      const directionalLight = new THREE.DirectionalLight('white', 3.8);
+      const directionalLight = new THREE.DirectionalLight('white', 4.7);
       directionalLight.position.set(-10, 5, 10);
       directionalLight.castShadow = true;
 
@@ -120,7 +120,7 @@ export const getFormationsSpace = (
     },
     postProcessingPassSettings: {
       bloom: {
-        threshold: 0.55,
+        threshold: 0.6,
         intensity: 2.0,
         smoothing: 0.1
       },
