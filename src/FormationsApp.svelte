@@ -5,6 +5,8 @@
   import { promptDownload } from './modules/substrates/src/utils/general';
   import { getFormationsSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/formations/formationsSpace";
 
+  export let interactive = true;
+
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
 
@@ -51,7 +53,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getFormationsSpace, spaceMetadata, undefined, true);
+    scene = new SyntheticGrids(canvas, getFormationsSpace, spaceMetadata, undefined, interactive);
     scene.resize();
     scene.start();
 

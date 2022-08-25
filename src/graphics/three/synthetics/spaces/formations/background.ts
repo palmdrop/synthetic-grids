@@ -3,6 +3,8 @@ import type { BackgroundRenderer } from '../../scene';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js';
+import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader';
 
 // Custom shader passes
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
@@ -11,7 +13,10 @@ import { BackgroundDistortionShader } from './backgroundDistortionShader';
 
 export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) => {
   const size = renderer.getSize(new THREE.Vector2());
-  const renderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {});
+  const renderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {
+  });
+  renderTarget.samples = 4;
+
   const composer = new EffectComposer(renderer, renderTarget);
   composer.renderToScreen = false;
 
@@ -23,6 +28,24 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
     new ShaderPass(
       BackgroundDistortionShader
     )
+  );
+
+  VerticalBlurShader.uniforms['v'].value = 0.0005;
+  HorizontalBlurShader.uniforms['h'].value = VerticalBlurShader.uniforms['v'].value;
+  const verticalBlurPass = new ShaderPass(
+    VerticalBlurShader
+  );
+
+  const horizontalBlurPass = new ShaderPass(
+    HorizontalBlurShader
+  )
+
+  composer.addPass(
+    verticalBlurPass
+  );
+
+  composer.addPass(
+    horizontalBlurPass
   );
 
   composer.addPass(

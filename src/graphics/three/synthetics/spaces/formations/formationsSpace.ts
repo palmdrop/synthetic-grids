@@ -5,7 +5,7 @@ import type { Synthetic, SyntheticSpace } from '../../scene';
 import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
 import { createFormation } from './formation';
-import { getRockConfig, getSharpConfig, getStairsConfig } from './configs';
+import { getRockConfig, getStairsConfig } from './configs';
 import { createLineBox } from '../../../../utils/lines';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { createBackgroundRenderer } from './background';
@@ -14,7 +14,7 @@ export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
+const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.5) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -35,32 +35,35 @@ const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderSc
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
+const updateFormation = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+  parent.clear();
+
+  const formation = createFormation(
+    Math.random() > 0.5 
+      ? getRockConfig()
+      : getStairsConfig()
+  );
+
+  parent.add(formation);
+  updateCamera(formation, renderScene);
+
+  const lineBox = createLineBox(new THREE.Box3().setFromObject(formation), new LineMaterial({
+    color: new THREE.Color('#13de00').getHex(),
+    linewidth: 0.0020
+  }));
+
+  lineBox.position.copy(formation.position);
+  formation.add(lineBox);
+}
 
 export const getFormationsSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
   const parent = new THREE.Object3D();
+  parent.rotateX(0.08);
 
-  const boulder = createFormation(
-    // getSharpConfig()
-    // getRockConfig()
-    getStairsConfig()
-  );
-
-  boulder.receiveShadow = true;
-  boulder.castShadow = true;
-
-  parent.add(boulder);
-  updateCamera(boulder, renderScene);
-
-  const lineBox = createLineBox(new THREE.Box3().setFromObject(boulder), new LineMaterial({
-    color: new THREE.Color('#779988').getHex(),
-    linewidth: 0.002
-  }));
-
-  lineBox.position.copy(boulder.position);
-  // boulder.add(lineBox);
+  updateFormation(parent, renderScene);
 
   const synthetic: Synthetic = {
     object: parent,
@@ -84,14 +87,10 @@ export const getFormationsSpace = (
       updateCamera(parent.children[0], renderScene);
     },
     onClick: () => {
-
+      updateFormation(parent, renderScene);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       scene.background = backgroundRenderTarget.texture;
-      // scene.background = new THREE.Color('gray');
-
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       camera.position.set(0, 0, 80);
 
@@ -116,6 +115,9 @@ export const getFormationsSpace = (
     postProcessing: true,
     defaultPasses: true,
     controls: interactive,
+    setupControls: (controls) => {
+      controls.noPan = true;
+    },
     postProcessingPassSettings: {
       bloom: {
         threshold: 0.55,
@@ -123,7 +125,7 @@ export const getFormationsSpace = (
         smoothing: 0.1
       },
       depthOfField: {
-        bokehScale: 5,
+        bokehScale: 2,
         focusDistance: 0.01,
         focalLength: 0.005
       },

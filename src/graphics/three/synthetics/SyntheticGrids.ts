@@ -44,6 +44,8 @@ export class SyntheticGrids extends AbstractRenderScene {
 
       this.controls.panSpeed = 1.8;
       this.controls.zoomSpeed = 0.5;
+
+      this.space.setupControls?.(this.controls);
     }
 
     if(this.controls && interactive) {
@@ -56,7 +58,7 @@ export class SyntheticGrids extends AbstractRenderScene {
           min: 0,
           max: 10
         }
-      })
+      });
     }
 
     this.properties = {

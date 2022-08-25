@@ -4,6 +4,7 @@ import type * as POSTPROCESSING from 'postprocessing';
 import type { FullscreenQuadRenderer } from '../tools/FullscreenQuadRenderer';
 import { setUniform } from '../../../modules/substrates/src/utils/shader';
 import type { AbstractRenderScene } from '../AbstractRenderScene';
+import type { TrackballControls } from '../examples/TrackballControls';
 
 export type SceneProperties = {
   time: number,
@@ -30,6 +31,7 @@ export type SyntheticSpace = {
   onClick?: (mousePosition: THREE.Vector2, renderScene: AbstractRenderScene) => void,
   regenerate?: (renderScene: AbstractRenderScene) => void,
   onResize?: (width: number, height: number, renderScene: AbstractRenderScene) => void,
+  setupControls?: (controls: TrackballControls) => void,
   backgroundRenderer?: BackgroundRenderer,
   synthetics: Synthetic[],
   postProcessing: boolean,

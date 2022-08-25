@@ -13,6 +13,14 @@ export const BackgroundDistortionShader = {
       value: new THREE.Vector2(1.4, 1.4), 
       type: 'vec2'
     },
+    'offset': {
+      value: new THREE.Vector3(0.0, 0.0), 
+      type: 'vec2'
+    },
+    'rotation': {
+      value: 0.01,
+      type: 'float'
+    },
     'colorCorrection': {
       value: new THREE.Vector3(
         0.8, 0.9, 0.9
@@ -35,17 +43,29 @@ export const BackgroundDistortionShader = {
 		varying vec2 vUv;
 
 		uniform vec2 scale;
+		uniform vec2 offset;
+		uniform float rotation;
 		uniform vec3 colorCorrection;
 		uniform vec4 backgroundColor;
 
+    vec2 rotate(vec2 point, float angle) {
+      float s = sin(angle);
+      float c = cos(angle);
+      mat2 matrix = mat2(c, -s, s, c);
+      return matrix * point;
+    }
+
 		void main() {
-      vec2 uv = (vUv - 0.5) / scale + 0.5;
+      vec2 centeredUv = vUv - 0.5;
 
-			gl_FragColor = texture2D(tDiffuse, uv);
-      gl_FragColor.rgb *= colorCorrection;
+      centeredUv = rotate(centeredUv, rotation);
+      centeredUv += offset;
 
-      // if(gl_FragColor.a < 1.0) gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-      gl_FragColor = mix(backgroundColor, gl_FragColor, gl_FragColor.a);
+      vec2 uv = centeredUv / scale + 0.5;
+
+			vec4 color = texture2D(tDiffuse, uv);
+      color.rgb *= colorCorrection;
+      gl_FragColor = mix(backgroundColor, color, color.a);
 			gl_FragColor.a = opacity;
 		}`
 } as const;
