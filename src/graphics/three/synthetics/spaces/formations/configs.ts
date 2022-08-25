@@ -1,6 +1,21 @@
 import * as THREE from 'three';
 import type { FormationConfig } from './formation';
 
+const getColors = (rockOnly = false) => {
+  return Math.random() > 0.5 || rockOnly ? 
+    [
+      new THREE.Color('#a3adad'),
+      new THREE.Color('#dad9cc'),
+      new THREE.Color('#b9b7b5'),
+      new THREE.Color('#d9f2e1'),
+    ] : [
+      new THREE.Color('#bac9b7'),
+      new THREE.Color('#b4b4cc'),
+      new THREE.Color('#bfa2a2'),
+      new THREE.Color('#cadbc9'),
+    ];
+}
+
 export const getStairsConfig = (): FormationConfig => ({
   size: 50,
   detail: 400,
@@ -14,12 +29,7 @@ export const getStairsConfig = (): FormationConfig => ({
     z: THREE.MathUtils.randFloat(0.8, 1.5),
   },
 
-  colors: [
-    new THREE.Color('#a3adad'),
-    new THREE.Color('#dad9cc'),
-    new THREE.Color('#b9b7b5'),
-    new THREE.Color('#d9f2e1'),
-  ],
+  colors: getColors(true),
 
   defaultRoughness: 0.8,
   defaultMetalness: 0.15,
@@ -50,12 +60,7 @@ export const getRockConfig = (): FormationConfig => ({
     z: THREE.MathUtils.randFloat(0.8, 1.5),
   },
 
-  colors: [
-    new THREE.Color('#a3adad'),
-    new THREE.Color('#dad9cc'),
-    new THREE.Color('#b9b9b5'),
-    new THREE.Color('#d9f2e1'),
-  ],
+  colors: getColors(),
 
   defaultRoughness: 0.8,
   defaultMetalness: 0.15,
