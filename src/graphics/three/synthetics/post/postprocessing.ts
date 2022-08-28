@@ -38,9 +38,9 @@ export const getComposer = (
   {
     const depthOfFieldEffect = new POSTPROCESSING.DepthOfFieldEffect(
       camera, {
-        focusDistance: defaultSettings?.depthOfField.focusDistance ?? 0.0,
-        focalLength: defaultSettings?.depthOfField.focalLength ?? focalLength,
-        bokehScale: defaultSettings?.depthOfField.bokehScale ?? 4.0,
+        focusDistance: defaultSettings?.depthOfField?.focusDistance ?? 0.0,
+        focalLength: defaultSettings?.depthOfField?.focalLength ?? focalLength,
+        bokehScale: defaultSettings?.depthOfField?.bokehScale ?? 4.0,
       }
     );
     effects.push( depthOfFieldEffect );
