@@ -9,8 +9,6 @@ export type FormationConfig = {
   size: number,
   detail: number,
   amount: number,
-  // TODO: distorted rocks with low step count
-  // TODO: and also low detail... make grid
   minSteps: number,
   maxSteps: number,
 
