@@ -3,7 +3,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
-  import { getLandscapeSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/landscape/landscapeSpace";
+  import { getGridTreeSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/gridTree/gridTreeSpace";
 
   export let interactive = true;
 
@@ -53,7 +53,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getLandscapeSpace, spaceMetadata, undefined, interactive);
+    scene = new SyntheticGrids(canvas, getGridTreeSpace, spaceMetadata, undefined, interactive);
     scene.resize();
     scene.start();
 
@@ -67,10 +67,10 @@
 
 <svelte:window 
   on:resize={onResize} 
+  on:keydown={onKeyDown}
 />
 
 <div
-  on:keydown={onKeyDown}
   on:mousemove={onMouseMove}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}

@@ -84,6 +84,11 @@ export class SpaceColonizationTree {
     stepSize : ArgumentFunction | number, 
     randomDeviation : ArgumentFunction | number 
   ) {
+    console.log({
+      minDistance, maxDistance,
+      dynamics, stepSize,
+      randomDeviation
+    })
 
     this.minDistance = toArgumentFunction( minDistance );
     this.maxDistance = toArgumentFunction( maxDistance );

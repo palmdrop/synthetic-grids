@@ -8,21 +8,19 @@ import { createFormation } from '../formations/formation';
 import { getRockConfig, getStairsConfig } from '../formations/configs';
 import { createLineBox } from '../../../../utils/lines';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { Octree, OctreeHelper } from '../../../tools/space/Octree';
-import { randomInVolume } from '../../../tools/math';
-import { SpaceColonizationTree } from '../../../tools/space/SpaceColonizationTree';
+import { getTree } from './tree';
 // import { createBackgroundRenderer } from './background';
 
 export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.5) => {
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
 
-  const box = new THREE.Box3().expandByObject(weedsObject);
+  const box = new THREE.Box3().expandByObject(object);
   const size = box.getSize(new THREE.Vector3());
 
   const maxDimension = Math.max(size.x, size.y);
@@ -38,43 +36,29 @@ const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderSc
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const updateFormation = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+const updateObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
   parent.clear();
 
-  const formation = createFormation(
-    Math.random() > 0.5 
-      ? getRockConfig()
-      : getStairsConfig()
-  );
+  const tree = getTree();
 
-  parent.add(formation);
-  updateCamera(formation, renderScene);
-
-  const lineBox = createLineBox(new THREE.Box3().setFromObject(formation), new LineMaterial({
-    color: new THREE.Color('#13de00').getHex(),
-    linewidth: 0.0020
-  }));
-
-  lineBox.position.copy(formation.position);
-  formation.add(lineBox);
+  parent.add(tree);
+  updateCamera(tree, renderScene);
 }
 
-export const getLandscapeSpace = (
+export const getGridTreeSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
   const parent = new THREE.Object3D();
-  parent.rotateX(0.08);
 
-  updateFormation(parent, renderScene);
+  updateObject(parent, renderScene);
 
   const synthetic: Synthetic = {
-    object: parent,
-    metadata: {}
-  };
+    object: parent
+  }
 
   synthetic.update = (properties) => {
-    parent.children[0].rotateY(0.002);
+    parent.children[0].rotateY(0.05);
   }
 
   // Background
@@ -92,42 +76,11 @@ export const getLandscapeSpace = (
       updateCamera(parent.children[0], renderScene);
     },
     onClick: () => {
-      updateFormation(parent, renderScene);
+      updateObject(parent, renderScene);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
-      const volume = {
-        x: -10,
-        y: -10,
-        z: -10,
-        w: 20,
-        h: 20,
-        d: 20,
-      }
-
-      // const octree = new Octree(volume, 1, 10);
-      const points: THREE.Vector3[] = [];
-      for(let i = 0; i < 10000; i++) {
-        // octree.insert(randomInVolume(volume), undefined);
-        points.push(randomInVolume(volume));
-      }
-
-      const tree = new SpaceColonizationTree(
-        0.4, // Min dist
-        5.5, // Max dist
-        0.5, // Dynamics
-        0.20, // Step size
-        0.02 // Random
-      );
-
-      tree.generate(points, volume, new THREE.Vector3(), new THREE.Vector3(), 100);
-
-      const octreeHelper = new OctreeHelper(tree.getSegments());
-      scene.add(octreeHelper);
-
-      scene.add(tree.buildInstancedThreeObject(new THREE.MeshBasicMaterial({ color: 'green' })));
-
       // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color('black');
+      scene.background = new THREE.Color('#0c140c');
 
       camera.position.set(0, 0, 80);
 
@@ -147,19 +100,19 @@ export const getLandscapeSpace = (
       );
     },
     synthetics: [
-      // synthetic,
+      synthetic,
     ],
     postProcessing: true,
     defaultPasses: true,
     controls: interactive,
     setupControls: (controls) => {
-      controls.noPan = true;
+      // controls.noPan = true;
     },
     postProcessingPassSettings: {
       bloom: {
-        threshold: 0.6,
-        intensity: 2.0,
-        smoothing: 0.1
+        threshold: 0.4,
+        intensity: 1.5,
+        smoothing: 0.05
       },
       depthOfField: {
         bokehScale: 2,

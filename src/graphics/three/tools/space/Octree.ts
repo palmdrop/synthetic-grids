@@ -5,10 +5,15 @@ import { volumePointIntersection, sphereVolumeIntersection, spherePointIntersect
 type QueryMode = 'entry' | 'point' | 'data';
 type Entry<T> = { point : THREE.Vector3, data : T | null };
 
+const defaultMaterialMaker = <T>(node: Octree<T>) => {
+  const hue = 360 * node.depth / node.maxDepth;
+  return new THREE.LineBasicMaterial( { color: `hsl(${ hue }, 100%, 50%)` } );
+}
+
 export class OctreeHelper<T> extends THREE.Object3D {
   private octree : Octree<T>;
 
-  constructor( octree : Octree<T> ) {
+  constructor( octree : Octree<T>, materialMaker: ((node: Octree<T>) => (THREE.LineBasicMaterial | undefined)) = defaultMaterialMaker) {
     super();
 
     this.octree = octree;
@@ -19,9 +24,8 @@ export class OctreeHelper<T> extends THREE.Object3D {
     );
 
     this.octree.traverseNodes( ( node : Octree<T> ) => {
-      const hue = 360 * node.depth / octree.maxDepth;
-
-      const material = new THREE.LineBasicMaterial( { color: `hsl(${ hue }, 100%, 50%)` } );
+      const material = materialMaker(node);
+      if(!material) return;
       const nodeMesh = new THREE.LineSegments( edges, material );
             
       const { x, y, z, w, h, d } = node.volume;
