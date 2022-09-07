@@ -4,12 +4,7 @@ import type { Synthetic, SyntheticSpace } from '../../scene';
 
 import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
-import { createFormation } from '../formations/formation';
-import { getRockConfig, getStairsConfig } from '../formations/configs';
-import { createLineBox } from '../../../../utils/lines';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { getTree } from './tree';
-// import { createBackgroundRenderer } from './background';
 
 export const spaceMetadata = {
   postProcessing: true
@@ -57,7 +52,7 @@ export const getGlowTreeSpace = (
     object: parent
   }
 
-  synthetic.update = (properties) => {
+  synthetic.update = () => {
     parent.children[0].rotateY(0.05);
   }
 

@@ -91,8 +91,6 @@ export class SyntheticGrids extends AbstractRenderScene {
 
       this.composer = composer;
     }
-
-    this.gui.show();
   }
 
   protected createCamera(): THREE.Camera {
