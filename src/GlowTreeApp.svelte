@@ -3,7 +3,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
-  import { getGridTreeSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/gridTree/gridTreeSpace";
+  import { getGlowTreeSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/glowTree/glowTreeSpace";
 
   export let interactive = true;
 
@@ -53,7 +53,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getGridTreeSpace, spaceMetadata, undefined, interactive);
+    scene = new SyntheticGrids(canvas, getGlowTreeSpace, spaceMetadata, undefined, interactive);
     scene.resize();
     scene.start();
 

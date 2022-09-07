@@ -45,7 +45,7 @@ const updateObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   updateCamera(tree, renderScene);
 }
 
-export const getGridTreeSpace = (
+export const getGlowTreeSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
@@ -61,16 +61,6 @@ export const getGridTreeSpace = (
     parent.children[0].rotateY(0.05);
   }
 
-  // Background
-  /*
-  const {
-    backgroundRenderer,
-    renderTarget: backgroundRenderTarget
-  } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
-  */
-
-  // renderScene.resizeables.push(backgroundRenderer);
-
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
       updateCamera(parent.children[0], renderScene);
@@ -79,7 +69,6 @@ export const getGridTreeSpace = (
       updateObject(parent, renderScene);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
-      // scene.background = backgroundRenderTarget.texture;
       scene.background = new THREE.Color('#0c140c');
 
       camera.position.set(0, 0, 80);
@@ -106,7 +95,7 @@ export const getGridTreeSpace = (
     defaultPasses: true,
     controls: interactive,
     setupControls: (controls) => {
-      // controls.noPan = true;
+      controls.noPan = true;
     },
     postProcessingPassSettings: {
       bloom: {
