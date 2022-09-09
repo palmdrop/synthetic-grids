@@ -53,7 +53,7 @@ export const getGlowTreeSpace = (
   }
 
   synthetic.update = () => {
-    parent.children[0].rotateY(0.05);
+    parent.children[0].rotateY(0.01);
   }
 
   const space: SyntheticSpace = {
