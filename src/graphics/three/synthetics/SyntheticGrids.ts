@@ -9,8 +9,6 @@ import { getComposer } from './post/postprocessing';
 import type { SceneProperties, SyntheticSpace } from './scene';
 
 export class SyntheticGrids extends AbstractRenderScene {
-  private backgroundRenderTarget: THREE.WebGLRenderTarget;
-
   private controls: TrackballControls;
 
   private guiVisible: boolean = true;
@@ -28,10 +26,6 @@ export class SyntheticGrids extends AbstractRenderScene {
     interactive = true
   ) {
     super(canvas, onLoad, spaceMetadata.postProcessing);
-
-    this.backgroundRenderTarget = new THREE.WebGLRenderTarget(
-      canvas.width, canvas.height, {}
-    );
 
     this.space = spaceCreator(this, interactive);
     this.space.sceneConfigurator(this.scene, this.camera, this.renderer);

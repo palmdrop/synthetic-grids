@@ -192,9 +192,28 @@ export class Octree<T> {
     this.nodes.forEach( node => node.traverseNodes( callback ) );
   }
 
+  getFlattenedNodes() {
+    const flattenedNodes: Octree<T>[] = [];
+    this.traverseNodes(node => flattenedNodes.push(node));
+    return flattenedNodes;
+  }
+
+  getLeafNodes() {
+    const leafNodes: Octree<T>[] = [];
+    this.traverseNodes(node => {
+      // if(!node.getEntryCount()) leafNodes.push(node);
+      if(!node.entries.length) leafNodes.push(node);
+    });
+    return leafNodes;
+  }
+
   getEntryCount() {
     let count = 0;
     this.traverseNodes( () => count++ );
     return count;
+  }
+
+  getVolume() {
+    return this.volume;
   }
 }

@@ -11,3 +11,16 @@ export const box3ToBoxGeometry = (box3: THREE.Box3) => {
 export const boundingBoxToBoxGeometry = (object: THREE.Object3D) => {
   return box3ToBoxGeometry(new THREE.Box3().setFromObject(object));
 }
+
+export const getScaleToFit = (container: THREE.Box3, content: THREE.Box3) => {
+  const containerSize = container.getSize(new THREE.Vector3());
+  const contentSize = content.getSize(new THREE.Vector3());
+
+  const biggestProportion = Math.max(
+    contentSize.x / containerSize.x,
+    contentSize.y / containerSize.y,
+    contentSize.z / containerSize.z,
+  );
+
+  return 1.0 / biggestProportion;
+}

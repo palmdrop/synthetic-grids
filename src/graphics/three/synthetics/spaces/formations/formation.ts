@@ -32,7 +32,11 @@ export type FormationConfig = {
   }
 }
 
-export const createFormation = (config: FormationConfig) => {
+export type InstancedConfig = {
+  count: number
+}
+
+export const createFormation = (config: FormationConfig, instancedConfig: undefined | InstancedConfig = undefined) => {
   const geometry = new THREE.SphereBufferGeometry(config.size, config.detail, config.detail);
   const positionAttribute = geometry.getAttribute('position');
 
@@ -181,10 +185,16 @@ export const createFormation = (config: FormationConfig) => {
     THREE.MathUtils.randFloatSpread(Math.PI)
   );
 
-  const mesh = new THREE.Mesh(
-    geometry,
-    material
-  );
-
-  return mesh;
+  if(instancedConfig) {
+    return new THREE.InstancedMesh(
+      geometry,
+      material,
+      instancedConfig.count
+    )
+  } else {
+    return new THREE.Mesh(
+      geometry,
+      material
+    );
+  }
 }

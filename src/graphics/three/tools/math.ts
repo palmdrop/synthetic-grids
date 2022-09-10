@@ -88,3 +88,22 @@ export const randomInVolume = (volume: Volume) => {
   const z = random(volume.z, volume.d);
   return new THREE.Vector3(x, y, z);
 }
+
+export const calculateVolume = (volume: Volume) => {
+  return volume.w * volume.h * volume.d;
+}
+
+export const getVolumeCenter = (volume: Volume) => {
+  return {
+    x: volume.x + volume.w / 2.0,
+    y: volume.y + volume.h / 2.0,
+    z: volume.z + volume.d / 2.0
+  }
+}
+
+export const volumeToBox3 = (volume: Volume) => {
+  return new THREE.Box3(
+    new THREE.Vector3(volume.x, volume.y, volume.z),
+    new THREE.Vector3(volume.x + volume.w, volume.y + volume.h, volume.z + volume.d)
+  );
+}
