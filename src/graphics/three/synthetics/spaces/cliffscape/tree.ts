@@ -46,7 +46,7 @@ export const getTree = () => {
   const { points, volume } = getPoints();
 
   const tree = new SpaceColonizationTree(
-    random(5.2, 10.0), // Min dist
+    random(3.2, 6.0), // Min dist
     random(15, 20.5), // Max dist
     random(0.5, 0.6), // Dynamics
     random(0.1, 0.4), // Step size
@@ -72,17 +72,23 @@ export const getTree = () => {
     color: '#f9ff99'
   }), 0.05, 0.3, 0.1, 10);
 
-  const octree = new Octree<THREE.Vector3>(volume, 1, 8);
+  const octree = new Octree<THREE.Vector3>(volume, 3, 8);
   octree.insertAll(treePoints, treePoints);
 
   const octreeHelper = new OctreeHelper(octree, (node) => {
-    if(node.depth < 1) return undefined;
+    // if(node.depth < 1) return undefined;
+    if(node.getChildCount() > 0) return undefined;
 
-    return new THREE.LineBasicMaterial( { color: new THREE.Color('#49ff56'), opacity: 0.3, transparent: true } );
+    return new THREE.LineBasicMaterial( { 
+      color: new THREE.Color('#80ff00'), opacity: 0.5, transparent: true 
+    } );
   });
 
   const object = new THREE.Object3D();
-  object.add(/* octreeHelper ,*/ treeObject);
+  object.add(
+    // octreeHelper, 
+    // treeObject
+  );
 
   return { object, octree };
 }

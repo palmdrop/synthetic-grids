@@ -207,10 +207,8 @@ export class Octree<T> {
     return leafNodes;
   }
 
-  getEntryCount() {
-    let count = 0;
-    this.traverseNodes( () => count++ );
-    return count;
+  getChildCount() {
+    return this.nodes.length;
   }
 
   getVolume() {
