@@ -88,7 +88,7 @@ export const getTree = (color: { r: number, g: number, b: number }) => {
   const object = new THREE.Object3D();
   object.add(
     // octreeHelper, 
-    treeObject
+    // treeObject
   );
 
   return { object, octree };

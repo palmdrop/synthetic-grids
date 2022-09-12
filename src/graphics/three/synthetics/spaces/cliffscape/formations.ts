@@ -116,7 +116,7 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, renderSce
   });
   
   synthetic.update = () => {
-    // parent.rotateY(0.005);
+    parent.rotateY(0.005);
 
     if(Math.random() > 0.7) return;
 

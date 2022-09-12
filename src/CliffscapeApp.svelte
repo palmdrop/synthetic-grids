@@ -22,6 +22,7 @@
     switch(event.key) {
       case 'c': {
         if(scene) {
+          console.log("CAPTURE!")
           scene.captureFrame(data => {
             promptDownload(data, 'synthetics.png');
           })
@@ -57,7 +58,7 @@
     scene.resize();
     scene.start();
 
-    scene.setCaptureFrameResolutionMultiplier(1.0);
+    scene.setCaptureFrameResolutionMultiplier(3.0);
 
     return () => {
       scene.stop();
@@ -67,10 +68,10 @@
 
 <svelte:window 
   on:resize={onResize} 
+  on:keydown={onKeyDown}
 />
 
 <div
-  on:keydown={onKeyDown}
   on:mousemove={onMouseMove}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}

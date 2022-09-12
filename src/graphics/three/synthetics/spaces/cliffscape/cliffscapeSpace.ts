@@ -60,8 +60,8 @@ export const getCliffscapeSpace
   const { object, octree } = getTree(backgroundPalette[0].color);
 
   // parent.add(object);
-  parent.rotateX(0.3);
-  parent.rotateY(0.5);
+  // parent.rotateX(0.3);
+  // parent.rotateY(0.5);
 
   // TODO: Try calm cloud background?
 
@@ -100,8 +100,17 @@ export const getCliffscapeSpace
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       // scene.background = backgroundRenderTarget.texture;
+      const background = new THREE.TextureLoader().load(backgroundImage);
       // scene.background = new THREE.Color('#696666');
-      scene.background = new THREE.TextureLoader().load(backgroundImage);
+      const backgroundColor = backgroundPalette[backgroundPalette.length - 1].color;
+      /*
+      scene.background = new THREE.Color(
+        backgroundColor.r / 255,
+        backgroundColor.g / 255,
+        backgroundColor.b / 255
+      );
+      */
+      scene.background = background;
 
       camera.position.set(0, 0, 80);
 
@@ -142,11 +151,23 @@ export const getCliffscapeSpace
       // pointLight.position.set(0, -100, 0);
       pointLight.position.set(0, 0, 0);
 
+      const plane = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(),
+        new THREE.MeshBasicMaterial({
+          map: background
+        })
+      );
+
+      // TODO: try rotating monuments floating ABOVE "sky"
+
+      plane.scale.set(1.0, 1.5, 1.0).multiplyScalar(30);
+      plane.position.set(0, 0, -30);
 
       scene.add(
         directionalLight,
         ambientLight,
-        pointLight
+        pointLight,
+        // plane
       );
     },
     synthetics: [
@@ -156,7 +177,7 @@ export const getCliffscapeSpace
     defaultPasses: true,
     controls: interactive,
     setupControls: (controls) => {
-      controls.noPan = true;
+      // controls.noPan = true;
     },
     postProcessingPassSettings: {
       bloom: {
