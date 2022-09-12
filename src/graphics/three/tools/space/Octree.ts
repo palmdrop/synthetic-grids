@@ -201,7 +201,6 @@ export class Octree<T> {
   getLeafNodes() {
     const leafNodes: Octree<T>[] = [];
     this.traverseNodes(node => {
-      // if(!node.getEntryCount()) leafNodes.push(node);
       if(!node.entries.length) leafNodes.push(node);
     });
     return leafNodes;

@@ -94,11 +94,11 @@ export const calculateVolume = (volume: Volume) => {
 }
 
 export const getVolumeCenter = (volume: Volume) => {
-  return {
-    x: volume.x + volume.w / 2.0,
-    y: volume.y + volume.h / 2.0,
-    z: volume.z + volume.d / 2.0
-  }
+  return new THREE.Vector3( 
+    volume.x + volume.w / 2.0,
+    volume.y + volume.h / 2.0,
+    volume.z + volume.d / 2.0
+  )
 }
 
 export const volumeToBox3 = (volume: Volume) => {

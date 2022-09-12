@@ -42,7 +42,7 @@ export const getPoints = () => {
   };
 }
 
-export const getTree = () => {
+export const getTree = (color: { r: number, g: number, b: number }) => {
   const { points, volume } = getPoints();
 
   const tree = new SpaceColonizationTree(
@@ -69,7 +69,8 @@ export const getTree = () => {
   tree.traverse(segment => treePoints.push(segment.origin));
 
   const treeObject = tree.buildInstancedThreeObject(new THREE.MeshBasicMaterial({
-    color: '#f9ff99'
+    color: new THREE.Color(1.5 * color.r / 255, 1.5 * color.g / 255, 1.5 * color.b / 255)
+    // '#ffffff'
   }), 0.05, 0.3, 0.1, 10);
 
   const octree = new Octree<THREE.Vector3>(volume, 3, 8);
@@ -87,7 +88,7 @@ export const getTree = () => {
   const object = new THREE.Object3D();
   object.add(
     // octreeHelper, 
-    // treeObject
+    treeObject
   );
 
   return { object, octree };

@@ -11,12 +11,25 @@ import { createBackgroundRenderer } from '../formations/background';
 import { getTree } from './tree';
 import { updateFormations } from './formations';
 import { volumeToBox3 } from '../../../tools/math';
+import { getBackgroundRenderer } from '../../background/background';
+import { decodeProgram } from '../../../../../modules/substrates/src/stores/programStore';
+import encodedGateProgram from '../../programs/skies5.json';
+import { rgbToHsl } from '../../../../utils/color';
+
+// import bg from '../../../../../assets/images/sky4.jpg';
+
+const backgrounds = Object.values(import.meta.globEager('../../../../../assets/images/sky*.jpg')).map((module: any) => module.default);
+const backgroundPalettes = Object.values(import.meta.globEager('../../../../../assets/palettes/skies/*.json')).map((module: any) => module.default);
+const backgroundIndex = Math.floor(Math.random() * backgrounds.length);
+
+const backgroundImage = backgrounds[backgroundIndex];
+const backgroundPalette = backgroundPalettes[backgroundIndex];
 
 export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (box: THREE.Box3, renderScene: AbstractRenderScene, margin = 0.2) => {
+const updateCamera = (box: THREE.Box3, renderScene: AbstractRenderScene, margin = 0.4) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -42,50 +55,60 @@ export const getCliffscapeSpace
   interactive?: boolean
 ): SyntheticSpace => {
   const parent = new THREE.Object3D();
-  // parent.rotateX(0.08);
 
   // updateFormation(parent, renderScene);
-  const { object, octree } = getTree();
-  updateFormations(parent, renderScene, octree);
+  const { object, octree } = getTree(backgroundPalette[0].color);
 
-  parent.add(object);
+  // parent.add(object);
+  parent.rotateX(0.3);
+  parent.rotateY(0.5);
+
+  // TODO: Try calm cloud background?
 
   const synthetic: Synthetic = {
     object: parent,
-    metadata: {}
+    metadata: {},
   };
 
-  synthetic.update = (properties) => {
-    // parent.children[0].rotateY(0.002);
-    parent.rotateY(0.005);
-  }
+  updateFormations(synthetic, renderScene, octree);
+  synthetic.object.add(object);
 
   // Background
+  /*
   const {
     backgroundRenderer,
     renderTarget: backgroundRenderTarget
   } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
+  */
 
-  renderScene.resizeables.push(backgroundRenderer);
+  const backgroundRenderTarget = new THREE.WebGLRenderTarget(1, 1, {});
+  const backgroundRenderer = getBackgroundRenderer(
+    renderScene.renderer, backgroundRenderTarget, 
+    decodeProgram(encodedGateProgram)
+  );
+
+  // renderScene.resizeables.push(backgroundRenderer);
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
       updateCamera(volumeToBox3(octree.getVolume()), renderScene);
     },
     onClick: () => {
-      updateFormations(parent, renderScene, octree);
+      updateFormations(synthetic, renderScene, octree);
+      synthetic.object.add(object);
       updateCamera(volumeToBox3(octree.getVolume()), renderScene);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color('#696666');
+      // scene.background = new THREE.Color('#696666');
+      scene.background = new THREE.TextureLoader().load(backgroundImage);
 
       camera.position.set(0, 0, 80);
 
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      const directionalLight = new THREE.DirectionalLight('white', 4.7);
+      const directionalLight = new THREE.DirectionalLight('white', 4.8);
       directionalLight.position.set(-10, 5, 10);
       directionalLight.castShadow = true;
 
@@ -102,16 +125,28 @@ export const getCliffscapeSpace
       directionalLight.shadow.camera.top = 75;
       directionalLight.shadow.camera.bottom = -75;
 
-      const ambientLight = new THREE.AmbientLight('white', 1.3);
+      const ambientLight = new THREE.AmbientLight('white', 1.2);
 
-      const pointLight = new THREE.PointLight('#80ff00', 30.0, 1000, 1.1);
+      let { h, s, l } = rgbToHsl(backgroundPalette[Math.floor(Math.random() * backgroundPalette.length)].color);
+      h /= 360;
+      s /= 100;
+      l /= 100;
+
+      const pointLightColor = new THREE.Color().setHSL(
+        h, 
+        Math.pow(s, 0.4),
+        Math.pow(l, 0.6)
+      );
+
+      const pointLight = new THREE.PointLight(pointLightColor, 8.0, 1000, 0.3);
       // pointLight.position.set(0, -100, 0);
       pointLight.position.set(0, 0, 0);
+
 
       scene.add(
         directionalLight,
         ambientLight,
-        // pointLight
+        pointLight
       );
     },
     synthetics: [
@@ -138,9 +173,9 @@ export const getCliffscapeSpace
         darkness: 0.2
       }
     },
-    // backgroundRenderer,
+    backgroundRenderer,
     defaultSceneProperties: {
-      scale: 1.0
+      scale: 0.003
     }
   };
 

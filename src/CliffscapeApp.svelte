@@ -82,7 +82,7 @@
 
 <style>
   div {
-    position: relative;
+    position: fixed;
     z-index: 0;
     min-width: 100vw;
     height: 100vh;
