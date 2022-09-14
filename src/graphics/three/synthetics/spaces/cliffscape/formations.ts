@@ -1,25 +1,47 @@
 import * as THREE from 'three';
-import { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { getScaleToFit } from '../../../tools/geometryTools';
 import { calculateVolume, getVolumeCenter, random, Volume, volumeToBox3 } from '../../../tools/math';
 import { Octree } from '../../../tools/space/Octree';
-import { getRockConfig } from './formationConfigs';
+import { getRockConfig } from './rockConfig';
 import { createFormation } from '../formations/formation';
 import { createLineBox } from '../../../../utils/lines';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { Synthetic } from '../../scene';
 
-export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, renderScene: AbstractRenderScene, octree: Octree<THREE.Vector3>) => {
+const getLight = () => {
+  const directionalLight = new THREE.DirectionalLight('white', 4.3);
+  directionalLight.target = new THREE.Object3D();
+  directionalLight.castShadow = true;
+
+  directionalLight.castShadow = true;
+  directionalLight.shadow.bias = -0.001;
+
+  directionalLight.shadow.mapSize.width = 1024 * 2;
+  directionalLight.shadow.mapSize.height = 1024 * 2;
+  directionalLight.shadow.camera.near = 0.0;
+  directionalLight.shadow.camera.far = 1024;
+
+  directionalLight.shadow.camera.left = -75;
+  directionalLight.shadow.camera.right = 75;
+  directionalLight.shadow.camera.top = 75;
+  directionalLight.shadow.camera.bottom = -75;
+
+  return directionalLight;
+}
+
+export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, octree: Octree<THREE.Vector3>, gridColor: THREE.Color) => {
   const parent = synthetic.object;
   parent.clear();
 
+  const light = getLight();
   const leafNodes = octree.getLeafNodes();
 
   const formationVersions = 4;
-  const formationCount = Math.floor(leafNodes.length / 1.2);
+  const formationCount = Math.floor(leafNodes.length / random(1.0, 1.2));
   const instanceCount = Math.ceil(formationCount / formationVersions);
 
   const object = new THREE.Object3D();
+  object.rotateX(0.2);
 
   const formations: THREE.InstancedMesh[] = [];
   for(let i = 0; i < formationVersions; i++) {
@@ -40,10 +62,10 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, renderSce
   object.position.copy(getVolumeCenter(octree.getVolume())).multiplyScalar(-1);
 
   object.add(...formations);
-  parent.add(object);
+  parent.add(object, light, light.target);
 
   const boundingBoxes = formations.map(formation => new THREE.Box3().setFromObject(formation));
-  const scaleMultiplier = random(0.8, 1.7);
+  const scaleMultiplier = random(1.2, 2.3);
 
   const placeInstance = (formationIndex: number, instanceIndex: number, volume: Volume) => {
     const boundingBox = boundingBoxes[formationIndex];
@@ -99,24 +121,47 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, renderSce
   });
   
   const unoccupiedVolumes: Volume[] = [];
+  const lineBoxes = new THREE.Object3D();
   octree.traverseNodes(node => {
     if(leafNodes.includes(node) || node.getChildCount() !== 0) return;
 
-    /*
     const lineBox = createLineBox(volumeToBox3(node.getVolume()), new LineMaterial({
-      color: new THREE.Color('#62ff00').getHex(),
-      linewidth: 0.0013
+      color: gridColor.getHex(),
+      linewidth: 0.0011
     }));
 
-    parent.add(
+    lineBox.visible = false;
+
+    lineBoxes.add(
       lineBox
     );
-    */
+    
     unoccupiedVolumes.push(node.getVolume());
   });
+
+  object.add(lineBoxes);
   
   synthetic.update = () => {
-    parent.rotateY(0.005);
+    object.rotateY(0.005);
+
+    lineBoxes.children.forEach(lineBox => {
+      const r = Math.random();
+      if(lineBox.visible && r > 0.7) {
+        lineBox.visible = false;
+      } else if(r > 0.99) {
+        lineBox.visible = true;
+      }
+    });
+
+    if(Math.random() > 0.95) {
+      light.target.position.set(
+        random(10, -10),
+        random(10, -10),
+        random(-2, -10)
+      );
+
+      light.target.updateMatrixWorld();
+    }
 
     if(Math.random() > 0.7) return;
 

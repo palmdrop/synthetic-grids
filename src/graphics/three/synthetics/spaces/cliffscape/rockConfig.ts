@@ -7,7 +7,7 @@ const palettes = Object.values(import.meta.globEager('../../../../../assets/pale
 
 const getColors = () => {
   const palette = palettes[Math.floor(Math.random() * palettes.length)];
-  const colors = palette.map(entry => {
+  const colors: THREE.Color[] = palette.map(entry => {
     let { h, s, l } = rgbToHsl(entry.color);
 
     h /= 360;
@@ -26,8 +26,8 @@ const getColors = () => {
 export const getRockConfig = (): FormationConfig => ({
   size: 50,
   detail: 200,
-  amount: 50,
-  minSteps: 200,
+  amount: random(40, 70),
+  minSteps: 100,
   maxSteps: 1000,
 
   scale: {
