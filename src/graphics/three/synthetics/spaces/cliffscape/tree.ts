@@ -67,7 +67,7 @@ export const getTree = () => {
     color: '#ffffff'
   }), 0.02, 0.2, 0.1, 10);
 
-  const octree = new Octree<THREE.Vector3>(volume, 3, 8);
+  const octree = new Octree<THREE.Vector3>(volume, 3, 5);
   octree.insertAll(treePoints, treePoints);
 
   const octreeHelper = new OctreeHelper(octree, (node) => {

@@ -36,7 +36,7 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, octree: O
   const light = getLight();
   const leafNodes = octree.getLeafNodes();
 
-  const formationVersions = 4;
+  const formationVersions = 3;
   const formationCount = Math.floor(leafNodes.length / random(1.0, 1.2));
   const instanceCount = Math.ceil(formationCount / formationVersions);
 

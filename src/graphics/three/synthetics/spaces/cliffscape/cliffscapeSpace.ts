@@ -56,7 +56,7 @@ export const getCliffscapeSpace
     metadata: {},
   };
 
-  const { h, s, l } = new THREE.Color(lightColor.r / 255, lightColor.g / 255, lightColor.b / 255).getHSL({ h: 0, s: 0, l: 0 });
+  const { h, l } = new THREE.Color(lightColor.r / 255, lightColor.g / 255, lightColor.b / 255).getHSL({ h: 0, s: 0, l: 0 });
   const gridColor = new THREE.Color().setHSL(
     h, 
     1.0,

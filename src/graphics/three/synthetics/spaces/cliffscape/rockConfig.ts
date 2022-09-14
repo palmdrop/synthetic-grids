@@ -25,7 +25,7 @@ const getColors = () => {
 
 export const getRockConfig = (): FormationConfig => ({
   size: 50,
-  detail: 200,
+  detail: 130,
   amount: random(40, 70),
   minSteps: 100,
   maxSteps: 1000,
