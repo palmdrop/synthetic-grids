@@ -95,13 +95,15 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.controls?.update();
     this.properties.time = now / 10.0;
 
+    delta = Math.min(delta, 1.0);
+
     this.space.synthetics.forEach(synthetic => {
       if(synthetic.update) {
-        synthetic.update(this.properties, this);
+        synthetic.update(this.properties, this, delta);
       }
     });
 
-    this.space?.backgroundRenderer?.update(this.properties, this);
+    this.space?.backgroundRenderer?.update(this.properties, this, delta);
   }
 
   onMouseMove(x: number, y: number): void {

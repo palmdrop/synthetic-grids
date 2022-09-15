@@ -83,8 +83,8 @@ export const getNeonMossSpace = (
     metadata: {}
   };
 
-  weedsSynthetic.update = (properties) => {
-    weedsParent.children[0].rotateY(0.001);
+  weedsSynthetic.update = (_, __, delta) => {
+    weedsParent.children[0].rotateY(0.07 * delta);
   }
 
   // Background

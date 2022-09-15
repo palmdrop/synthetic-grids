@@ -52,8 +52,8 @@ export const getGlowTreeSpace = (
     object: parent
   }
 
-  synthetic.update = () => {
-    parent.children[0].rotateY(0.01);
+  synthetic.update = (_, __, delta) => {
+    parent.children[0].rotateY(0.08 * delta);
   }
 
   const space: SyntheticSpace = {

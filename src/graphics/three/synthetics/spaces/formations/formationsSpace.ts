@@ -70,8 +70,8 @@ export const getFormationsSpace = (
     metadata: {}
   };
 
-  synthetic.update = (properties) => {
-    parent.children[0].rotateY(0.002);
+  synthetic.update = (_, __, delta) => {
+    parent.children[0].rotateY(0.1 * delta);
   }
 
   // Background

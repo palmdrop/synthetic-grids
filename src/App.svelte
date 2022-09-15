@@ -7,8 +7,8 @@
   import { onMount } from 'svelte';
   import { promptDownload } from './modules/substrates/src/utils/general';
   import { getTaxonomySpace, spaceMetadata } from './graphics/three/synthetics/spaces/taxonomy/taxonomySpace';
-import { getLandscapeMap } from './graphics/three/synthetics/spaces/landscapeMap';
-import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpace';
+  import { getLandscapeMap } from './graphics/three/synthetics/spaces/landscapeMap';
+  import { getWeedsSpace } from './graphics/three/synthetics/spaces/weeds/weedsSpace';
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;

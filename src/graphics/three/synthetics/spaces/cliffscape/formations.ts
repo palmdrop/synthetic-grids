@@ -141,8 +141,8 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, octree: O
 
   object.add(lineBoxes);
   
-  synthetic.update = () => {
-    object.rotateY(0.005);
+  synthetic.update = (_, __, delta) => {
+    object.rotateY(0.1 * delta);
 
     lineBoxes.children.forEach(lineBox => {
       const r = Math.random();

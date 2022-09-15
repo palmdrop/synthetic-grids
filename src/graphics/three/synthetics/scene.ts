@@ -16,7 +16,7 @@ export type SceneProperties = {
 export type Synthetic<ObjectType = THREE.Object3D> = {
   object: ObjectType,
   updateShader?: (program?: Program) => void,
-  update?: (sceneProperties: SceneProperties, renderScene: AbstractRenderScene) => void,
+  update?: (sceneProperties: SceneProperties, renderScene: AbstractRenderScene, delta: number) => void,
   resize?: (width: number, height: number) => void,
   metadata?: Record<string, any>,
 }
