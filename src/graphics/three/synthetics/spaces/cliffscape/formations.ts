@@ -141,8 +141,15 @@ export const updateFormations = (synthetic: Synthetic<THREE.Object3D>, octree: O
 
   object.add(lineBoxes);
   
+  let timeSinceLastUpdate = 0;
+  const updateSpeed = 0.06;
   synthetic.update = (_, __, delta) => {
     object.rotateY(0.1 * delta);
+
+    timeSinceLastUpdate += delta;
+
+    if(timeSinceLastUpdate < updateSpeed) return;
+    timeSinceLastUpdate -= updateSpeed;
 
     lineBoxes.children.forEach(lineBox => {
       const r = Math.random();
