@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { combineProbabilityMaps, getWeightedRandomPointsInDomain, noiseProbabilityMap, uniformProbabilityMap } from '../../../procedural/domain/domain';
 import { getContainingVolume, random } from "../../../tools/math";
-import { Octree, OctreeHelper } from '../../../tools/space/Octree';
+import { Octree } from '../../../tools/space/Octree';
 import { SpaceColonizationTree } from "../../../tools/space/SpaceColonizationTree";
 
 export const getPoints = () => {
@@ -63,25 +63,14 @@ export const getTree = () => {
   tree.traverse(segment => treePoints.push(segment.origin));
 
   const treeObject = tree.buildInstancedThreeObject(new THREE.MeshBasicMaterial({
-    // color: new THREE.Color(1.5 * color.r / 255, 1.5 * color.g / 255, 1.5 * color.b / 255)
     color: '#ffffff'
   }), 0.02, 0.2, 0.1, 10);
 
   const octree = new Octree<THREE.Vector3>(volume, 3, 5);
   octree.insertAll(treePoints, treePoints);
 
-  const octreeHelper = new OctreeHelper(octree, (node) => {
-    // if(node.depth < 1) return undefined;
-    if(node.getChildCount() > 0) return undefined;
-
-    return new THREE.LineBasicMaterial( { 
-      color: new THREE.Color('#80ff00'), opacity: 0.5, transparent: true 
-    } );
-  });
-
   const object = new THREE.Object3D();
   object.add(
-    // octreeHelper, 
     treeObject
   );
 
