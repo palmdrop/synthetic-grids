@@ -109,6 +109,7 @@ export class SyntheticGrids extends AbstractRenderScene {
   onMouseMove(x: number, y: number): void {
     if(!this.mouseLocked) {
       this.properties.mousePosition.set(x, y);
+      this.space.onMouseMove?.(this.properties.mousePosition, this);
     }
   }
 

@@ -69,7 +69,7 @@ export abstract class AbstractRenderScene implements RenderScene {
       powerPreference: 'high-performance',
       antialias: !postProcessing,
       stencil: false,
-      alpha: false
+      alpha: false,
     } );
 
     renderer.setClearColor( new THREE.Color( '#000000' ), 0.0 );
