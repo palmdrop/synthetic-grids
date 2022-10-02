@@ -86,8 +86,7 @@
     z-index: 0;
     min-width: 100vw;
     height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
 
     display: flex;
     justify-content: center;
