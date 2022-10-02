@@ -1,13 +1,8 @@
 import * as THREE from 'three';
-import { ArcCurve } from 'three';
 
+const fragments = import.meta.glob('../../../../../assets/fragments/**/*.png');
 
-
-const fragments: string[] = Object.values(import.meta.globEager('../../../../../assets/fragments/flowers2/*.png')).map((module: any) => module.default);
-
-const f = import.meta.glob('../../../../../assets/fragments/**/*.png');
-
-const groups = Object.entries(f).reduce((acc, entry) => {
+const groups = Object.entries(fragments).reduce((acc, entry) => {
   const [path, importFunction] = entry;
 
   const folder = path.split('/').at(-2);
@@ -17,15 +12,6 @@ const groups = Object.entries(f).reduce((acc, entry) => {
 
   return acc;
 }, {} as Record<string, (() => Promise<{ [key: string]: any }>)[]>);
-
-const groupedFragments = fragments.reduce((acc, fragment) => {
-  const folder = fragment.split('/').at(-2);
-
-  if(!acc[folder]) acc[folder] = [];
-  acc[folder].push(fragment);
-
-  return acc;
-}, {} as Record<string, string[]>);
 
 const textureCache = new Map<string, THREE.Texture>();
 const textureLoader = new THREE.TextureLoader();

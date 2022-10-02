@@ -9,13 +9,13 @@ import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurS
 // Custom shader passes
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 import { BackgroundDistortionShader } from './backgroundDistortionShader';
+import { BackgroundConfig } from './configs';
 
-
-export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) => {
+export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, config?: BackgroundConfig) => {
   const size = renderer.getSize(new THREE.Vector2());
   const renderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {
   });
-  renderTarget.samples = 4;
+  renderTarget.samples = 1;
 
   const composer = new EffectComposer(renderer, renderTarget);
   composer.renderToScreen = false;
@@ -32,10 +32,6 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
     distortionPass
   );
 
-  VerticalBlurShader.uniforms['v'].value = THREE.MathUtils.randFloat(0.02, 0.009);
-  // VerticalBlurShader.uniforms['v'].value = 0.01; // Nice display background effect
-  //VerticalBlurShader.uniforms['v'].value = 0.000003; // Nice foliage effect
-  HorizontalBlurShader.uniforms['h'].value = VerticalBlurShader.uniforms['v'].value;
   const verticalBlurPass = new ShaderPass(
     VerticalBlurShader
   );
@@ -80,8 +76,21 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
     } 
   }
 
+  const update = (config: BackgroundConfig) => {
+    Object.entries(config.distortion).forEach(([property, value]) => {
+      if(!distortionPass.uniforms[property]) return;
+      distortionPass.uniforms[property].value = value;
+    });
+
+    verticalBlurPass.uniforms['v'].value = config.blur.x;
+    horizontalBlurPass.uniforms['h'].value = config.blur.y;
+  }
+
+  if(config) update(config);
+
   return {
     backgroundRenderer,
-    renderTarget
+    renderTarget,
+    update
   }
 }

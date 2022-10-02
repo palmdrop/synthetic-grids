@@ -18,7 +18,7 @@ export const BackgroundDistortionShader = {
       type: 'vec4'
     },
     'scale': {
-      value: new THREE.Vector2(1.0, 1.0).multiplyScalar(THREE.MathUtils.randFloat(1.01, 1.04)), 
+      value: new THREE.Vector2(1.0, 1.0).multiplyScalar(THREE.MathUtils.randFloat(1.21, 1.34)), 
       type: 'vec2'
     },
     'offset': {
@@ -26,7 +26,8 @@ export const BackgroundDistortionShader = {
       type: 'vec2'
     },
     'rotation': {
-      value: THREE.MathUtils.randFloat(-0.05, 0.05),
+      value: 0.0,
+      // THREE.MathUtils.randFloat(-0.05, 0.05),
       type: 'float'
     },
     'colorCorrection': {

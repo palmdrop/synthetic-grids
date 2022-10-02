@@ -6,6 +6,9 @@ import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
 import { createBackgroundRenderer } from './background';
 import { getSingleFragmentScene } from './scene';
+import { configMakers, hyperTunnel1 } from './configs';
+import { createFormation } from '../formations/formation';
+import { getRockConfig } from '../formations/configs';
 
 export const spaceMetadata = {
   postProcessing: true
@@ -37,6 +40,7 @@ const updateFragmentCore = async (parent: THREE.Object3D, renderScene: AbstractR
 
   parent.clear();
   parent.add(object);
+
   updateCamera(object, renderScene);
 
   return update;
@@ -49,7 +53,7 @@ let mouseDeltaY = 0.0;
 const previousMousePosition = new THREE.Vector2();
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  const rotationForce = 0.008;
+  const rotationForce = 0.015;
   const rotationResetForce = 0.005;
 
   const maxRotation = Math.PI / 3;
@@ -101,10 +105,18 @@ export const getFragmentsSpace = (
   updateScene(synthetic, renderScene);
 
   // Background
+  const updateBackgroundEffect = () => {
+    const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
+    updateBackground(backgroundConfig);
+  }
+
   const {
     backgroundRenderer,
-    renderTarget: backgroundRenderTarget
+    renderTarget: backgroundRenderTarget,
+    update: updateBackground
   } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
+
+  updateBackgroundEffect();
 
   renderScene.resizeables.push(backgroundRenderer);
 
@@ -114,6 +126,7 @@ export const getFragmentsSpace = (
     },
     onClick: () => {
       updateScene(synthetic, renderScene);
+      updateBackgroundEffect();
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
