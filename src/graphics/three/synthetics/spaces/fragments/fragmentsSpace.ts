@@ -11,12 +11,12 @@ export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.5) => {
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 3.0) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
 
-  const box = new THREE.Box3().expandByObject(weedsObject);
+  const box = new THREE.Box3().expandByObject(object);
   const size = box.getSize(new THREE.Vector3());
 
   const maxDimension = Math.max(size.x, size.y);
@@ -32,51 +32,73 @@ const updateCamera = (weedsObject: THREE.Object3D, renderScene: AbstractRenderSc
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const updateScene = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+const updateFragmentCore = async (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+  const { object, update } = await getSingleFragmentScene();
+
   parent.clear();
-
-  const object = getSingleFragmentScene();
-
   parent.add(object);
-  // updateCamera(object, renderScene);
+  updateCamera(object, renderScene);
 
-  /*
-  const lineBox = createLineBox(new THREE.Box3().setFromObject(scene), new LineMaterial({
-    color: new THREE.Color('#13de00').getHex(),
-    linewidth: 0.0020
-  }));
+  return update;
+}
 
-  lineBox.position.copy(scene.position);
-  scene.add(lineBox);
-  */
+
+let firstUpdate = true;
+let mouseDeltaX = 0.0;
+let mouseDeltaY = 0.0;
+const previousMousePosition = new THREE.Vector2();
+
+const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
+  const rotationForce = 0.008;
+  const rotationResetForce = 0.005;
+
+  const maxRotation = Math.PI / 3;
+
+  const parent = synthetic.object;
+
+  updateFragmentCore(parent, renderScene).then(update => {
+    let timeSinceLastUpdate = 0;
+    let updateFrequency = 0.1;
+    synthetic.update = (sceneProperties, __, delta) => {
+      parent.children[0].rotateZ(0.03 * delta);
+
+      if(!firstUpdate) {
+        if(previousMousePosition.equals(sceneProperties.mousePosition)) {
+          mouseDeltaX = THREE.MathUtils.lerp(mouseDeltaX, 0.0, rotationResetForce);
+          mouseDeltaY = THREE.MathUtils.lerp(mouseDeltaY, 0.0, rotationResetForce);
+        } else {
+          mouseDeltaX = 2.0 * (0.5 - (sceneProperties.mousePosition.x / sceneProperties.dimensions.x));
+          mouseDeltaY = 2.0 * (0.5 - (sceneProperties.mousePosition.y / sceneProperties.dimensions.y));
+        }
+
+        parent.rotation.x = THREE.MathUtils.lerp(parent.rotation.x, mouseDeltaY * maxRotation, rotationForce);
+        parent.rotation.y = THREE.MathUtils.lerp(parent.rotation.y, mouseDeltaX * maxRotation, rotationForce);
+      }
+
+      timeSinceLastUpdate += delta;
+      if(timeSinceLastUpdate > updateFrequency) {
+        timeSinceLastUpdate -= updateFrequency;
+        update();
+      }
+      
+      previousMousePosition.copy(sceneProperties.mousePosition);
+      firstUpdate = false;
+    }
+  });
 }
 
 export const getFragmentsSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
-  const rotationForce = 0.005;
-  const rotationFriction = 0.05;
-
-  const maxRotation = Math.PI / 3;
   const parent = new THREE.Object3D();
-
-  updateScene(parent, renderScene);
 
   const synthetic: Synthetic = {
     object: parent,
     metadata: {}
   };
 
-  synthetic.update = (sceneProperties, __, delta) => {
-    parent.children[0].rotateZ(0.03 * delta);
-
-    const mouseDeltaX = 2.0 * ((sceneProperties.mousePosition.x / sceneProperties.dimensions.x) - 0.5);
-    const mouseDeltaY = 2.0 * ((sceneProperties.mousePosition.y / sceneProperties.dimensions.y) - 0.5);
-
-    parent.rotation.x = THREE.MathUtils.lerp(parent.rotation.x, mouseDeltaY * maxRotation, rotationForce);
-    parent.rotation.y = THREE.MathUtils.lerp(parent.rotation.y, mouseDeltaX * maxRotation, rotationForce);
-  }
+  updateScene(synthetic, renderScene);
 
   // Background
   const {
@@ -88,10 +110,10 @@ export const getFragmentsSpace = (
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
-      updateCamera(parent.children[0], renderScene);
+      if(parent.children.length) updateCamera(parent.children[0], renderScene);
     },
     onClick: () => {
-      updateScene(parent, renderScene);
+      updateScene(synthetic, renderScene);
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;

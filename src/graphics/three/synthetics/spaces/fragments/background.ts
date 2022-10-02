@@ -24,14 +24,17 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
     new RenderPass(scene, camera)
   );
 
-  composer.addPass(
-    new ShaderPass(
-      BackgroundDistortionShader
-    )
+  const distortionPass = new ShaderPass(
+    BackgroundDistortionShader
   );
 
+  composer.addPass(
+    distortionPass
+  );
+
+  VerticalBlurShader.uniforms['v'].value = THREE.MathUtils.randFloat(0.02, 0.009);
   // VerticalBlurShader.uniforms['v'].value = 0.01; // Nice display background effect
-  VerticalBlurShader.uniforms['v'].value = 0.0000003; // Nice foliage effect
+  //VerticalBlurShader.uniforms['v'].value = 0.000003; // Nice foliage effect
   HorizontalBlurShader.uniforms['h'].value = VerticalBlurShader.uniforms['v'].value;
   const verticalBlurPass = new ShaderPass(
     VerticalBlurShader
@@ -72,7 +75,9 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
     render() {
       composer.render();
     },
-    update() {} 
+    update(sceneProperties) {
+      distortionPass.uniforms['time'].value = sceneProperties.time;
+    } 
   }
 
   return {

@@ -1,16 +1,24 @@
 import * as THREE from 'three';
 
+import ditheringTexturePath from '../../../../../assets/blue-noise/LDR_RGBA_7.png';
+import { createDitheringTexture } from '../../../tools/texture/texture';
+
+const ditheringTexture = createDitheringTexture(ditheringTexturePath);
+const ditheringTextureDimensions = new THREE.Vector2(
+  128, 128
+);
+
 export const BackgroundDistortionShader = {
 	uniforms: {
 		'tDiffuse': { value: null, type: 'sampler2D' },
 		'opacity': { value: 1.0, type: 'float' },
 
     'backgroundColor': {
-      value: new THREE.Vector4(0.3, 0.3, 0.3, 1.0),
+      value: new THREE.Vector4(0.0, 0.0, 0.0, 1.0),
       type: 'vec4'
     },
     'scale': {
-      value: new THREE.Vector2(1.3, 1.3), 
+      value: new THREE.Vector2(1.0, 1.0).multiplyScalar(THREE.MathUtils.randFloat(1.01, 1.04)), 
       type: 'vec2'
     },
     'offset': {
@@ -18,7 +26,7 @@ export const BackgroundDistortionShader = {
       type: 'vec2'
     },
     'rotation': {
-      value: 0.0,
+      value: THREE.MathUtils.randFloat(-0.05, 0.05),
       type: 'float'
     },
     'colorCorrection': {
@@ -26,6 +34,22 @@ export const BackgroundDistortionShader = {
         0.9, 0.98, 0.98
       ),
       type: 'vec3'
+    },
+    'dithering': {
+      type: 'float',
+      value: 0.1
+    },
+    'ditheringTextureDimensions': {
+      type: 'vec2',
+      value: ditheringTextureDimensions,
+    },
+    'tDithering': {
+      type: 'sampler2D',
+      value: ditheringTexture,
+    },
+    'time': {
+      type: 'float',
+      value: 0.0
     }
 	},
 
@@ -48,6 +72,12 @@ export const BackgroundDistortionShader = {
 		uniform vec3 colorCorrection;
 		uniform vec4 backgroundColor;
 
+    uniform float dithering;
+    uniform vec2 ditheringTextureDimensions;
+    uniform sampler2D tDithering;
+
+    uniform float time;
+
     vec2 rotate(vec2 point, float angle) {
       float s = sin(angle);
       float c = cos(angle);
@@ -66,6 +96,11 @@ export const BackgroundDistortionShader = {
 			vec4 color = texture2D(tDiffuse, uv);
       color.rgb *= colorCorrection;
       gl_FragColor = mix(backgroundColor, color, color.a);
+
+      vec2 ditheringCoord = gl_FragCoord.xy / ditheringTextureDimensions + vec2(fract(time * 13.41), fract(time * 3.451));
+      vec3 ditheringValue = dithering * texture(tDithering, ditheringCoord).rgb - dithering / 2.0;
+      gl_FragColor.rgb += ditheringValue;      
+
 			gl_FragColor.a = opacity;
 		}`
 } as const;
