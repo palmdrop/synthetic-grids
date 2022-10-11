@@ -1,5 +1,6 @@
 import type { Uniforms } from '../../../../modules/substrates/src/shader/types/core';
 import * as THREE from 'three';
+import { mapShader } from '../mapShader';
 
 // Based on https://madebyevan.com/shaders/grid/
 
@@ -14,7 +15,11 @@ export const mapNormalShader: Omit<THREE.Shader, 'uniforms'> & { uniforms: Unifo
     'width': { value: 1.0, type: 'float' },
   },
 
-  vertexShader: ``,
+  // vertexShader: ``,
+   vertexShader: `
+    varying float normalOffset;
+    ${mapShader.vertexShader}
+  `,
 
 	fragmentShader: /* glsl */`
 		uniform float opacity;

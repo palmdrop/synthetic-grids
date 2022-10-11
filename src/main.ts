@@ -4,7 +4,8 @@
 // import App from './FormationsApp.svelte'
 // import App from './GlowTreeApp.svelte'
 // import App from './CliffscapeApp.svelte'
-import App from './FragmentsApp.svelte'
+// import App from './FragmentsApp.svelte'
+import App from './MappingsApp.svelte';
 
 const app = new App({
   target: document.getElementById('app')

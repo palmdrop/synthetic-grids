@@ -51,11 +51,12 @@ export class Octree<T> {
   size = 0;
   depth = 1;
 
+  preDivide: boolean;
   subdivided = false;
   nodes : Octree<T>[] = [];
   entries : Entry<T>[] = [];
 
-  constructor( volume : Volume, capacity : number, maxDepth : number ) {
+  constructor( volume : Volume, capacity : number, maxDepth : number, preDivide?: boolean ) {
     this.volume = volume;
     this.capacity = capacity;
     this.maxDepth = maxDepth;
@@ -64,6 +65,7 @@ export class Octree<T> {
     this.depth = 1;
 
     this.subdivided = false;
+    this.preDivide = !!preDivide;
     this.nodes = [];
     this.entries = [];
   }
@@ -89,6 +91,10 @@ export class Octree<T> {
     // A new point should be added to this node
     if( this.entries.length < this.capacity || this.depth === this.maxDepth ) {
       this.entries.push( { point, data } );
+
+      if(this.preDivide && this.entries.length === this.capacity) {
+        this._subdivide();
+      }
     } 
     // Subdivide
     else {
@@ -98,10 +104,6 @@ export class Octree<T> {
 
       const node = this._getNode( point );
       node.insert( point, data );
-
-      /*this.nodes.forEach( node => {
-                node.insert( point, data );
-            });*/
     }
 
     return true;
@@ -138,7 +140,7 @@ export class Octree<T> {
             d: d / 2.0,
           };
 
-          const node = new Octree<T>( volume, this.capacity, this.maxDepth );
+          const node = new Octree<T>( volume, this.capacity, this.maxDepth, this.preDivide );
           node.depth = this.depth + 1;
 
           this.nodes.push( node );
@@ -181,10 +183,36 @@ export class Octree<T> {
     return found;
   }
 
+  // Finds the node in which the point is located
+
+  getLowestNode( point : THREE.Vector3 ): Octree<T> | undefined {
+    if ( !volumePointIntersection( this.volume, point ) ) return undefined;
+
+    if( !this.subdivided ) {
+      return this;
+    }
+
+    return this.nodes.map( node => node.getLowestNode(point) ).find( node => !!node );
+  }
+
+  getNodeAtLevel( point : THREE.Vector3, level: number ): Octree<T> | undefined {
+    if ( !volumePointIntersection( this.volume, point ) || level < 0 ) return undefined;
+
+    if( !this.subdivided ) {
+      return this;
+    }
+
+    return this.nodes.map( node => node.getNodeAtLevel( point, level - 1 ) ).find( node => !!node );
+  }
+
   traverseEntries( callback ?: ( entry : Entry<T>, octree : Octree<T> ) => void ) {
     if( !callback ) return;
     this.entries.forEach( entry => callback( entry, this ) );
     this.nodes.forEach( node => node.traverseEntries( callback ) );
+  }
+
+  traverseChildren( callback ?: ( node : Octree<T> ) => void ) {
+    this.nodes.forEach( node => callback && callback( node ) );
   }
 
   traverseNodes( callback ?: ( node : Octree<T> ) => void ) {

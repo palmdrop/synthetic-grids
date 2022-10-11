@@ -23,8 +23,8 @@ const rotateObjectWithMouse = (
 ) => {
   const oldUpdateMethod = synthetic.update;
 
-  synthetic.update = (properties, renderScene) => {
-    oldUpdateMethod?.(properties, renderScene);
+  synthetic.update = (properties, renderScene, delta) => {
+    oldUpdateMethod?.(properties, renderScene, delta);
     const { nx, ny } = getNormalizedMousePosition(properties);
 
     const xRotation = THREE.MathUtils.mapLinear(
