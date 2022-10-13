@@ -9,13 +9,14 @@ import { configMakers } from './configs';
 import { createFormation } from '../formations/formation';
 import { getRockConfig } from './configs';
 import { transparentMapShader } from '../../../../glsl/shaders/transparentMapShader';
-import { randomGaussian } from '../../../tools/math';
+import { createLineBox } from '../../../../utils/lines';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 
 export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.0) => {
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.2) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -41,6 +42,8 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
     getRockConfig()
   );
 
+  object.geometry.center();
+
   const material = new THREE.ShaderMaterial(
     transparentMapShader
   );
@@ -48,30 +51,50 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
   material.uniforms.lineColor.value = new THREE.Vector3(
     0.9, 1, 0.8
   );
-
-  material.uniforms.width.value = 5.5;
-
-  material.uniforms.scale.value.set(
-    0.0, 0.0, 0.002
-  );
+  
+  material.uniforms.width.value = 0.01;
+  material.uniforms.scale.value.multiplyScalar(0.01);
 
   (object as any).material = material;
 
-  object.position.set(0, 0, 300);
-
   parent.clear();
   parent.add(object);
+
+  const lineBox1 = createLineBox(new THREE.Box3().setFromObject(object), new LineMaterial({
+    color: new THREE.Color(0.9, 1.0, 0.8).getHex(),
+    linewidth: 0.0005
+  }));
+
+  lineBox1.position.copy(object.position);
+  object.add(lineBox1);
+
+  const lineBox2 = createLineBox(new THREE.Box3().setFromObject(object), new LineMaterial({
+    color: new THREE.Color(0.9, 1.0, 0.8).getHex(),
+    linewidth: 0.00015
+  }));
+
+  lineBox2.position.copy(object.position);
+  lineBox2.scale.set(1.1, 1.1, 1.1);
+  object.add(lineBox2);
+
+  const lineBox3 = createLineBox(new THREE.Box3().setFromObject(object), new LineMaterial({
+    color: new THREE.Color(0.9, 1.0, 0.8).getHex(),
+    linewidth: 0.00015
+  }));
+
+  lineBox3.position.copy(object.position);
+  lineBox3.scale.set(1.15, 1.15, 1.15);
+  object.add(lineBox3);
 
   updateCamera(object, renderScene);
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  const rotationForce = 0.003;
-  // const visibilityTime = 0.1;
+  const rotationForce = 0.00;
 
   const parent = synthetic.object;
 
-  let visible = false;
+  let visible = true;
 
   const rotationVelocity = new THREE.Vector3().randomDirection().multiplyScalar(rotationForce);
 
@@ -86,37 +109,18 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
       object.rotation.z += rotationVelocity.z;
 
       timeSinceLastUpdate += delta;
-      if(timeSinceLastUpdate > updateFrequency) {
-        // rotationVelocity.randomDirection().multiplyScalar(rotationForce);
+      if(!updateFrequency || timeSinceLastUpdate > updateFrequency) {
         visible = !visible;
 
         object.visible = visible;
-        // object.rotation.set(0, 0, 0);
 
         timeSinceLastUpdate -= updateFrequency;
 
-        /*
-        object.geometry.applyMatrix4(
-          new THREE.Matrix4().makeRotationAxis(
-            new THREE.Vector3().randomDirection(),
-            Math.random() * Math.PI * 2
-          )
-        );
-        */
         (object.material.uniforms.scale.value as any)
           .randomDirection()
-          .multiplyScalar(Math.random() * 0.01 + 0.005)
+          .multiplyScalar(Math.random() * 0.01 + 0.002)
 
-        object.material.uniforms.width.value = 5.0 * Math.random() + 1.0;
-
-          /*
-        object.scale.set(
-          1.0, 1.0, 1.0
-        ).multiplyScalar(
-          // Math.random() + 1.0
-          Math.abs(randomGaussian(1)) + 0.0
-        );
-        */
+        object.material.uniforms.width.value = 4.0 * Math.random() + 0.0;
       }
     }
   });
@@ -126,15 +130,6 @@ export const getMappingsSpace = (
   renderScene: AbstractRenderScene,
   interactive?: boolean
 ): SyntheticSpace => {
-  const parent = new THREE.Object3D();
-
-  const synthetic: Synthetic = {
-    object: parent,
-    metadata: {}
-  };
-
-  updateScene(synthetic, renderScene);
-
   // Background
   const updateBackgroundEffect = () => {
     const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
@@ -148,8 +143,20 @@ export const getMappingsSpace = (
   } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
 
   updateBackgroundEffect();
-
   renderScene.resizeables.push(backgroundRenderer);
+
+  // Scene
+  const parent = new THREE.Object3D();
+
+  parent.rotateY(0.4);
+  parent.rotateX(-0.1);
+
+  const synthetic: Synthetic = {
+    object: parent,
+    metadata: {}
+  };
+
+  updateScene(synthetic, renderScene);
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
@@ -164,17 +171,6 @@ export const getMappingsSpace = (
       scene.background = backgroundRenderTarget.texture;
 
       camera.position.set(0, 0, 80);
-
-      const directionalLight = new THREE.DirectionalLight('#88ff77', 9.7);
-      directionalLight.position.set(-10, 5, 10);
-      directionalLight.castShadow = true;
-
-      // const ambientLight = new THREE.AmbientLight('white', 2.3);
-
-      scene.add(
-        directionalLight,
-        // ambientLight,
-      );
     },
     synthetics: [
       synthetic,
