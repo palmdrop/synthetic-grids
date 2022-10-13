@@ -9,8 +9,8 @@ export const remnants = (): BackgroundConfig => ({
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
     colorCorrection: new THREE.Vector3(
-      0.99, 0.99, 0.99
-    ).add(new THREE.Vector3().randomDirection().multiplyScalar(0.004)),
+      0.995, 0.995, 0.995
+    ).add(new THREE.Vector3().randomDirection().multiplyScalar(0.003)),
     dithering: 0.08,
   },
   blur: {
