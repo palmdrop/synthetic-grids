@@ -117,7 +117,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
   getObject(parent, renderScene).then((colors) => {
     let timeSinceLastUpdate = 0;
-    synthetic.update = (_, __, delta) => {
+    synthetic.update = (_, renderScene, delta) => {
       const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
       object.rotation.x += rotationVelocity.x;
@@ -141,7 +141,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
           )
           .multiplyScalar(Math.random() * scale + 0.002)
 
-        object.material.uniforms.width.value = value * Math.random();
+        object.material.uniforms.width.value = value * Math.random() / renderScene.renderer.getPixelRatio();
 
         const color = colors[Math.floor(Math.random() * colors.length)];
         object.material.uniforms.lineColor.value.set(
