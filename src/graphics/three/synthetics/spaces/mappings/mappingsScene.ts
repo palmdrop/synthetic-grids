@@ -17,7 +17,9 @@ export const spaceMetadata = {
   postProcessing: true
 }
 
-const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.2) => {
+const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
+
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -49,9 +51,23 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
     transparentMapShader
   );
 
-  material.uniforms.lineColor.value = new THREE.Vector3(
-    0.9, 1, 0.8
-  );
+  const paletteIndex = Math.floor(Math.random() * palettes.length);
+  const palette = palettes[paletteIndex];
+
+  const colors = palette.map(entry => entry.color).map(({ r, g, b }) => {
+    const { h, s, l } = new THREE.Color(r / 255, g / 255, b / 255).getHSL({ h: 0, s: 0, l: 0 });
+    const color = new THREE.Color().setHSL(
+      h, 
+      s,
+      Math.max(Math.pow(l, 0.7), 0.8),
+    );
+
+    return color;
+  });
+
+  console.log(colors);
+
+  material.uniforms.lineColor.value = new THREE.Vector3(colors[0].r, colors[0].g, colors[0].b);
   
   material.uniforms.width.value = 0.01;
   material.uniforms.scale.value.multiplyScalar(0.01);
@@ -62,7 +78,7 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
   parent.add(object);
 
   const lineBox = createLineBox(new THREE.Box3().setFromObject(object), new LineMaterial({
-    color: new THREE.Color(0.9, 1.0, 0.8).getHex(),
+    color: colors[0].getHex(),
     linewidth: 0.00002
   }));
 
@@ -70,12 +86,15 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
   object.add(lineBox);
 
   updateCamera(object, renderScene);
+
+  console.log(colors);
+  return colors;
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   const rotationForce = 0.00;
-  let updateFrequency = 0.03;
-  let resizeProbability = 0.0035;
+  let updateFrequency = 0.01;
+  let resizeProbability = 0.0;
   let resizeScale = new THREE.Vector2(0.7, 1.5);
 
   const parent = synthetic.object;
@@ -96,7 +115,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
     value = THREE.MathUtils.randFloat(0.2, 0.8);
   }
 
-  getObject(parent, renderScene).then(() => {
+  getObject(parent, renderScene).then((colors) => {
     let timeSinceLastUpdate = 0;
     synthetic.update = (_, __, delta) => {
       const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
@@ -114,10 +133,20 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
         timeSinceLastUpdate -= updateFrequency;
 
         (object.material.uniforms.scale.value as any)
-          .randomDirection()
+          // .randomDirection()
+          .set(
+            THREE.MathUtils.randFloatSpread(1),
+            THREE.MathUtils.randFloatSpread(1),
+            -1
+          )
           .multiplyScalar(Math.random() * scale + 0.002)
 
         object.material.uniforms.width.value = value * Math.random();
+
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        object.material.uniforms.lineColor.value.set(
+          color.r, color.g, color.b
+        );
 
         object.children[0].scale.set(
           1.0, 1.0, 1.0
@@ -184,7 +213,7 @@ export const getMappingsSpace = (
     setupControls: (controls) => {
       controls.zoomSpeed = 1;
       controls.noPan = true;
-      controls.noRotate = true;
+      // controls.noRotate = true;
     },
     postProcessingPassSettings: {
       bloom: {

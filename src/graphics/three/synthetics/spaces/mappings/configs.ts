@@ -7,11 +7,10 @@ export const remnants = (): BackgroundConfig => ({
     scale: new THREE.Vector2(1.0, 1.0),
     offset: new THREE.Vector2(),
     rotation: 0.0,
-    // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
     colorCorrection: new THREE.Vector3(
-      0.995, 0.995, 0.995
+      0.9955, 0.9955, 0.9955
     ).add(new THREE.Vector3().randomDirection().multiplyScalar(0.003)),
-    dithering: 0.08,
+    dithering: 0.09,
   },
   blur: {
     x: 0.000009,
@@ -19,23 +18,8 @@ export const remnants = (): BackgroundConfig => ({
   }
 });
 
-export const flow = (): BackgroundConfig => ({
-  distortion: {
-    scale: new THREE.Vector2(1.0, 1.0).multiplyScalar(THREE.MathUtils.randFloat(1.0003, 1.002)),
-    offset: new THREE.Vector2(),
-    rotation: 0.001,
-    colorCorrection: new THREE.Vector3(0.98, 0.98, 0.96),
-    dithering: 0.1,
-  },
-  blur: {
-    x: 0.0,
-    y: 0.0,
-  }
-});
-
 export const configMakers = [
   remnants,
-  // flow,
 ];
 
 export const getRockConfig1 = (): FormationConfig => ({
