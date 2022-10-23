@@ -59,13 +59,11 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
     const color = new THREE.Color().setHSL(
       h, 
       s,
-      Math.max(Math.pow(l, 0.7), 0.8),
+      Math.max(Math.pow(l, 0.9), 0.7),
     );
 
     return color;
   });
-
-  console.log(colors);
 
   material.uniforms.lineColor.value = new THREE.Vector3(colors[0].r, colors[0].g, colors[0].b);
   
@@ -87,7 +85,6 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
 
   updateCamera(object, renderScene);
 
-  console.log(colors);
   return colors;
 }
 
