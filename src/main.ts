@@ -5,7 +5,8 @@
 // import App from './GlowTreeApp.svelte'
 // import App from './CliffscapeApp.svelte'
 // import App from './FragmentsApp.svelte'
-import App from './MappingsApp.svelte';
+// import App from './MappingsApp.svelte';
+import App from './PipesSpace.svelte';
 
 const app = new App({
   target: document.getElementById('app')
