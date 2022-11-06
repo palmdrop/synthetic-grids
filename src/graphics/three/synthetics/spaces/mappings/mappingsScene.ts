@@ -65,8 +65,6 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
     return color;
   });
 
-  console.log(colors);
-
   material.uniforms.lineColor.value = new THREE.Vector3(colors[0].r, colors[0].g, colors[0].b);
   
   material.uniforms.width.value = 0.01;
@@ -87,7 +85,6 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
 
   updateCamera(object, renderScene);
 
-  console.log(colors);
   return colors;
 }
 

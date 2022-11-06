@@ -12,20 +12,18 @@ import { transparentMapShader } from '../../../../glsl/shaders/transparentMapSha
 import { createLineBox } from '../../../../utils/lines';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { randomGaussian } from '../../../tools/math';
-import { Grid, makeGrid, Pipe } from './pipes';
+import { Grid, makeGrid, makePipesSystem, Pipe } from './pipes';
+import { getNoise3D } from '../../../procedural/noise/noise';
 
 export const spaceMetadata = {
   postProcessing: true
 }
 
-const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
-
-const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
+const updateCamera = (box: THREE.Box3, renderScene: AbstractRenderScene, margin = 0.8) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
 
-  const box = new THREE.Box3().expandByObject(object);
   const size = box.getSize(new THREE.Vector3());
 
   const maxDimension = Math.max(size.x, size.y);
@@ -44,60 +42,60 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
 const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
   parent.clear();
 
-  const radius = 0.5;
-  const spacing = 2.0;
+  const radius = 0.28;
+  const spacing = 3.0;
+  const padding = 0.5;
 
-  const grid = makeGrid<boolean>(
-    30, 30, 30,
-  );
+  const offset = {
+    x: THREE.MathUtils.randFloatSpread(100),
+    y: THREE.MathUtils.randFloatSpread(100),
+    z: THREE.MathUtils.randFloatSpread(100)
+  }
 
-  const curve = new THREE.LineCurve3(new THREE.Vector3(0.0, 0.0, 0.0), new THREE.Vector3(1.0, 0.0, 0.0));
-  const geometry = new THREE.TubeBufferGeometry(
-    curve, 10, radius, 10, true
-  );
-
-  const material = new THREE.MeshStandardMaterial({
-    color: 'white'
-  });
-
-  const pipe = new Pipe(
-    grid,
-    new THREE.Vector3(),
-    (previous, next) => {
-      const mesh = new THREE.Mesh(
-        geometry, material
-      );
-
-      mesh.position
-        .copy(next)
-        .multiplyScalar(spacing)
-
-      mesh.scale.set(spacing, 1.0, 1.0);
-
-      const direction = new THREE.Vector3().subVectors(next, previous);
-      
-      mesh.lookAt(direction);
-
-      return mesh;
+  const grid = makeGrid<number>(
+    10, 10, 10,
+    (x, y, z) => {
+      return getNoise3D({
+        x, y, z
+      }, {
+        frequency: 0.03,
+        min: 0,
+        max: 1,
+        offset
+      });
     }
   );
 
-  parent.add(pipe.object);
+  const system = makePipesSystem({
+    spacing, padding, radius, grid
+  });
 
-  updateCamera(parent, renderScene);
+  parent.add(system.object);
 
-  return pipe;
+  updateCamera(system.boundingBox, renderScene);
+
+  return system;
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   const parent = synthetic.object;
 
-  const pipe = getObject(parent, renderScene); 
+  parent.scale.set(
+    1, 1, 1
+  ).multiplyScalar(
+    THREE.MathUtils.randFloat(0.5, 1.5)
+  );
+
+  const system = getObject(parent, renderScene); 
 
   synthetic.update = (sceneProperties, renderScene, delta) => {
+    system.walk(10);
 
-    pipe.walk(1);
+    parent.rotateX(delta * 0.05);
+    parent.rotateY(-delta * 0.05);
   }
+
+  return system;
 }
 
 export const getPipesSpace = (
@@ -126,25 +124,40 @@ export const getPipesSpace = (
     metadata: {}
   };
 
-  updateScene(synthetic, renderScene);
+  let boundingBox: THREE.Box3;
+
+  let sceneData = updateScene(synthetic, renderScene);
+  boundingBox = sceneData.boundingBox;
+
+  const generateNew = () => {
+    sceneData = updateScene(synthetic, renderScene);
+    boundingBox = sceneData.boundingBox;
+    updateBackgroundEffect();
+  }
+
+  setInterval(() => {
+    generateNew();
+  }, 2000)
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
-      if(parent.children.length) updateCamera(parent.children[0], renderScene);
+      updateCamera(boundingBox, renderScene);
     },
     onClick: () => {
-      updateScene(synthetic, renderScene);
-      updateBackgroundEffect();
+      generateNew();
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      // scene.background = backgroundRenderTarget.texture;
-      scene.background = new THREE.Color('black');
+      scene.background = backgroundRenderTarget.texture;
+      // scene.background = new THREE.Color('black');
+
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       camera.position.set(0, 0, 80);
 
-      const directionalLight = new THREE.DirectionalLight('white', 2);
-      const ambientLight = new THREE.AmbientLight('white', 0.5);
+      const directionalLight = new THREE.DirectionalLight('white', 3);
+      const ambientLight = new THREE.AmbientLight('white', 0.8);
       directionalLight.position.set(1, 1, 1);
       scene.add(
         directionalLight,
@@ -154,17 +167,17 @@ export const getPipesSpace = (
     synthetics: [
       synthetic,
     ],
-    postProcessing: false,
-    defaultPasses: false,
+    postProcessing: true,
+    defaultPasses: true,
     controls: interactive,
     setupControls: (controls) => {
       controls.zoomSpeed = 1;
-      // controls.noPan = true;
+      controls.noPan = true;
       // controls.noRotate = true;
     },
     postProcessingPassSettings: {
       bloom: {
-        threshold: 0.4,
+        threshold: 0.5,
         intensity: 0.0,
         smoothing: 1.4
       },
@@ -174,7 +187,7 @@ export const getPipesSpace = (
         focalLength: 0.005
       },
       vignette: {
-        darkness: 0.2
+        darkness: 0.3
       }
     },
     backgroundRenderer,

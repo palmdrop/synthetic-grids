@@ -4,7 +4,7 @@ export type BackgroundConfig = Record<string, any>;
 
 export const remnants = (): BackgroundConfig => ({
   distortion: {
-    scale: new THREE.Vector2(1.0, 1.0),
+    scale: new THREE.Vector2(0.999, 0.999),
     offset: new THREE.Vector2(),
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),

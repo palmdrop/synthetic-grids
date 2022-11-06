@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import ditheringTexturePath from '../../../../../assets/blue-noise/LDR_RGBA_7.png';
+import ditheringTexturePath from '../../../../../assets/blue-noise/LDR_LLL1_7.png';
 import { createDitheringTexture } from '../../../tools/texture/texture';
 
 const ditheringTexture = createDitheringTexture(ditheringTexturePath);
