@@ -191,7 +191,7 @@ export const getMappingsSpace = (
     metadata: {}
   };
 
-  const sceneLifeTime = new THREE.Vector2(7000, 15000);
+  const sceneLifeTime = new THREE.Vector2(10000, 17000);
   const sceneDeadTime = new THREE.Vector2(2000, 4000);
 
   const sceneUpdateLoop = () => {
