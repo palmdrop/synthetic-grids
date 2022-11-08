@@ -9,13 +9,15 @@ export const remnants = (): BackgroundConfig => ({
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
     colorCorrection: new THREE.Vector3(
-      0.9955, 0.9955, 0.9955
-    ).add(new THREE.Vector3().randomDirection().multiplyScalar(0.003)),
-    dithering: 0.065,
+      1.0, 1.0, 1.0
+    )
+      .add(new THREE.Vector3().randomDirection().multiplyScalar(0.25))
+      .multiplyScalar(0.8),
+    dithering: 0.03,
   },
   blur: {
-    x: 0.000009,
-    y: 0.000009,
+    x: 0.000007,
+    y: 0.000007,
   }
 });
 
@@ -23,43 +25,10 @@ export const configMakers = [
   remnants,
 ];
 
-export const getRockConfig1 = (): FormationConfig => ({
-  size: 50,
-  detail: 400,
-  amount: 50,
-  minSteps: 1,
-  maxSteps: 1000,
-
-  scale: {
-    x: THREE.MathUtils.randFloat(0.8, 1.5),
-    y: THREE.MathUtils.randFloat(0.8, 1.5),
-    z: THREE.MathUtils.randFloat(0.8, 1.5),
-  },
-
-  colors: [
-    new THREE.Color('white')
-  ],
-
-  defaultRoughness: 0.8,
-  defaultMetalness: 0.15,
-  normalScale: 3.0,
-
-  textureRepeat: 10,
-
-  noiseSettings: {
-    octaves: 5,
-    frequency: 0.006,
-    min: -1.0,
-    max: 1.0,
-    lacunarity: 1.80,
-    persistance: 0.23,
-  }
-});
-
 export const getRockConfig = (): FormationConfig => ({
   size: 50,
-  detail: 400,
-  amount: 200,
+  detail: 350,
+  amount: THREE.MathUtils.randFloat(150, 200),
   minSteps: THREE.MathUtils.randInt(1, 5),
   maxSteps: THREE.MathUtils.randInt(100, 1000),
 
@@ -85,6 +54,6 @@ export const getRockConfig = (): FormationConfig => ({
     min: -1.0,
     max: 1.0,
     lacunarity: 1.80,
-    persistance: 0.23,
+    persistance: 0.25,
   }
 });

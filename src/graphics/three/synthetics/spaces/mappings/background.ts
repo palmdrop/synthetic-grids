@@ -72,6 +72,7 @@ export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: T
       composer.render();
     },
     update(sceneProperties) {
+      distortionPass.uniforms['delta'].value = sceneProperties.delta;
       distortionPass.uniforms['time'].value = Math.random();
     } 
   }

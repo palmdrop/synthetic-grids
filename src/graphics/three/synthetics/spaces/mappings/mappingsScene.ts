@@ -17,6 +17,8 @@ export const spaceMetadata = {
   postProcessing: true
 }
 
+const c = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json'));
+console.log(c);
 const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
 
 const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
@@ -40,7 +42,7 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
   const object = createFormation(
     getRockConfig()
   );
@@ -53,13 +55,14 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
 
   const paletteIndex = Math.floor(Math.random() * palettes.length);
   const palette = palettes[paletteIndex];
+  console.log(paletteIndex, palette);
 
   const colors = palette.map(entry => entry.color).map(({ r, g, b }) => {
     const { h, s, l } = new THREE.Color(r / 255, g / 255, b / 255).getHSL({ h: 0, s: 0, l: 0 });
     const color = new THREE.Color().setHSL(
       h, 
       s,
-      Math.max(Math.pow(l, 0.9), 0.7),
+      Math.max(Math.pow(l, 0.5), 0.7),
     );
 
     return color;
@@ -89,10 +92,11 @@ const getObject = async (parent: THREE.Object3D, renderScene: AbstractRenderScen
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  const rotationForce = 0.00;
-  let updateFrequency = 0.01;
-  let resizeProbability = 0.0;
-  let resizeScale = new THREE.Vector2(0.7, 1.5);
+  const rotationForce = 0; // 0.0003;
+  const updateFrequency = 0.03;
+  const resizeProbability = 0; // 0.003;
+  const resizeScale = new THREE.Vector2(0.7, 1.5);
+  const updateFrame = true;
 
   const parent = synthetic.object;
 
@@ -105,58 +109,60 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   let value: number;
 
   if(thin) {
+    scale = THREE.MathUtils.randFloat(0.05, 0.1);
+    value = THREE.MathUtils.randFloat(0.5, 0.8);
+  } else {
     scale = THREE.MathUtils.randFloat(0.005, 0.02);
     value = THREE.MathUtils.randFloat(3.0, 10.0);
-  } else {
-    scale = THREE.MathUtils.randFloat(0.05, 0.2);
-    value = THREE.MathUtils.randFloat(0.2, 0.8);
   }
 
-  getObject(parent, renderScene).then((colors) => {
-    let timeSinceLastUpdate = 0;
-    synthetic.update = (_, renderScene, delta) => {
-      const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
+  const colors = getObject(parent, renderScene);
 
-      object.rotation.x += rotationVelocity.x;
-      object.rotation.y += rotationVelocity.y;
-      object.rotation.z += rotationVelocity.z;
+  let timeSinceLastUpdate = 0;
+  synthetic.update = (_, renderScene, delta) => {
+    const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-      timeSinceLastUpdate += delta;
-      if(!updateFrequency || timeSinceLastUpdate > updateFrequency) {
-        visible = !visible;
+    object.rotation.x += rotationVelocity.x;
+    object.rotation.y += rotationVelocity.y;
+    object.rotation.z += rotationVelocity.z;
 
-        object.visible = visible;
+    timeSinceLastUpdate += delta;
+    if(!updateFrequency || timeSinceLastUpdate > updateFrequency) {
+      visible = !visible;
 
-        timeSinceLastUpdate -= updateFrequency;
+      object.visible = visible;
 
-        (object.material.uniforms.scale.value as any)
-          // .randomDirection()
-          .set(
-            THREE.MathUtils.randFloatSpread(1),
-            THREE.MathUtils.randFloatSpread(1),
-            -1
-          )
-          .multiplyScalar(Math.random() * scale + 0.002)
+      timeSinceLastUpdate -= updateFrequency;
 
-        object.material.uniforms.width.value = value * Math.random() / renderScene.renderer.getPixelRatio();
+      (object.material.uniforms.scale.value as any)
+        // .randomDirection()
+        .set(
+          THREE.MathUtils.randFloatSpread(1),
+          THREE.MathUtils.randFloatSpread(1),
+          THREE.MathUtils.randFloat(-0.2, -1)
+        )
+        .multiplyScalar(Math.random() * scale + 0.002)
 
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        object.material.uniforms.lineColor.value.set(
-          color.r, color.g, color.b
-        );
+      object.material.uniforms.width.value = value * Math.random() / renderScene.renderer.getPixelRatio();
 
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      object.material.uniforms.lineColor.value.set(
+        color.r, color.g, color.b
+      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1.5));
+
+      if(updateFrame) {
         object.children[0].scale.set(
           1.0, 1.0, 1.0
         ).multiplyScalar(Math.abs(randomGaussian(0.8)) + 0.8);
+      }
 
-        if(Math.random() < resizeProbability) {
-          parent.scale.set(
-            1.0, 1.0, 1.0
-          ).multiplyScalar(THREE.MathUtils.randFloat(resizeScale.x, resizeScale.y));
-        }
+      if(Math.random() < resizeProbability) {
+        parent.scale.set(
+          1.0, 1.0, 1.0
+        ).multiplyScalar(THREE.MathUtils.randFloat(resizeScale.x, resizeScale.y));
       }
     }
-  });
+  }
 }
 
 export const getMappingsSpace = (
@@ -185,7 +191,25 @@ export const getMappingsSpace = (
     metadata: {}
   };
 
-  updateScene(synthetic, renderScene);
+  const sceneLifeTime = new THREE.Vector2(7000, 15000);
+  const sceneDeadTime = new THREE.Vector2(2000, 4000);
+
+  const sceneUpdateLoop = () => {
+    parent.visible = true;
+    updateScene(synthetic, renderScene);
+    updateBackgroundEffect();
+
+    setTimeout(() => {
+      parent.visible = false;
+
+      setTimeout(
+        sceneUpdateLoop, 
+        THREE.MathUtils.randFloat(sceneDeadTime.x, sceneDeadTime.y)
+      );
+    }, THREE.MathUtils.randFloat(sceneLifeTime.x, sceneLifeTime.y));
+  }
+
+  sceneUpdateLoop();
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
@@ -211,21 +235,6 @@ export const getMappingsSpace = (
       controls.zoomSpeed = 1;
       controls.noPan = true;
       // controls.noRotate = true;
-    },
-    postProcessingPassSettings: {
-      bloom: {
-        threshold: 0.4,
-        intensity: 0.0,
-        smoothing: 1.4
-      },
-      depthOfField: {
-        bokehScale: 0,
-        focusDistance: 0.01,
-        focalLength: 0.005
-      },
-      vignette: {
-        darkness: 0.2
-      }
     },
     backgroundRenderer,
     defaultSceneProperties: {

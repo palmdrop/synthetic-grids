@@ -51,6 +51,10 @@ export const BackgroundDistortionShader = {
     'time': {
       type: 'float',
       value: 0.0
+    },
+    'delta': {
+      type: 'float',
+      value: 0.0
     }
 	},
 
@@ -78,6 +82,7 @@ export const BackgroundDistortionShader = {
     uniform sampler2D tDithering;
 
     uniform float time;
+    uniform float delta;
 
     vec2 rotate(vec2 point, float angle) {
       float s = sin(angle);
@@ -89,13 +94,14 @@ export const BackgroundDistortionShader = {
 		void main() {
       vec2 centeredUv = vUv - 0.5;
 
-      centeredUv = rotate(centeredUv, rotation);
-      centeredUv += offset;
+      centeredUv = rotate(centeredUv, rotation * delta);
+      centeredUv += offset * delta;
 
       vec2 uv = centeredUv / scale + 0.5;
 
 			vec4 color = texture2D(tDiffuse, uv);
-      color.rgb *= colorCorrection;
+      vec3 corrected = color.rgb * colorCorrection;
+      color.rgb = mix(color.rgb, corrected, delta);
       gl_FragColor = mix(backgroundColor, color, color.a);
 
       vec2 ditheringCoord = gl_FragCoord.xy / ditheringTextureDimensions + vec2(fract(time * 13.41), fract(time * 3.451));

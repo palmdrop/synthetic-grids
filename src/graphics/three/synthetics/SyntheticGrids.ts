@@ -57,6 +57,7 @@ export class SyntheticGrids extends AbstractRenderScene {
 
     this.properties = {
       time: 0.0,
+      delta: 0.0,
       mousePosition: new THREE.Vector2(),
       dimensions: new THREE.Vector2(this.canvas.width, this.canvas.height),
       scale: 1.0,
@@ -94,6 +95,7 @@ export class SyntheticGrids extends AbstractRenderScene {
   update(delta: number, now: number): void {
     this.controls?.update();
     this.properties.time = now / 10.0;
+    this.properties.delta = delta;
 
     delta = Math.min(delta, 1.0);
 

@@ -8,6 +8,7 @@ import type { TrackballControls } from '../examples/TrackballControls';
 
 export type SceneProperties = {
   time: number,
+  delta: number,
   mousePosition: THREE.Vector2,
   dimensions: THREE.Vector2,
   scale: number
