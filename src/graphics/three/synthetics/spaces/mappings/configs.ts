@@ -4,20 +4,27 @@ export type BackgroundConfig = Record<string, any>;
 
 export const remnants = (): BackgroundConfig => ({
   distortion: {
-    scale: new THREE.Vector2(1.0, 1.0),
+    scale: new THREE.Vector2(1.004, 1.004),
     offset: new THREE.Vector2(),
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
     colorCorrection: new THREE.Vector3(
       1.0, 1.0, 1.0
     )
-      .add(new THREE.Vector3().randomDirection().multiplyScalar(0.25))
-      .multiplyScalar(0.8),
-    dithering: 0.03,
+      .add(new THREE.Vector3()
+        // .randomDirection()
+        .set(
+          THREE.MathUtils.randFloat(0, -1),
+          THREE.MathUtils.randFloat(0, -1),
+          THREE.MathUtils.randFloat(0, -1)
+        ).normalize()
+        .multiplyScalar(0.23)
+      ).multiplyScalar(0.85),
+    dithering: 0.04,
   },
   blur: {
-    x: 0.000007,
-    y: 0.000007,
+    x: 0.000005,
+    y: 0.000005,
   }
 });
 

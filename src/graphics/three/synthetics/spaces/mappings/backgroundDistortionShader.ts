@@ -97,7 +97,9 @@ export const BackgroundDistortionShader = {
       centeredUv = rotate(centeredUv, rotation * delta);
       centeredUv += offset * delta;
 
-      vec2 uv = centeredUv / scale + 0.5;
+      vec2 scaleFactor = (scale - 1.0) * delta;
+
+      vec2 uv = centeredUv / (1.0 + scaleFactor) + 0.5;
 
 			vec4 color = texture2D(tDiffuse, uv);
       vec3 corrected = color.rgb * colorCorrection;
