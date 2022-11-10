@@ -4,7 +4,7 @@ export type BackgroundConfig = Record<string, any>;
 
 export const remnants = (): BackgroundConfig => ({
   distortion: {
-    scale: new THREE.Vector2(1.004, 1.004),
+    scale: new THREE.Vector2(1.003, 1.003),
     offset: new THREE.Vector2(),
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
@@ -14,13 +14,13 @@ export const remnants = (): BackgroundConfig => ({
       .add(new THREE.Vector3()
         // .randomDirection()
         .set(
-          THREE.MathUtils.randFloat(0, -1),
-          THREE.MathUtils.randFloat(0, -1),
-          THREE.MathUtils.randFloat(0, -1)
+          THREE.MathUtils.randFloat(0.2, -1),
+          THREE.MathUtils.randFloat(0.2, -1),
+          THREE.MathUtils.randFloat(0.2, -1)
         ).normalize()
         .multiplyScalar(0.23)
-      ).multiplyScalar(0.85),
-    dithering: 0.04,
+      ).multiplyScalar(0.8),
+    dithering: 0.053,
   },
   blur: {
     x: 0.000005,
@@ -34,8 +34,8 @@ export const configMakers = [
 
 export const getRockConfig = (): FormationConfig => ({
   size: 50,
-  detail: 350,
-  amount: THREE.MathUtils.randFloat(150, 200),
+  detail: 400,
+  amount: 200,
   minSteps: THREE.MathUtils.randInt(1, 5),
   maxSteps: THREE.MathUtils.randInt(100, 1000),
 
@@ -61,6 +61,6 @@ export const getRockConfig = (): FormationConfig => ({
     min: -1.0,
     max: 1.0,
     lacunarity: 1.80,
-    persistance: 0.25,
+    persistance: 0.23,
   }
 });

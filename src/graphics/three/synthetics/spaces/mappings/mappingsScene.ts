@@ -19,7 +19,7 @@ export const spaceMetadata = {
 
 const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
 
-const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.2) => {
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -69,7 +69,7 @@ const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, sho
     const color = new THREE.Color().setHSL(
       h, 
       s,
-      Math.max(Math.pow(l, 0.5), 0.7),
+      Math.max(Math.pow(l, 0.7), 0.7),
     );
 
     return color;
@@ -115,9 +115,9 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   let scale: number;
   let value: number;
 
-  if(Math.random() > 0.0) {
-    scale = THREE.MathUtils.randFloat(0.08, 0.1);
-    value = THREE.MathUtils.randFloat(0.5, 0.8);
+  if(Math.random() > 0.5) {
+    scale = THREE.MathUtils.randFloat(0.05, 0.09);
+    value = THREE.MathUtils.randFloat(0.4, 0.8);
   } else {
     scale = THREE.MathUtils.randFloat(0.007, 0.03);
     value = THREE.MathUtils.randFloat(3.0, 10.0);
@@ -146,7 +146,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
         .set(
           THREE.MathUtils.randFloatSpread(1),
           THREE.MathUtils.randFloatSpread(1),
-          THREE.MathUtils.randFloat(-0.2, -1)
+          THREE.MathUtils.randFloat(-0.8, -1)
         )
         .multiplyScalar((Math.random() + 0.0) * scale)
 
@@ -155,7 +155,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
       const color = colors[Math.floor(Math.random() * colors.length)];
       object.material.uniforms.lineColor.value.set(
         color.r, color.g, color.b
-      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1.65));
+      ).multiplyScalar(THREE.MathUtils.randFloat(0.7, 1.4));
 
       if(showFrame) {
         object.children[0].scale.set(

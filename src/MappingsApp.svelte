@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "./global.css";
 	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
@@ -87,7 +88,7 @@
     min-width: 100vw;
     height: 100vh;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
 
     display: flex;
     justify-content: center;
