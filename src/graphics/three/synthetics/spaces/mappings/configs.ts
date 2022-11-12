@@ -1,10 +1,14 @@
 import * as THREE from 'three';
+import { randomGaussian } from '../../../tools/math';
 import { FormationConfig } from '../formations/formation';
 export type BackgroundConfig = Record<string, any>;
 
 export const remnants = (): BackgroundConfig => ({
   distortion: {
-    scale: new THREE.Vector2(1.003, 1.003),
+    scale: new THREE.Vector2(
+      1.005, 
+      1.005
+    ),
     offset: new THREE.Vector2(),
     rotation: 0.0,
     // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
@@ -20,7 +24,7 @@ export const remnants = (): BackgroundConfig => ({
         ).normalize()
         .multiplyScalar(0.23)
       ).multiplyScalar(0.8),
-    dithering: 0.053,
+    dithering: 0.054,
   },
   blur: {
     x: 0.000005,

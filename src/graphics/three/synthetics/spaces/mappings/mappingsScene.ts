@@ -47,16 +47,6 @@ const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, sho
 
   object.geometry.center();
 
-  object.geometry.rotateX(
-    THREE.MathUtils.randFloat(-Math.PI, Math.PI),
-  );
-  object.geometry.rotateY(
-    THREE.MathUtils.randFloat(-Math.PI, Math.PI),
-  );
-  object.geometry.rotateZ(
-    THREE.MathUtils.randFloat(-Math.PI, Math.PI),
-  );
-
   const material = new THREE.ShaderMaterial(
     transparentMapShader
   );
@@ -116,10 +106,10 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   let value: number;
 
   if(Math.random() > 0.5) {
-    scale = THREE.MathUtils.randFloat(0.05, 0.09);
+    scale = THREE.MathUtils.randFloat(0.07, 0.1);
     value = THREE.MathUtils.randFloat(0.4, 0.8);
   } else {
-    scale = THREE.MathUtils.randFloat(0.007, 0.03);
+    scale = THREE.MathUtils.randFloat(0.01, 0.04);
     value = THREE.MathUtils.randFloat(3.0, 10.0);
   }
 
@@ -155,7 +145,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
       const color = colors[Math.floor(Math.random() * colors.length)];
       object.material.uniforms.lineColor.value.set(
         color.r, color.g, color.b
-      ).multiplyScalar(THREE.MathUtils.randFloat(0.7, 1.4));
+      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1.2));
 
       if(showFrame) {
         object.children[0].scale.set(
@@ -198,8 +188,8 @@ export const getMappingsSpace = (
     metadata: {}
   };
 
-  const sceneLifeTime = new THREE.Vector2(10000, 17000);
-  const sceneDeadTime = new THREE.Vector2(2000, 4000);
+  const sceneLifeTime = new THREE.Vector2(8000, 15000);
+  const sceneDeadTime = new THREE.Vector2(1800, 4000);
 
   const sceneUpdateLoop = () => {
     parent.visible = true;
@@ -222,10 +212,6 @@ export const getMappingsSpace = (
     onResize: (width, height, renderScene) => {
       if(parent.children.length) updateCamera(parent.children[0], renderScene);
     },
-    onClick: () => {
-      updateScene(synthetic, renderScene);
-      updateBackgroundEffect();
-    },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
       scene.background = backgroundRenderTarget.texture;
@@ -237,11 +223,12 @@ export const getMappingsSpace = (
     ],
     postProcessing: false,
     defaultPasses: false,
-    controls: interactive,
+    controls: false,
     setupControls: (controls) => {
       controls.zoomSpeed = 1;
       controls.noPan = true;
-      // controls.noRotate = true;
+      controls.noRotate = true;
+      controls.noZoom = true;
     },
     backgroundRenderer,
     defaultSceneProperties: {
