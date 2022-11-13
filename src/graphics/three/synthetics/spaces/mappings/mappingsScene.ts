@@ -145,7 +145,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
       const color = colors[Math.floor(Math.random() * colors.length)];
       object.material.uniforms.lineColor.value.set(
         color.r, color.g, color.b
-      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1.2));
+      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1));
 
       if(showFrame) {
         object.children[0].scale.set(
