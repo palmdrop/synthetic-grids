@@ -19,7 +19,7 @@ export const spaceMetadata = {
 
 const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
 
-const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.1) => {
+const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.15) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
 
   const camera = renderScene.camera;
@@ -80,7 +80,7 @@ const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, sho
       linewidth: 0.00002
     }));
 
-    lineBox.position.copy(object.position);
+    // lineBox.position.copy(object.position);
     object.add(lineBox);
   }
 
@@ -94,7 +94,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   const updateFrequency = 0.0215;
   const resizeProbability = 0; // 0.003;
   const resizeScale = new THREE.Vector2(0.7, 1.5);
-  const showFrame = false;
+  const showFrame = true;
 
   const parent = synthetic.object;
 
@@ -152,6 +152,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
           1.0, 1.0, 1.0
         ).multiplyScalar(Math.abs(randomGaussian(0.8)) + 0.8);
       }
+
 
       if(Math.random() < resizeProbability) {
         parent.scale.set(
