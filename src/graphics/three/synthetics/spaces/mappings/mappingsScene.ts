@@ -80,8 +80,8 @@ const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, sho
       linewidth: 0.00002
     }));
 
-    // lineBox.position.copy(object.position);
-    object.add(lineBox);
+    lineBox.position.copy(object.position);
+    parent.add(lineBox);
   }
 
   updateCamera(object, renderScene);
@@ -90,7 +90,7 @@ const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, sho
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  const rotationForce = 0; // 0.0003;
+  const rotationForce = 0.005; // 0.0003;
   const updateFrequency = 0.0215;
   const resizeProbability = 0; // 0.003;
   const resizeScale = new THREE.Vector2(0.7, 1.5);
@@ -100,7 +100,11 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
   let visible = true;
 
-  const rotationVelocity = new THREE.Vector3().randomDirection().multiplyScalar(rotationForce);
+  const rotationVelocity = new THREE.Vector3(
+    0, 1, 0
+  )
+    //.randomDirection()
+    .multiplyScalar(rotationForce);
 
   let scale: number;
   let value: number;
@@ -119,9 +123,9 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   synthetic.update = (_, renderScene, delta) => {
     const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    object.rotation.x += rotationVelocity.x;
-    object.rotation.y += rotationVelocity.y;
-    object.rotation.z += rotationVelocity.z;
+    object.rotation.x += rotationVelocity.x * delta;
+    object.rotation.y += rotationVelocity.y * delta;
+    object.rotation.z += rotationVelocity.z * delta;
 
     timeSinceLastUpdate += delta;
     if(!updateFrequency || timeSinceLastUpdate > updateFrequency) {
@@ -148,9 +152,9 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
       ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1));
 
       if(showFrame) {
-        object.children[0].scale.set(
+        parent.children[1].scale.set(
           1.0, 1.0, 1.0
-        ).multiplyScalar(Math.abs(randomGaussian(0.8)) + 0.8);
+        ).multiplyScalar(Math.abs(randomGaussian(0.8)) + 0.9);
       }
 
 
@@ -189,7 +193,13 @@ export const getMappingsSpace = (
     metadata: {}
   };
 
-  const sceneLifeTime = new THREE.Vector2(8000, 15000);
+  const sceneLifeTime = new THREE.Vector2(
+    10 * 60 * 1000,
+    20 * 60 * 1000,
+    // 8000, 
+    // 15000
+  );
+
   const sceneDeadTime = new THREE.Vector2(1800, 4000);
 
   const sceneUpdateLoop = () => {
