@@ -194,8 +194,8 @@ export const getMappingsSpace = (
   };
 
   const sceneLifeTime = new THREE.Vector2(
-    5 * 60 * 1000,
-    13 * 60 * 1000
+    10 * 1000,
+    30 * 1000
   );
 
   const sceneDeadTime = new THREE.Vector2(1800, 4000);
