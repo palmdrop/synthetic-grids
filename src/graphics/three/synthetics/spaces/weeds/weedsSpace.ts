@@ -46,9 +46,11 @@ export const getWeedsSpace = (
     metadata: {}
   };
 
+  /*
   weedsParent.rotateY(0.2);
   weedsParent.rotateX(0.2);
   weedsParent.rotateZ(0.03);
+  */
 
   weedsSynthetic.update = (properties) => {
     // weedsSynthetic.object.rotateY(0.002);
@@ -102,8 +104,8 @@ export const getWeedsSpace = (
 
       const ambientLight = new THREE.AmbientLight('white', 1.5)
 
-      const directionalLight = new THREE.DirectionalLight('white', 2.2);
-      directionalLight.position.set(-6, 8, 16);
+      const directionalLight = new THREE.DirectionalLight('white', 3.2);
+      directionalLight.position.set(1, 1, -3);
       directionalLight.castShadow = true;
       directionalLight.shadow.bias = -0.001;
 

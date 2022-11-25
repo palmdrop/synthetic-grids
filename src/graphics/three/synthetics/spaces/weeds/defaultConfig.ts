@@ -137,7 +137,7 @@ export const configMaker = (): WeedsGridConfig => {
       },
 
       directionNoiseSettings: {
-        frequency: 0.04,
+        frequency: 0.1,
         min: -1.0,
         max: 1.0
       },
@@ -152,7 +152,7 @@ export const configMaker = (): WeedsGridConfig => {
         twist: 0.2,
         turn: 0.4,
         direction: 0.2, 
-        random: 0.05
+        random: 0.1
       },
 
       materialGenerator: (index, position) => {
