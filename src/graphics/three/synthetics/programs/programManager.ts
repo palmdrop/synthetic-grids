@@ -3,7 +3,7 @@ import type { Unsubscriber } from 'svelte/store';
 import * as THREE from 'three';
 import type { Program } from '../../../../modules/substrates/src/interface/types/program/program';
 import { buildProgramShader } from '../../../../modules/substrates/src/shader/builder/programBuilder';
-import { programHistoryStore$, programStore$, setProgram, subscribeToProgram } from '../../../../modules/substrates/src/stores/programStore';
+import { initializeProgramStore, programHistoryStore$, programStore$, setProgram, subscribeToProgram } from '../../../../modules/substrates/src/stores/programStore';
 import { additionalShaderMaterials$ } from '../../../../modules/substrates/src/stores/shaderStore';
 
 export type MaterialObject = {
@@ -39,7 +39,9 @@ export const createProgramManager = (
     const config = configs[name];
 
     const program = config.program ?? config.defaultProgram;
-    if(program) setProgram(program);
+    console.log("Program", program)
+    if(program) initializeProgramStore(program);
+    // setProgram(program);
 
     const updateMaterial = (program: Program) => {
       let material: THREE.ShaderMaterial;
@@ -48,7 +50,7 @@ export const createProgramManager = (
       } else {
         material = config.createMaterial 
           ? config.createMaterial(program)
-          : new THREE.ShaderMaterial(buildProgramShader(program));
+          : new THREE.ShaderMaterial(buildProgramShader(program).shader);
       }
 
       config.object.material = material;
