@@ -13,8 +13,12 @@ import { BackgroundConfig } from './configs';
 
 export const createBackgroundRenderer = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, config?: BackgroundConfig) => {
   const size = renderer.getSize(new THREE.Vector2());
-  const renderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {
-  });
+  const renderTarget = new THREE.WebGLRenderTarget(
+    size.x, 
+    size.y, 
+    {}
+  );
+
   renderTarget.samples = 1;
 
   const composer = new EffectComposer(renderer, renderTarget);

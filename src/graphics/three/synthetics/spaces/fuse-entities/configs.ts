@@ -11,19 +11,9 @@ export const remnants = (): BackgroundConfig => ({
     ),
     offset: new THREE.Vector2(),
     rotation: 0.0,
-    // colorCorrection: new THREE.Vector3(0.98, 0.99, 0.97),
     colorCorrection: new THREE.Vector3(
       1.0, 1.0, 1.0
-    )
-      .add(new THREE.Vector3()
-        // .randomDirection()
-        .set(
-          THREE.MathUtils.randFloat(0.2, -1),
-          THREE.MathUtils.randFloat(0.2, -1),
-          THREE.MathUtils.randFloat(0.2, -1)
-        ).normalize()
-        .multiplyScalar(0.23)
-      ).multiplyScalar(0.8),
+    ).multiplyScalar(0.1),
     dithering: 0.054,
   },
   blur: {

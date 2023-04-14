@@ -27,12 +27,11 @@ export const BackgroundDistortionShader = {
     },
     'rotation': {
       value: 0.0,
-      // THREE.MathUtils.randFloat(-0.05, 0.05),
       type: 'float'
     },
     'colorCorrection': {
       value: new THREE.Vector3(
-        0.9, 0.98, 0.98
+        0.98, 0.98, 0.98
       ),
       type: 'vec3'
     },

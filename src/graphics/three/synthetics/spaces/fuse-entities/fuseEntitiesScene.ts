@@ -8,16 +8,10 @@ import { createBackgroundRenderer } from './background';
 import { configMakers } from './configs';
 import { createFormation } from '../formations/formation';
 import { getRockConfig } from './configs';
-import { transparentMapShader } from '../../../../glsl/shaders/transparentMapShader';
-import { createLineBox } from '../../../../utils/lines';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { randomGaussian } from '../../../tools/math';
 
 export const spaceMetadata = {
   postProcessing: true
 }
-
-const palettes = Object.values(import.meta.globEager('../../../../../assets/palettes/*.json')).map((module: any) => module.default);
 
 const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, margin = 0.15) => {
   if(!(renderScene.camera as THREE.OrthographicCamera).isOrthographicCamera) return;
@@ -40,78 +34,35 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const getObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, showFrame = true) => {
+const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
   const object = createFormation(
     getRockConfig()
   );
 
-  object.geometry.center();
-
-  /*
-  const material = new THREE.ShaderMaterial(
-    transparentMapShader
-  );
-  */
   const material = new THREE.MeshStandardMaterial({
-    color: '#777777'
+    color: '#777777',
+    side: THREE.DoubleSide
   });
 
-  const paletteIndex = Math.floor(Math.random() * palettes.length);
-  const palette = palettes[paletteIndex];
-
-  const colors = palette.map(entry => entry.color).map(({ r, g, b }) => {
-    const { h, s, l } = new THREE.Color(r / 255, g / 255, b / 255).getHSL({ h: 0, s: 0, l: 0 });
-    const color = new THREE.Color().setHSL(
-      h, 
-      s,
-      Math.max(Math.pow(l, 0.7), 0.7),
-    );
-
-    return color;
-  });
-
-  /*
-  material.uniforms.lineColor.value = new THREE.Vector3(colors[0].r, colors[0].g, colors[0].b);
-  material.uniforms.width.value = 0.01;
-  material.uniforms.scale.value.multiplyScalar(0.01);
-  */
-
-  (object as any).material = material;
+  object.geometry.center();
+  object.material = material;
 
   parent.clear();
   parent.add(object);
 
-  if(showFrame) {
-    const lineBox = createLineBox(new THREE.Box3().setFromObject(object), new LineMaterial({
-      color: colors[0].getHex(),
-      linewidth: 0.00002
-    }));
-
-    lineBox.position.copy(object.position);
-    parent.add(lineBox);
-  }
-
   updateCamera(object, renderScene);
 
-  return colors;
+  return object;
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   const rotationForce = 0.005; // 0.0003;
-  const updateFrequency = 0.0215;
-  const resizeProbability = 0; // 0.003;
-  const resizeScale = new THREE.Vector2(0.7, 1.5);
-  const showFrame = true;
 
   const parent = synthetic.object;
 
-  let visible = true;
-
   const rotationVelocity = new THREE.Vector3(
     0, 1, 0
-  )
-    //.randomDirection()
-    .multiplyScalar(rotationForce);
+  ).multiplyScalar(rotationForce);
 
   let scale: number;
   let value: number;
@@ -124,63 +75,19 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
     value = THREE.MathUtils.randFloat(3.0, 10.0);
   }
 
-  const colors = getObject(parent, renderScene, showFrame);
+  createObject(parent, renderScene);
 
-  let timeSinceLastUpdate = 0;
   synthetic.update = (_, renderScene, delta) => {
     const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     object.rotation.x += rotationVelocity.x * delta;
     object.rotation.y += rotationVelocity.y * delta;
     object.rotation.z += rotationVelocity.z * delta;
-
-    timeSinceLastUpdate += delta;
-    if(!updateFrequency || timeSinceLastUpdate > updateFrequency) {
-      visible = !visible;
-
-      object.visible = visible;
-
-      timeSinceLastUpdate -= updateFrequency;
-
-      /*
-      (object.material.uniforms.scale.value as any)
-        // .randomDirection()
-        .set(
-          THREE.MathUtils.randFloatSpread(1),
-          THREE.MathUtils.randFloatSpread(1),
-          THREE.MathUtils.randFloat(-0.8, -1)
-        )
-        .multiplyScalar((Math.random() + 0.0) * scale)
-
-      object.material.uniforms.width.value = value * Math.random() / renderScene.renderer.getPixelRatio();
-      */
-
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      /*
-      object.material.uniforms.lineColor.value.set(
-        color.r, color.g, color.b
-      ).multiplyScalar(THREE.MathUtils.randFloat(0.8, 1));
-      */
-
-      if(showFrame) {
-        parent.children[1].scale.set(
-          1.0, 1.0, 1.0
-        ).multiplyScalar(Math.abs(randomGaussian(0.8)) + 0.9);
-      }
-
-
-      if(Math.random() < resizeProbability) {
-        parent.scale.set(
-          1.0, 1.0, 1.0
-        ).multiplyScalar(THREE.MathUtils.randFloat(resizeScale.x, resizeScale.y));
-      }
-    }
   }
 }
 
 export const getFuseEntitiesSpace = (
   renderScene: AbstractRenderScene,
-  interactive?: boolean
 ): SyntheticSpace => {
   // Background
   const updateBackgroundEffect = () => {
@@ -253,12 +160,10 @@ export const getFuseEntitiesSpace = (
     ],
     postProcessing: false,
     defaultPasses: false,
-    controls: false,
+    controls: true,
     setupControls: (controls) => {
       controls.zoomSpeed = 1;
       controls.noPan = true;
-      controls.noRotate = true;
-      controls.noZoom = true;
     },
     backgroundRenderer,
     defaultSceneProperties: {
