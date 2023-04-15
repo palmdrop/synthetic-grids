@@ -3,7 +3,7 @@
 	import { SyntheticGrids } from "./graphics/three/synthetics/SyntheticGrids";
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
-  import { getFuseEntitiesSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/fuse-entities/fuseEntitiesScene";
+  import { getAggregateSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/aggregate/aggregateScene";
 
   export let interactive = true;
 
@@ -19,7 +19,7 @@
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getFuseEntitiesSpace, spaceMetadata, undefined, interactive);
+    scene = new SyntheticGrids(canvas, getAggregateSpace, spaceMetadata, undefined, interactive);
     scene.resize();
     scene.start();
 

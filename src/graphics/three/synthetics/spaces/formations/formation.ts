@@ -49,7 +49,6 @@ export const createFormation = (config: FormationConfig, instancedConfig: undefi
     dithering: true
   });
 
-
   geometry.setAttribute(
     'color',
     new THREE.BufferAttribute( new Float32Array( positionAttribute.count * 3 ), 3 )

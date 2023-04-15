@@ -8,6 +8,9 @@ import { createBackgroundRenderer } from './background';
 import { configMakers } from './configs';
 import { createFormation } from '../formations/formation';
 import { getRockConfig } from './configs';
+import { encodedProgram, makeShaderUpdater } from './aggregateShader';
+import { decodeProgram } from '../../../../../modules/substrates/src/stores/programStore';
+import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 
 export const spaceMetadata = {
   postProcessing: true
@@ -35,17 +38,36 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
 }
 
 const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+  /*
   const object = createFormation(
     getRockConfig()
   );
+  */
 
   const material = new THREE.MeshStandardMaterial({
     color: '#777777',
     side: THREE.DoubleSide
   });
 
+  const object = new THREE.Mesh(
+    new THREE.SphereBufferGeometry(5, 500, 500),
+    material
+  );
+
   object.geometry.center();
-  object.material = material;
+  // object.material = material;
+
+  /*
+  getAggregateShader().then(shader => {
+    console.log(shader);
+    console.log(shader.vertexShader);
+    console.log(shader.fragmentShader);
+    (object as any).material = new THREE.ShaderMaterial(shader);
+  });
+  */
+  const updateShader = makeShaderUpdater(object);
+  decodeProgram(encodedProgram as any)
+    .then(program => updateShader(program));
 
   parent.clear();
   parent.add(object);
@@ -77,19 +99,26 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
   createObject(parent, renderScene);
 
-  synthetic.update = (_, renderScene, delta) => {
+  synthetic.update = (sceneProperties, renderScene, delta) => {
     const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
     object.rotation.x += rotationVelocity.x * delta;
     object.rotation.y += rotationVelocity.y * delta;
     object.rotation.z += rotationVelocity.z * delta;
+
+    setUniform(
+      'time',
+      sceneProperties.time,
+      object.material
+    );
   }
 }
 
-export const getFuseEntitiesSpace = (
+export const getAggregateSpace = (
   renderScene: AbstractRenderScene,
 ): SyntheticSpace => {
   // Background
+  /*
   const updateBackgroundEffect = () => {
     const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
     updateBackground(backgroundConfig);
@@ -103,14 +132,16 @@ export const getFuseEntitiesSpace = (
 
   updateBackgroundEffect();
   renderScene.resizeables.push(backgroundRenderer);
+  */
 
   // Scene
   const parent = new THREE.Object3D();
   const synthetic: Synthetic = {
     object: parent,
-    metadata: {}
+    metadata: {},
   };
 
+  /*
   const sceneLifeTime = new THREE.Vector2(
     10 * 1000,
     30 * 1000
@@ -121,7 +152,7 @@ export const getFuseEntitiesSpace = (
   const sceneUpdateLoop = () => {
     parent.visible = true;
     updateScene(synthetic, renderScene);
-    updateBackgroundEffect();
+    // updateBackgroundEffect();
 
     setTimeout(() => {
       parent.visible = false;
@@ -134,6 +165,8 @@ export const getFuseEntitiesSpace = (
   }
 
   sceneUpdateLoop();
+  */
+  updateScene(synthetic, renderScene);
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
@@ -141,16 +174,23 @@ export const getFuseEntitiesSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      scene.background = backgroundRenderTarget.texture;
+      // scene.background = backgroundRenderTarget.texture;
+      scene.background = new THREE.Color('black');
         
       const directionalLight = new THREE.DirectionalLight(
         'white',
-        5
+        7
       );
       directionalLight.position.set(2, 10, 5);
 
+      const ambientLight = new THREE.AmbientLight(
+        'white',
+        0.3
+      );
+
       scene.add(
-        directionalLight
+        directionalLight,
+        ambientLight
       );
 
       camera.position.set(0, 0, 80);
@@ -165,7 +205,7 @@ export const getFuseEntitiesSpace = (
       controls.zoomSpeed = 1;
       controls.noPan = true;
     },
-    backgroundRenderer,
+    // backgroundRenderer,
     defaultSceneProperties: {
       scale: 1.0
     },
