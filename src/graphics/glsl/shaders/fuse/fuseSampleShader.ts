@@ -2,19 +2,35 @@ import type * as THREE from 'three';
 import type { Attributes, GLSL, Uniforms } from '../../../../modules/substrates/src/shader/types/core';
 import { attributesToGLSL, uniformsToGLSL } from '../../../../modules/substrates/src/shader/builder/utils/shader';
 
-export const makeFuseShader = (
+export const makeSampleFuseShader = (
   attributes: Attributes,
+  uniforms: Uniforms,
   sampleGLSL: GLSL,
   textures: THREE.Texture[],
+  sampler: THREE.Texture
 ): THREE.Shader => {
-  const uniforms: Uniforms = {
+  uniforms = {
+    ...uniforms,
     textures: {
       value: textures,
       type: 'tv' as any, // TODO
       ignore: true
     },
+    sampler: {
+      value: sampler,
+      type: 'tv' as any, // TODO
+      ignore: true
+    },
     strength: {
       value: 1.0,
+      type: 'float'
+    },
+    power: {
+      value: 1.0,
+      type: 'float'
+    },
+    time: {
+      value: 0.0,
       type: 'float'
     }
   };
@@ -25,11 +41,12 @@ export const makeFuseShader = (
 		varying vec2 vUv;
 
     uniform sampler2D textures[${Math.max(textures.length, 1)}];
+    uniform sampler2D sampler;
 
 		void main() {
       ${sampleGLSL} 
       float l = float(textures.length());
-      n = max(pow(n, strength) * l, 0.0);
+      n = max(pow(n * strength, power) * l, 0.0);
       n = mod(n, l);
       vec4 color;
 

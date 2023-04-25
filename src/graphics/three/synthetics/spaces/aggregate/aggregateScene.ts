@@ -38,36 +38,45 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
 }
 
 const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
-  /*
-  const object = createFormation(
-    getRockConfig()
-  );
-  */
-
+  const gui = renderScene.gui;
   const material = new THREE.MeshStandardMaterial({
     color: '#777777',
     side: THREE.DoubleSide
   });
 
   const object = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(5, 500, 500),
+    new THREE.SphereBufferGeometry(20, 500, 500),
     material
   );
 
   object.geometry.center();
-  // object.material = material;
 
-  /*
-  getAggregateShader().then(shader => {
-    console.log(shader);
-    console.log(shader.vertexShader);
-    console.log(shader.fragmentShader);
-    (object as any).material = new THREE.ShaderMaterial(shader);
-  });
-  */
   const updateShader = makeShaderUpdater(object);
   decodeProgram(encodedProgram as any)
-    .then(program => updateShader(program));
+    .then(program => {
+      updateShader(program)
+
+      // Gui
+      const objectFolder = gui.addFolder('object');
+
+      objectFolder
+        .add({ samplerStrength: 0.001 }, 'samplerStrength', 0, 2)
+        .onChange(value => {
+          setUniform('strength', value, object.material as any)
+        });
+
+      objectFolder
+        .add({ sampleScale: 0.0005 }, 'sampleScale', 0, 0.1)
+        .onChange(value => {
+          setUniform('sampleScale', value, object.material as any)
+        });
+
+      objectFolder
+        .add({ samplePower: 1 }, 'samplePower', 0, 5)
+        .onChange(value => {
+          setUniform('power', value, object.material as any)
+        });
+    });
 
   parent.clear();
   parent.add(object);
@@ -106,8 +115,15 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
     object.rotation.y += rotationVelocity.y * delta;
     object.rotation.z += rotationVelocity.z * delta;
 
+    /*
     setUniform(
       'time',
+      sceneProperties.time,
+      object.material
+    );
+    */
+    setUniform(
+      'animationTime',
       sceneProperties.time,
       object.material
     );
@@ -117,6 +133,8 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 export const getAggregateSpace = (
   renderScene: AbstractRenderScene,
 ): SyntheticSpace => {
+  const gui = renderScene.gui;
+  gui.show();
   // Background
   /*
   const updateBackgroundEffect = () => {
@@ -203,7 +221,7 @@ export const getAggregateSpace = (
     controls: true,
     setupControls: (controls) => {
       controls.zoomSpeed = 1;
-      controls.noPan = true;
+      // controls.noPan = true;
     },
     // backgroundRenderer,
     defaultSceneProperties: {
