@@ -45,7 +45,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   });
 
   const object = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(20, 500, 500),
+    // new THREE.SphereBufferGeometry(20, 500, 500),
+    new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
     material
   );
 
@@ -75,6 +76,18 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         .add({ samplePower: 1 }, 'samplePower', 0, 5)
         .onChange(value => {
           setUniform('power', value, object.material as any)
+        });
+
+      objectFolder
+        .add({ frequency: 1 }, 'frequency', 0, 1)
+        .onChange(value => {
+          setUniform('frequency', value, object.material as any)
+        });
+
+      objectFolder
+        .add({ amplitude: 1 }, 'amplitude', 0, 100)
+        .onChange(value => {
+          setUniform('amplitude', value, object.material as any)
         });
     });
 

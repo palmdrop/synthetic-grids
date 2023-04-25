@@ -9,10 +9,12 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
-import encodedProgram from '../../../../../assets/substrates/moss-structure/moss-structure2.json';
+// import encodedProgram from '../../../../../assets/substrates/moss-structure/moss-structure2.json';
 
 // NICE ONE
 // import encodedProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
+
+import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 
 // import encodedProgram from '../../../../../assets/substrates/forest-reflections/forest-reflection6.json';
 import { makeFuseShader } from '../../../../glsl/shaders/fuse/fuseShader';
@@ -247,7 +249,7 @@ const makeShader = (
       // vec3 pos = position + offset - centerOffset;
       vec3 pos = position + offset;
 
-      normalOffset = (length(normal) + length(offset));
+      normalOffset = length(normal) + length(offset);
 
       vertexPosition = (modelMatrix * vec4( pos, 1.0 )).xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
