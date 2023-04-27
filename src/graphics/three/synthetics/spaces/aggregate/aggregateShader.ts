@@ -3,7 +3,7 @@ import { mapNormalShader } from "../../../../glsl/shaders/normalWarp/mapNormalSh
 import { updateShaderUtil } from "../../scene";
 
 import { Program } from '../../../../../modules/substrates/src/interface/types/program/program';
-import { buildProgramFunction } from '../../../../../modules/substrates/src/shader/builder/programBuilder';
+import { buildProgramFunction, buildProgramShader } from '../../../../../modules/substrates/src/shader/builder/programBuilder';
 import { buildShader } from '../../../../../modules/substrates/src/shader/builder/shaderBuilder';
 import { variableValueToGLSL } from '../../../../../modules/substrates/src/shader/builder/utils/glsl';
 
@@ -12,9 +12,11 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // import encodedProgram from '../../../../../assets/substrates/moss-structure/moss-structure2.json';
 
 // NICE ONE
-// import encodedProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
+// import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
+import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
+import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
 
-import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
+// import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 
 // import encodedProgram from '../../../../../assets/substrates/forest-reflections/forest-reflection6.json';
 import { makeFuseShader } from '../../../../glsl/shaders/fuse/fuseShader';
@@ -22,7 +24,8 @@ import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
 
 export { 
-  encodedProgram
+  encodedDisplacementProgram,
+  encodedFragmentProgram
 }
 
 const images = Object.values(import.meta.globEager('../../../../../assets/images/*')).map(module => module.default);
@@ -197,6 +200,10 @@ const makeShader = (
       value: 0,
       type: 'float'
     },
+    substrateFrequency: {
+      value: 5,
+      type: 'float'
+    },
     ...programFunction.uniforms
   };
 
@@ -271,7 +278,10 @@ const makeShader = (
   shader.fragmentShader = fragmentShader.fragmentShader;
   shader.vertexShader = shader
     .vertexShader
+    .replaceAll(') * time', ')')
     .replaceAll('gl_FragCoord', 'point');
+
+  console.log(shader.vertexShader);
 
   return shader;
 }
@@ -281,11 +291,30 @@ const makeShader = (
 export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
   object,
   // program => makeShader(program, mapNormalShader),
-  program => {
-    const { fuseShader, textures } = getFuseShader();
+  (program, substrateProgram) => {
+    // const { fuseShader, textures } = getFuseShader();
+    const { shader: substrateShader } = buildProgramShader(substrateProgram);
+
+    substrateShader.fragmentShader = substrateShader
+      .fragmentShader
+      .replace(
+        'varying vec2 vUv;',
+        `varying vec2 vUv;
+         varying vec3 vertexPosition;
+         uniform float substrateFrequency;
+        `
+      )
+      .replace(
+        'vec3 point = vec3(gl_FragCoord.xy, 0.0);',
+        'vec3 point = vertexPosition * substrateFrequency;'
+      )
+
+    const shader = makeShader(program, substrateShader);
+    /*
     const shader = makeShader(program, fuseShader);
     setUniform('textures', textures.slice(1), shader);
     setUniform('sampler', textures[0], shader);
+    */
     return shader;
   },
   material => {

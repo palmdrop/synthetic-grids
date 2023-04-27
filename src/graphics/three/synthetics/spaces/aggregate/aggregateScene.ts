@@ -8,7 +8,11 @@ import { createBackgroundRenderer } from './background';
 import { configMakers } from './configs';
 import { createFormation } from '../formations/formation';
 import { getRockConfig } from './configs';
-import { encodedProgram, makeShaderUpdater } from './aggregateShader';
+import { 
+  encodedDisplacementProgram, 
+  encodedFragmentProgram,
+  makeShaderUpdater 
+} from './aggregateShader';
 import { decodeProgram } from '../../../../../modules/substrates/src/stores/programStore';
 import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 
@@ -45,20 +49,24 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   });
 
   const object = new THREE.Mesh(
-    // new THREE.SphereBufferGeometry(20, 500, 500),
-    new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
+    new THREE.SphereBufferGeometry(20, 500, 500),
+    // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
     material
   );
 
   object.geometry.center();
 
   const updateShader = makeShaderUpdater(object);
-  decodeProgram(encodedProgram as any)
-    .then(program => {
-      updateShader(program)
+  Promise.all([
+    decodeProgram(encodedDisplacementProgram as any),
+    decodeProgram(encodedFragmentProgram as any),
+  ])
+    .then(([displacementProgram, fragmentProgram]) => {
+      updateShader(displacementProgram, fragmentProgram);
 
       // Gui
       const objectFolder = gui.addFolder('object');
+      const materialFolder = gui.addFolder('material');
 
       objectFolder
         .add({ samplerStrength: 0.001 }, 'samplerStrength', 0, 2)
@@ -88,6 +96,12 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         .add({ amplitude: 1 }, 'amplitude', 0, 100)
         .onChange(value => {
           setUniform('amplitude', value, object.material as any)
+        });
+
+      materialFolder
+        .add({ frequency: 1 }, 'frequency', 0, 20)
+        .onChange(value => {
+          setUniform('substrateFrequency', value, object.material as any)
         });
     });
 
@@ -138,6 +152,12 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
     setUniform(
       'animationTime',
       sceneProperties.time,
+      object.material
+    );
+
+    setUniform(
+      'time',
+      sceneProperties.time * 10.0,
       object.material
     );
   }

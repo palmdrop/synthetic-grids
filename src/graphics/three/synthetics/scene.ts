@@ -47,17 +47,17 @@ export type SyntheticSpace = {
 
 export const updateShaderUtil = (
   object: Synthetic<THREE.Mesh>['object'],
-  shaderMaker: (program: Program) => THREE.Shader,
+  shaderMaker: (program: Program, ...additionalPrograms: Program[]) => THREE.Shader,
   materialCallback: (material: THREE.ShaderMaterial) => void,
   uniformDefaults: { [name: string]: any },
   setter?: (material: THREE.ShaderMaterial, object: Synthetic<THREE.Mesh>['object']) => void
 ) => {
   let material: THREE.ShaderMaterial | undefined = undefined;
 
-  return (program: Program) => {
+  return (program: Program, ...additionalPrograms: Program[]) => {
     const oldMaterial = material;
 
-    const shader = shaderMaker(program);
+    const shader = shaderMaker(program, ...additionalPrograms);
     material = new THREE.ShaderMaterial(shader);
 
     if(oldMaterial) {
