@@ -179,6 +179,19 @@ const makeShader = (
 
         return offset;
       `
+    },
+    get3dOffset: {
+      parameters: [
+        [ 'vec3', 'samplePosition' ],
+      ],
+      returnType: 'vec3',
+      body: `
+        return vec3(
+          getOffset(samplePosition + 13.5),
+          getOffset(samplePosition + 1312.34),
+          getOffset(samplePosition - 234.181)
+        );
+      `
     }
   }
 
@@ -237,24 +250,11 @@ const makeShader = (
       normalOffset = n;
       */
 
-      /*
-      vec3 centerOffset = vec3(
-        getOffset(vec3(0.0)),
-        getOffset(vec3(0.0)),
-        getOffset(vec3(0.0))
-      );
-      */
-
       vec3 samplePosition = position + speed * animationTime;
 
-      vec3 offset = vec3(
-        getOffset(samplePosition + 13.5),
-        getOffset(samplePosition + 1312.34),
-        getOffset(samplePosition - 234.181)
-      );
-
-      // vec3 pos = position + offset - centerOffset;
-      vec3 pos = position + offset;
+      vec3 centerOffset = get3dOffset(vec3(0.0, 0.0, 0.0));
+      vec3 offset = get3dOffset(samplePosition);
+      vec3 pos = position + offset - centerOffset;
 
       normalOffset = length(normal) + length(offset);
 
@@ -280,8 +280,6 @@ const makeShader = (
     .vertexShader
     .replaceAll(') * time', ')')
     .replaceAll('gl_FragCoord', 'point');
-
-  console.log(shader.vertexShader);
 
   return shader;
 }
@@ -309,7 +307,8 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
         'vec3 point = vertexPosition * substrateFrequency;'
       )
 
-    const shader = makeShader(program, substrateShader);
+    // const shader = makeShader(program, substrateShader);
+    const shader = makeShader(program, mapNormalShader);
     /*
     const shader = makeShader(program, fuseShader);
     setUniform('textures', textures.slice(1), shader);
@@ -322,21 +321,21 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
     material.extensions.derivatives = true;
   },
   {
-    baseColor: new THREE.Color('black'),
-    lineColor: new THREE.Color('white'),
-    frequency: 0.5,
+    lineColor: new THREE.Color('#edeaea'),
+    baseColor: new THREE.Color('#232020'),
+    frequency: 0.1,
   
     scale: new THREE.Vector3(
       0, 
-      5,
+      15,
       0,
     ),
-    amplitude: 55,
+    amplitude: 200,
     speed: new THREE.Vector3(
       0,
       0,
       70
     ),
-    width: 1.1
+    width: 1.0
   }
 );

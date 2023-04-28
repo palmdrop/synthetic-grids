@@ -93,7 +93,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         });
 
       objectFolder
-        .add({ amplitude: 1 }, 'amplitude', 0, 100)
+        .add({ amplitude: 1 }, 'amplitude', 0, 200)
         .onChange(value => {
           setUniform('amplitude', value, object.material as any)
         });
@@ -169,7 +169,6 @@ export const getAggregateSpace = (
   const gui = renderScene.gui;
   gui.show();
   // Background
-  /*
   const updateBackgroundEffect = () => {
     const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
     updateBackground(backgroundConfig);
@@ -183,7 +182,6 @@ export const getAggregateSpace = (
 
   updateBackgroundEffect();
   renderScene.resizeables.push(backgroundRenderer);
-  */
 
   // Scene
   const parent = new THREE.Object3D();
@@ -225,8 +223,8 @@ export const getAggregateSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      // scene.background = backgroundRenderTarget.texture;
       scene.background = new THREE.Color('black');
+      scene.background = backgroundRenderTarget.texture;
         
       const directionalLight = new THREE.DirectionalLight(
         'white',
@@ -256,7 +254,7 @@ export const getAggregateSpace = (
       controls.zoomSpeed = 1;
       // controls.noPan = true;
     },
-    // backgroundRenderer,
+    backgroundRenderer,
     defaultSceneProperties: {
       scale: 1.0
     },
