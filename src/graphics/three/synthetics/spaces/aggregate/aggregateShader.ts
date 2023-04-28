@@ -14,11 +14,13 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // NICE ONE
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
-import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
+import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
 
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 
-// import encodedProgram from '../../../../../assets/substrates/forest-reflections/forest-reflection6.json';
+import encodedProgram from '../../../../../assets/substrates/forest-reflections/forest-reflection6.json';
 import { makeFuseShader } from '../../../../glsl/shaders/fuse/fuseShader';
 import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
@@ -196,7 +198,8 @@ const makeShader = (
   }
 
   const uniforms = {
-    ...JSON.parse(JSON.stringify(fragmentShader.uniforms)),
+    // ...JSON.parse(JSON.stringify(fragmentShader.uniforms)),
+    ...fragmentShader.uniforms,
     frequency: {
       value: 0.00000001,
       type: 'float'
@@ -307,8 +310,8 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
         'vec3 point = vertexPosition * substrateFrequency;'
       )
 
-    // const shader = makeShader(program, substrateShader);
-    const shader = makeShader(program, mapNormalShader);
+    const shader = makeShader(program, substrateShader);
+    // const shader = makeShader(program, mapNormalShader);
     /*
     const shader = makeShader(program, fuseShader);
     setUniform('textures', textures.slice(1), shader);
