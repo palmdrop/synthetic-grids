@@ -12,17 +12,18 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // import encodedProgram from '../../../../../assets/substrates/moss-structure/moss-structure2.json';
 
 // NICE ONE
+// import encodedDisplacementProgram from '../../../../../assets/substrates/moss-structure/moss-structure3.json';
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
 // import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
-import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
-// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
+import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
+
+// import encodedFragmentProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
+
 
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 
-import encodedProgram from '../../../../../assets/substrates/forest-reflections/forest-reflection6.json';
-import { makeFuseShader } from '../../../../glsl/shaders/fuse/fuseShader';
-import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
 
 export { 
@@ -261,7 +262,7 @@ const makeShader = (
 
       normalOffset = length(normal) + length(offset);
 
-      vertexPosition = (modelMatrix * vec4( pos, 1.0 )).xyz;
+      vertexPosition = (vec4( pos, 1.0 )).xyz;
       gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
     `
   };
@@ -327,6 +328,7 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
     lineColor: new THREE.Color('#edeaea'),
     baseColor: new THREE.Color('#232020'),
     frequency: 0.1,
+    substrateFrequency: 20,
   
     scale: new THREE.Vector3(
       0, 

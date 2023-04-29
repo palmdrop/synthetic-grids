@@ -93,13 +93,13 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         });
 
       objectFolder
-        .add({ amplitude: 1 }, 'amplitude', 0, 200)
+        .add({ amplitude: 1 }, 'amplitude', 0, 1000)
         .onChange(value => {
           setUniform('amplitude', value, object.material as any)
         });
 
       materialFolder
-        .add({ frequency: 1 }, 'frequency', 0, 20)
+        .add({ frequency: 1 }, 'frequency', 0, 100)
         .onChange(value => {
           setUniform('substrateFrequency', value, object.material as any)
         });
@@ -114,9 +114,13 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  const rotationForce = 0.005; // 0.0003;
+  // const rotationForce = 0.1; // 0.0003;
+  const rotationForce = 0.0; // 0.0003;
 
   const parent = synthetic.object;
+  parent.rotation.set(
+    0.3, 0, 0
+  )
 
   const rotationVelocity = new THREE.Vector3(
     0, 1, 0
@@ -169,6 +173,7 @@ export const getAggregateSpace = (
   const gui = renderScene.gui;
   gui.show();
   // Background
+  /*
   const updateBackgroundEffect = () => {
     const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
     updateBackground(backgroundConfig);
@@ -182,6 +187,7 @@ export const getAggregateSpace = (
 
   updateBackgroundEffect();
   renderScene.resizeables.push(backgroundRenderer);
+  */
 
   // Scene
   const parent = new THREE.Object3D();
@@ -223,8 +229,8 @@ export const getAggregateSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      scene.background = new THREE.Color('black');
-      scene.background = backgroundRenderTarget.texture;
+      scene.background = new THREE.Color('#838281');
+      // scene.background = backgroundRenderTarget.texture;
         
       const directionalLight = new THREE.DirectionalLight(
         'white',
@@ -242,7 +248,8 @@ export const getAggregateSpace = (
         ambientLight
       );
 
-      camera.position.set(0, 0, 80);
+      const orthographicCamera = camera as THREE.OrthographicCamera;
+      orthographicCamera.zoom = 0.6;
     },
     synthetics: [
       synthetic,
@@ -254,7 +261,7 @@ export const getAggregateSpace = (
       controls.zoomSpeed = 1;
       // controls.noPan = true;
     },
-    backgroundRenderer,
+    // backgroundRenderer,
     defaultSceneProperties: {
       scale: 1.0
     },
