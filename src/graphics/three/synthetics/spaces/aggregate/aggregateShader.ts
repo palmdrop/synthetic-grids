@@ -15,8 +15,8 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // import encodedDisplacementProgram from '../../../../../assets/substrates/moss-structure/moss-structure3.json';
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
-// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
-import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
+import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate4.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
 // import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
 
 // import encodedFragmentProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
@@ -155,14 +155,15 @@ const makeShader = (
     },
     getOffset: {
       parameters: [
-        [ 'vec3', 'position' ]
+        [ 'vec3', 'position' ],
+        [ 'bool', 'correct' ]
       ],
       returnType: 'float',
       body: `
         float f = frequency;
         float a = amplitude;
         float offset = 0.0;
-        float maxAmount = 0.0;
+        float maxOffset = 0.0;
         for(int i = 0; i < ${constants.octaves}; i++) {
           float n = a * ${programFunction.functionName}(
             f * position
@@ -171,28 +172,29 @@ const makeShader = (
           offset += quantize(
             n, 
             floor(
-              mapLinear(float(i), 0.0, float(${constants.octaves}), float(${constants.minSteps}), float(${constants.maxSteps}))
+              mapLinear(float(i), 0.0, float(${constants.octaves}), float(minSteps), float(maxSteps))
             )
           );
 
-          maxAmount += a;
-          f *= ${variableValueToGLSL({ type: 'float', value: constants.lacunarity })};
-          a *= ${variableValueToGLSL({ type: 'float', value: constants.persistance })};
+          maxOffset += a;
+          f *= lacunarity;
+          a *= persistance;
         }
 
-        return offset;
+        return offset - (correct ? amplitude * correction : 0.0);
       `
     },
     get3dOffset: {
       parameters: [
         [ 'vec3', 'samplePosition' ],
+        [ 'bool', 'correct' ],
       ],
       returnType: 'vec3',
       body: `
         return vec3(
-          getOffset(samplePosition + 13.5),
-          getOffset(samplePosition + 1312.34),
-          getOffset(samplePosition - 234.181)
+          getOffset(samplePosition, correct),
+          getOffset(samplePosition + 120.34, correct),
+          getOffset(samplePosition - 145.181, correct)
         );
       `
     }
@@ -220,6 +222,26 @@ const makeShader = (
     substrateFrequency: {
       value: 5,
       type: 'float'
+    },
+    correction: {
+      value: 0.0,
+      type: 'float'
+    },
+    persistance: {
+      value: 0.5,
+      type: 'float'
+    },
+    lacunarity: {
+      value: 2.0,
+      type: 'float'
+    },
+    minSteps: {
+      value: 5,
+      type: 'int'
+    },
+    maxSteps: {
+      value: 100,
+      type: 'int'
     },
     ...programFunction.uniforms
   };
@@ -256,8 +278,8 @@ const makeShader = (
 
       vec3 samplePosition = position + speed * animationTime;
 
-      vec3 centerOffset = get3dOffset(vec3(0.0, 0.0, 0.0));
-      vec3 offset = get3dOffset(samplePosition);
+      vec3 centerOffset = get3dOffset(vec3(0.0, 20.0, 0.0), false);
+      vec3 offset = get3dOffset(samplePosition, true);
       vec3 pos = position + offset - centerOffset;
 
       normalOffset = length(normal) + length(offset);

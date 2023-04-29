@@ -54,8 +54,6 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
     material
   );
 
-  object.geometry.center();
-
   const updateShader = makeShaderUpdater(object);
   Promise.all([
     decodeProgram(encodedDisplacementProgram as any),
@@ -68,6 +66,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
       const objectFolder = gui.addFolder('object');
       const materialFolder = gui.addFolder('material');
 
+      /*
       objectFolder
         .add({ samplerStrength: 0.001 }, 'samplerStrength', 0, 2)
         .onChange(value => {
@@ -85,24 +84,34 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         .onChange(value => {
           setUniform('power', value, object.material as any)
         });
+      */
+      const addUniformSlider = (
+        gui: dat.GUI,
+        name: string,
+        defaultValue: number,
+        min: number,
+        max: number,
+        step?: number
+      ) => {
+        setUniform(name, defaultValue, object.material as any);
+        gui
+          .add({ [name]: defaultValue }, name, min, max, step)
+          .onChange(value => {
+            setUniform(name, value, object.material as any)
+          });
+      }
 
-      objectFolder
-        .add({ frequency: 1 }, 'frequency', 0, 1)
-        .onChange(value => {
-          setUniform('frequency', value, object.material as any)
-        });
+      addUniformSlider(objectFolder, 'correction', 0.0, -100, 100);
+      addUniformSlider(objectFolder, 'frequency', 0.1, 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', 250, 0, 400);
 
-      objectFolder
-        .add({ amplitude: 1 }, 'amplitude', 0, 1000)
-        .onChange(value => {
-          setUniform('amplitude', value, object.material as any)
-        });
+      addUniformSlider(objectFolder, 'persistance', 0.5, 0, 1);
+      addUniformSlider(objectFolder, 'lacunarity', 2, 0, 10);
 
-      materialFolder
-        .add({ frequency: 1 }, 'frequency', 0, 100)
-        .onChange(value => {
-          setUniform('substrateFrequency', value, object.material as any)
-        });
+      addUniformSlider(objectFolder, 'minSteps', 5, 0, 100, 1);
+      addUniformSlider(objectFolder, 'maxSteps', 100, 0, 1000, 1);
+
+      addUniformSlider(materialFolder, 'substrateFrequency', 15, 0, 100);
     });
 
   parent.clear();
@@ -115,12 +124,15 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   // const rotationForce = 0.1; // 0.0003;
+  // const rotationForce = 0.3; // 0.0003;
   const rotationForce = 0.0; // 0.0003;
 
   const parent = synthetic.object;
+  /*
   parent.rotation.set(
     0.3, 0, 0
   )
+  */
 
   const rotationVelocity = new THREE.Vector3(
     0, 1, 0
@@ -146,22 +158,15 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
     object.rotation.y += rotationVelocity.y * delta;
     object.rotation.z += rotationVelocity.z * delta;
 
-    /*
-    setUniform(
-      'time',
-      sceneProperties.time,
-      object.material
-    );
-    */
     setUniform(
       'animationTime',
-      sceneProperties.time,
+      sceneProperties.time * 0.1,
       object.material
     );
 
     setUniform(
       'time',
-      sceneProperties.time * 10.0,
+      sceneProperties.time * 0.1,
       object.material
     );
   }
