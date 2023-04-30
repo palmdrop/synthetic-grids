@@ -15,8 +15,8 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // import encodedDisplacementProgram from '../../../../../assets/substrates/moss-structure/moss-structure3.json';
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
-import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate4.json';
-// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate4.json';
+import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
 // import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
 
 // import encodedFragmentProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
@@ -181,7 +181,7 @@ const makeShader = (
           a *= persistance;
         }
 
-        return offset - (correct ? amplitude * correction : 0.0);
+        return (offset - (correct ? (amplitude * correction + add) : 0.0)) * mult;
       `
     },
     get3dOffset: {
@@ -212,7 +212,7 @@ const makeShader = (
       type: 'float'
     },
     speed: {
-      value: new THREE.Vector3(0, 0, 1),
+      value: new THREE.Vector3(1, 1, 1),
       type: 'vec3'
     },
     animationTime: {
@@ -243,6 +243,14 @@ const makeShader = (
       value: 100,
       type: 'int'
     },
+    add: {
+      value: 0,
+      type: 'float'
+    },
+    mult: {
+      value: 1,
+      type: 'float'
+    },
     ...programFunction.uniforms
   };
 
@@ -263,7 +271,7 @@ const makeShader = (
 
       /*
       float n = getOffset(
-        position + speed * time
+        position + speed * time, false
       );
 
       vec3 pos = vec3(
@@ -276,9 +284,15 @@ const makeShader = (
       normalOffset = n;
       */
 
-      vec3 samplePosition = position + speed * animationTime;
+      float sampleRange = 80.0;
 
-      vec3 centerOffset = get3dOffset(vec3(0.0, 20.0, 0.0), false);
+      vec3 samplePosition = position + vec3(
+        sin(animationTime * speed.x) * sampleRange,
+        cos(animationTime * speed.y) * sampleRange,
+        0.0
+      );
+
+      vec3 centerOffset = get3dOffset(vec3(0.0, 0.0, 0.0), false);
       vec3 offset = get3dOffset(samplePosition, true);
       vec3 pos = position + offset - centerOffset;
 
@@ -359,8 +373,8 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
     ),
     amplitude: 200,
     speed: new THREE.Vector3(
-      0,
-      0,
+      1,
+      1,
       70
     ),
     width: 1.0

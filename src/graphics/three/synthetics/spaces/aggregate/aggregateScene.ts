@@ -101,6 +101,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
           });
       }
 
+      // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -100, 100);
       addUniformSlider(objectFolder, 'frequency', 0.1, 0, 1);
       addUniformSlider(objectFolder, 'amplitude', 250, 0, 400);
@@ -110,6 +111,9 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       addUniformSlider(objectFolder, 'minSteps', 5, 0, 100, 1);
       addUniformSlider(objectFolder, 'maxSteps', 100, 0, 1000, 1);
+
+      addUniformSlider(objectFolder, 'add', 0, -200, 200);
+      addUniformSlider(objectFolder, 'mult', 1, 0, 100);
 
       addUniformSlider(materialFolder, 'substrateFrequency', 15, 0, 100);
     });
@@ -125,14 +129,12 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   // const rotationForce = 0.1; // 0.0003;
   // const rotationForce = 0.3; // 0.0003;
-  const rotationForce = 0.0; // 0.0003;
+  const rotationForce = 0.3;
 
   const parent = synthetic.object;
-  /*
   parent.rotation.set(
-    0.3, 0, 0
+    0.3, Math.PI, 0
   )
-  */
 
   const rotationVelocity = new THREE.Vector3(
     0, 1, 0
@@ -160,7 +162,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
     setUniform(
       'animationTime',
-      sceneProperties.time * 0.1,
+      sceneProperties.time * 1,
       object.material
     );
 
