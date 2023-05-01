@@ -251,6 +251,18 @@ const makeShader = (
       value: 1,
       type: 'float'
     },
+    translationX: {
+      value: 0,
+      type: 'float'
+    },
+    translationY: {
+      value: 0,
+      type: 'float'
+    },
+    translationZ: {
+      value: 0,
+      type: 'float'
+    },
     ...programFunction.uniforms
   };
 
@@ -287,9 +299,9 @@ const makeShader = (
       float sampleRange = 80.0;
 
       vec3 samplePosition = position + vec3(
-        sin(animationTime * speed.x) * sampleRange,
-        cos(animationTime * speed.y) * sampleRange,
-        0.0
+        sin(animationTime * speed.x) * sampleRange + translationX,
+        cos(animationTime * speed.y) * sampleRange + translationY,
+        0.0 + translationZ
       );
 
       vec3 centerOffset = get3dOffset(vec3(0.0, 0.0, 0.0), false);
@@ -326,8 +338,8 @@ const makeShader = (
 
 // TODO: try makeFuseShader for making the fuse image part of the code?
 
-export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
-  object,
+export const makeShaderUpdater = (object: THREE.Mesh, ...rest: THREE.Mesh[]) => updateShaderUtil(
+  [object, ...rest],
   // program => makeShader(program, mapNormalShader),
   (program, substrateProgram) => {
     // const { fuseShader, textures } = getFuseShader();
@@ -340,11 +352,27 @@ export const makeShaderUpdater = (object: THREE.Mesh) => updateShaderUtil(
         `varying vec2 vUv;
          varying vec3 vertexPosition;
          uniform float substrateFrequency;
+         uniform float translationX;
+         uniform float translationY;
+         uniform float translationZ;
         `
       )
       .replace(
         'vec3 point = vec3(gl_FragCoord.xy, 0.0);',
-        'vec3 point = vertexPosition * substrateFrequency;'
+        `
+          float x = vertexPosition.x;
+          float y = vertexPosition.y;
+          float z = vertexPosition.z;
+          float speed = 10.0;
+
+          vec3 point = vec3(
+            x * cos(time * speed) - z * sin(time * speed),
+            y,
+            z * cos(time * speed) + x * sin(time * speed)
+          ) * substrateFrequency;
+
+          // point += vec3(translationX, translationY, translationZ);
+        `
       )
 
     const shader = makeShader(program, substrateShader);

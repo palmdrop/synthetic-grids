@@ -48,13 +48,31 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
     side: THREE.DoubleSide
   });
 
-  const object = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(20, 500, 500),
-    // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
-    material
-  );
+  const rows = 2;
+  const columns = 3;
 
-  const updateShader = makeShaderUpdater(object);
+  const objects: THREE.Mesh[] = [];
+  for(let x = 0; x < columns; x++) for(let y = 0; y < rows; y++) {
+    const dx = x - ((columns - 1) / 2.0);
+    const dy = y - ((rows - 1) / 2.0);
+    console.log(dx, dy);
+    const object = new THREE.Mesh(
+      new THREE.SphereBufferGeometry(20, 200, 200),
+      // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
+      material
+    );
+    object.position.set(dx * 60, dy * 60, 0);
+    object.scale.set(0.5, 1, 1);
+    object.userData.translationX = object.position.x;
+    object.userData.translationY = object.position.y;
+    object.userData.translationZ = object.position.z;
+
+    object.rotateY(Math.random() * Math.PI);
+    
+    objects.push(object);
+  }
+
+  const updateShader = makeShaderUpdater(objects[0], ...objects.slice(1));
   Promise.all([
     decodeProgram(encodedDisplacementProgram as any),
     decodeProgram(encodedFragmentProgram as any),
@@ -93,18 +111,20 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
         max: number,
         step?: number
       ) => {
-        setUniform(name, defaultValue, object.material as any);
+        objects.forEach(object => setUniform(name, defaultValue, object.material as any));
         gui
           .add({ [name]: defaultValue }, name, min, max, step)
           .onChange(value => {
-            setUniform(name, value, object.material as any)
+            objects.forEach(object => {
+              setUniform(name, value, object.material as any)
+            })
           });
       }
 
       // TODO: save to local storage and read on app load
-      addUniformSlider(objectFolder, 'correction', 0.0, -100, 100);
-      addUniformSlider(objectFolder, 'frequency', 0.1, 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', 250, 0, 400);
+      addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.1), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', 160, 0, 400);
 
       addUniformSlider(objectFolder, 'persistance', 0.5, 0, 1);
       addUniformSlider(objectFolder, 'lacunarity', 2, 0, 10);
@@ -119,17 +139,18 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
     });
 
   parent.clear();
-  parent.add(object);
+  parent.add(...objects);
 
-  updateCamera(object, renderScene);
+  updateCamera(parent, renderScene);
 
-  return object;
+  return objects;
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
   // const rotationForce = 0.1; // 0.0003;
   // const rotationForce = 0.3; // 0.0003;
-  const rotationForce = 0.3;
+  // const rotationForce = 0.3;
+  const rotationForce = 0.0;
 
   const parent = synthetic.object;
   parent.rotation.set(
@@ -154,23 +175,42 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
   createObject(parent, renderScene);
 
   synthetic.update = (sceneProperties, renderScene, delta) => {
-    const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
+    parent.children.forEach((object: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>) => {
+      // const object = parent.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
 
-    object.rotation.x += rotationVelocity.x * delta;
-    object.rotation.y += rotationVelocity.y * delta;
-    object.rotation.z += rotationVelocity.z * delta;
+      object.rotation.x += rotationVelocity.x * delta;
+      object.rotation.y += rotationVelocity.y * delta;
+      object.rotation.z += rotationVelocity.z * delta;
 
-    setUniform(
-      'animationTime',
-      sceneProperties.time * 1,
-      object.material
-    );
+      setUniform(
+        'translationX',
+        object.userData.translationX ?? 0,
+        object.material
+      );
+      setUniform(
+        'translationY',
+        object.userData.translationY ?? 0,
+        object.material
+      );
+      setUniform(
+        'translationZ',
+        object.userData.translationZ ?? 0,
+        object.material
+      );
 
-    setUniform(
-      'time',
-      sceneProperties.time * 0.1,
-      object.material
-    );
+      setUniform(
+        'animationTime',
+        sceneProperties.time * 3,
+        object.material
+      );
+
+      setUniform(
+        'time',
+        sceneProperties.time * 0.1,
+        object.material
+      );
+    });
+
   }
 }
 
@@ -256,7 +296,7 @@ export const getAggregateSpace = (
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;
-      orthographicCamera.zoom = 0.6;
+      orthographicCamera.zoom = 0.5;
     },
     synthetics: [
       synthetic,

@@ -46,7 +46,7 @@ export type SyntheticSpace = {
 }
 
 export const updateShaderUtil = (
-  object: Synthetic<THREE.Mesh>['object'],
+  object: Synthetic<THREE.Mesh>['object'] | Synthetic<THREE.Mesh>['object'][],
   shaderMaker: (program: Program, ...additionalPrograms: Program[]) => THREE.Shader,
   materialCallback: (material: THREE.ShaderMaterial) => void,
   uniformDefaults: { [name: string]: any },
@@ -75,11 +75,23 @@ export const updateShaderUtil = (
       })
     }
 
-    if(!setter) {
-      object.material = material;
+    if(Array.isArray(object)) {
+      (object as Synthetic<THREE.Mesh>['object'][]).forEach(object => {
+        const materialCopy = material.clone();
+        if(setter) {
+          setter(materialCopy, object);
+        } else {
+          object.material = materialCopy;
+        }
+      })
     } else {
-      setter(material, object);
+      if(setter) {
+        setter(material, object);
+      } else {
+        object.material = material;
+      }
     }
+
     materialCallback(material);
   }
 }
