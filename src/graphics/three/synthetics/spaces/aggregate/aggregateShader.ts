@@ -5,7 +5,6 @@ import { updateShaderUtil } from "../../scene";
 import { Program } from '../../../../../modules/substrates/src/interface/types/program/program';
 import { buildProgramFunction, buildProgramShader } from '../../../../../modules/substrates/src/shader/builder/programBuilder';
 import { buildShader } from '../../../../../modules/substrates/src/shader/builder/shaderBuilder';
-import { variableValueToGLSL } from '../../../../../modules/substrates/src/shader/builder/utils/glsl';
 
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
 // import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
@@ -15,14 +14,9 @@ import { variableValueToGLSL } from '../../../../../modules/substrates/src/shade
 // import encodedDisplacementProgram from '../../../../../assets/substrates/moss-structure/moss-structure3.json';
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
-// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate4.json';
-import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid1.json';
-// import encodedFragmentProgram from '../../../../../assets/substrates/foliage-grids/foliage-grid5.json';
-
-// import encodedFragmentProgram from '../../../../../assets/substrates/jolt-gate/gate5.json';
-
-
-// import encodedProgram from '../../../../../assets/substrates/jolt-gate/gate2.json';
+const encodedFragmentPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregates/*.json'));
+// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
+const encodedFragmentProgram = encodedFragmentPrograms[Math.floor(Math.random() * encodedFragmentPrograms.length)];
 
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
 
@@ -165,6 +159,8 @@ const makeShader = (
         float offset = 0.0;
         float maxOffset = 0.0;
         for(int i = 0; i < ${constants.octaves}; i++) {
+          // NOTE: this is not the correct formations implementation.
+          // NOTE: Do not multiply with "a" here, instead, multiply the result of the quantize function below
           float n = a * ${programFunction.functionName}(
             f * position
           );

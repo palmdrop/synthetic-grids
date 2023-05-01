@@ -65,7 +65,7 @@
         "scale": {
           "kind": "static",
           "type": "float",
-          "value": 0.0010099,
+          "value": 0.00080099,
           "min": 0.00001,
           "max": 0.1,
           "excludeFromFunction": true,
@@ -246,9 +246,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "0020b7e2-ecc1-47dc-885c-defb41333829",
+            "uuid": "3455a972-ea16-426f-aacb-c6a2ac5640c6",
             "name": "rocks4.jpg",
-            "image": "523e2e76-8e89-42c2-92a8-43a2c5d1b716",
+            "image": "ca9a6a51-a0ee-4414-a2ce-3b2634f21662",
             "mapping": 300,
             "repeat": [
               1,

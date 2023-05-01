@@ -8,7 +8,7 @@
       "y": -250.80259079062736,
       "width": 200,
       "height": 212,
-      "layer": 174,
+      "layer": 172,
       "fields": {
         "point": {
           "kind": "static",
@@ -65,7 +65,7 @@
         "scale": {
           "kind": "static",
           "type": "float",
-          "value": 0.0010099,
+          "value": 0.0030097,
           "min": 0.00001,
           "max": 0.1,
           "excludeFromFunction": true,
@@ -1810,7 +1810,7 @@
         "hovered": false,
         "active": false
       },
-      "layer": 31,
+      "layer": 174,
       "fields": {
         "source": {
           "kind": "dynamic",
@@ -1835,7 +1835,7 @@
         "contrast": {
           "kind": "dynamic",
           "type": "float",
-          "value": 0.88,
+          "value": 1.38,
           "min": 0,
           "max": 2,
           "anchor": {
@@ -1850,7 +1850,7 @@
         "brightness": {
           "kind": "dynamic",
           "type": "float",
-          "value": 0.04,
+          "value": 0.09,
           "anchor": {
             "size": 16,
             "x": 0,
@@ -1913,9 +1913,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "ebd06caa-48b0-4b6f-8839-753206b7fa17",
+            "uuid": "3a09cf59-f46c-4645-9628-9ccc015c1703",
             "name": "cloud4.jpg",
-            "image": "2a23f10e-0e37-4378-8630-7ef7fc362c06",
+            "image": "fe307721-5ebc-401f-aa23-ba7c2674cd2a",
             "mapping": 300,
             "repeat": [
               1,
@@ -2038,7 +2038,7 @@
         "hovered": false,
         "active": false
       },
-      "layer": 172,
+      "layer": 31,
       "fields": {
         "value1": {
           "kind": "dynamic",
@@ -2553,9 +2553,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "ad5377f3-0465-4170-8356-07a5e529bea7",
+            "uuid": "3dfca8e2-7fcf-4fec-bb5f-0d29b36d937b",
             "name": "cloud2.jpg",
-            "image": "547fedee-e85f-4053-a137-6b8f1d53cb27",
+            "image": "4901df93-fbda-4df1-8c10-25a0a123f928",
             "mapping": 300,
             "repeat": [
               1,
@@ -2666,8 +2666,8 @@
     }
   },
   "position": {
-    "x": -1350.2705857857832,
-    "y": 104.92769862147578
+    "x": -1386.0433130027197,
+    "y": -102.79905506977249
   },
-  "zoom": 1.17932067748143
+  "zoom": 1.0079663910097691
 }

@@ -8,7 +8,7 @@
       "y": -250.80259079062736,
       "width": 200,
       "height": 212,
-      "layer": 172,
+      "layer": 177,
       "fields": {
         "point": {
           "kind": "static",
@@ -65,7 +65,7 @@
         "scale": {
           "kind": "static",
           "type": "float",
-          "value": 0.0020098,
+          "value": 0.0040096,
           "min": 0.00001,
           "max": 0.1,
           "excludeFromFunction": true,
@@ -197,7 +197,7 @@
       "returnType": "vec3",
       "id": "29",
       "hovered": false,
-      "active": false,
+      "active": true,
       "elevated": false
     },
     "33": {
@@ -1810,7 +1810,7 @@
         "hovered": false,
         "active": false
       },
-      "layer": 177,
+      "layer": 172,
       "fields": {
         "source": {
           "kind": "dynamic",
@@ -1835,7 +1835,7 @@
         "contrast": {
           "kind": "dynamic",
           "type": "float",
-          "value": 0.88,
+          "value": 0.56,
           "min": 0,
           "max": 2,
           "anchor": {
@@ -1850,7 +1850,7 @@
         "brightness": {
           "kind": "dynamic",
           "type": "float",
-          "value": 0.15,
+          "value": 0.16,
           "anchor": {
             "size": 16,
             "x": 0,
@@ -1864,7 +1864,7 @@
       "returnType": "vec3",
       "id": "173",
       "elevated": false,
-      "active": true,
+      "active": false,
       "hovered": false
     },
     "175": {
@@ -1913,9 +1913,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "d8a07e6a-76e5-42de-be5d-62475245051b",
+            "uuid": "7d655218-f775-4465-a888-ef0c957d29a4",
             "name": "cig1.jpg",
-            "image": "444be2d4-b69d-4062-8fb0-932e56f50e27",
+            "image": "6f5e968a-5527-4bb2-9eae-8c4f4ccb534f",
             "mapping": 300,
             "repeat": [
               1,
@@ -2553,9 +2553,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "a4930732-83e4-4541-8e43-613f83f8043e",
+            "uuid": "8fd9c530-3e5c-42b9-9843-5851043dd15b",
             "name": "cig2.jpg",
-            "image": "68079055-6e97-4dd1-a921-1e8e0ec01f65",
+            "image": "1cc9e985-ab6f-48a7-9b6b-9272c4e327d3",
             "mapping": 300,
             "repeat": [
               1,

@@ -6,8 +6,6 @@ import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
 import { createBackgroundRenderer } from './background';
 import { configMakers } from './configs';
-import { createFormation } from '../formations/formation';
-import { getRockConfig } from './configs';
 import { 
   encodedDisplacementProgram, 
   encodedFragmentProgram,
@@ -48,26 +46,31 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
     side: THREE.DoubleSide
   });
 
+  /*
   const rows = 2;
   const columns = 3;
+  */
+  const rows = 1;
+  const columns = 1;
 
   const objects: THREE.Mesh[] = [];
   for(let x = 0; x < columns; x++) for(let y = 0; y < rows; y++) {
     const dx = x - ((columns - 1) / 2.0);
     const dy = y - ((rows - 1) / 2.0);
-    console.log(dx, dy);
     const object = new THREE.Mesh(
       new THREE.SphereBufferGeometry(20, 200, 200),
       // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
       material
     );
     object.position.set(dx * 60, dy * 60, 0);
-    object.scale.set(0.5, 1, 1);
+    // object.scale.set(0.5, 1, 1);
     object.userData.translationX = object.position.x;
     object.userData.translationY = object.position.y;
     object.userData.translationZ = object.position.z;
 
     object.rotateY(Math.random() * Math.PI);
+    
+    object.visible = false;
     
     objects.push(object);
   }
@@ -79,6 +82,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   ])
     .then(([displacementProgram, fragmentProgram]) => {
       updateShader(displacementProgram, fragmentProgram);
+
+      objects.forEach(object => object.visible = true);
 
       // Gui
       const objectFolder = gui.addFolder('object');
@@ -123,11 +128,11 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.1), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', 160, 0, 400);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.15), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(150, 300), 0, 400);
 
-      addUniformSlider(objectFolder, 'persistance', 0.5, 0, 1);
-      addUniformSlider(objectFolder, 'lacunarity', 2, 0, 10);
+      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.45, 0.55), 0, 1);
+      addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(1.8, 2.3), 0, 10);
 
       addUniformSlider(objectFolder, 'minSteps', 5, 0, 100, 1);
       addUniformSlider(objectFolder, 'maxSteps', 100, 0, 1000, 1);
@@ -147,30 +152,16 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 }
 
 const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
-  // const rotationForce = 0.1; // 0.0003;
-  // const rotationForce = 0.3; // 0.0003;
-  // const rotationForce = 0.3;
-  const rotationForce = 0.0;
+  const rotationForce = 0.03;
 
   const parent = synthetic.object;
   parent.rotation.set(
-    0.3, Math.PI, 0
+    0.3, THREE.MathUtils.randFloat(-Math.PI, Math.PI), 0
   )
 
   const rotationVelocity = new THREE.Vector3(
     0, 1, 0
   ).multiplyScalar(rotationForce);
-
-  let scale: number;
-  let value: number;
-
-  if(Math.random() > 0.5) {
-    scale = THREE.MathUtils.randFloat(0.07, 0.1);
-    value = THREE.MathUtils.randFloat(0.4, 0.8);
-  } else {
-    scale = THREE.MathUtils.randFloat(0.01, 0.04);
-    value = THREE.MathUtils.randFloat(3.0, 10.0);
-  }
 
   createObject(parent, renderScene);
 
@@ -220,21 +211,19 @@ export const getAggregateSpace = (
   const gui = renderScene.gui;
   gui.show();
   // Background
-  /*
-  const updateBackgroundEffect = () => {
-    const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
-    updateBackground(backgroundConfig);
-  }
-
   const {
     backgroundRenderer,
     renderTarget: backgroundRenderTarget,
     update: updateBackground
   } = createBackgroundRenderer(renderScene.renderer, renderScene.scene, renderScene.camera);
 
+  const updateBackgroundEffect = () => {
+    const backgroundConfig = configMakers[Math.floor(Math.random() * configMakers.length)]();
+    updateBackground(backgroundConfig);
+  }
+
   updateBackgroundEffect();
   renderScene.resizeables.push(backgroundRenderer);
-  */
 
   // Scene
   const parent = new THREE.Object3D();
@@ -276,8 +265,7 @@ export const getAggregateSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      scene.background = new THREE.Color('#838281');
-      // scene.background = backgroundRenderTarget.texture;
+      scene.background = backgroundRenderTarget.texture;
         
       const directionalLight = new THREE.DirectionalLight(
         'white',
@@ -296,7 +284,7 @@ export const getAggregateSpace = (
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;
-      orthographicCamera.zoom = 0.5;
+      orthographicCamera.zoom = 0.6;
     },
     synthetics: [
       synthetic,
@@ -308,7 +296,7 @@ export const getAggregateSpace = (
       controls.zoomSpeed = 1;
       // controls.noPan = true;
     },
-    // backgroundRenderer,
+    backgroundRenderer,
     defaultSceneProperties: {
       scale: 1.0
     },
