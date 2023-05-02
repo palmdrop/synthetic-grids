@@ -295,12 +295,12 @@ const makeShader = (
       float sampleRange = 120.0;
 
       vec3 samplePosition = position + vec3(
-        /*
         sin(animationTime * speed.x) * sampleRange + translationX,
         cos(animationTime * speed.y) * sampleRange + translationY,
-        */
+        /*
         animationTime * speed.x + translationX,
         animationTime * speed.y + translationY,
+        */
         0.0 + translationZ
       );
 
