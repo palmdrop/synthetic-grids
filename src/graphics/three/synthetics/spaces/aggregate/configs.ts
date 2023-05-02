@@ -11,7 +11,8 @@ export const grayFade = (): BackgroundConfig => ({
     rotation: 0.0,
     colorCorrection: new THREE.Vector3(
       1.0, 1.0, 1.0
-    ).multiplyScalar(0.9),
+    ).multiplyScalar(0.98)
+    ,
     dithering: 0.035,
   },
   blur: {

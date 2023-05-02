@@ -128,8 +128,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.15), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(150, 300), 0, 400);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.05, 0.09), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(400, 600), 0, 800);
 
       addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.45, 0.55), 0, 1);
       addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(1.8, 2.3), 0, 10);
@@ -197,7 +197,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
       setUniform(
         'time',
-        sceneProperties.time * 0.1,
+        sceneProperties.time * 0.5,
         object.material
       );
     });
