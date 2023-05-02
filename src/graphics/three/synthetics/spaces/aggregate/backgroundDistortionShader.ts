@@ -14,8 +14,16 @@ export const BackgroundDistortionShader = {
 		'opacity': { value: 1.0, type: 'float' },
 
     'backgroundColor': {
-      value: new THREE.Vector4(0.0, 0.0, 0.0, 1.0),
+      value: new THREE.Vector4(0.5, 0.5, 0.5, 1.0),
       type: 'vec4'
+    },
+    'lerpToBackground': {
+      value: 0.001,
+      type: 'float'
+    },
+    'gridCellSize': {
+      value: 50.0,
+      type: 'float'
     },
     'scale': {
       value: new THREE.Vector2(1.0, 1.0).multiplyScalar(THREE.MathUtils.randFloat(1.21, 1.34)), 
@@ -31,13 +39,13 @@ export const BackgroundDistortionShader = {
     },
     'colorCorrection': {
       value: new THREE.Vector3(
-        0.98, 0.98, 0.98
-      ),
+        1.0, 1.0, 1.0
+      ).multiplyScalar(1.02),
       type: 'vec3'
     },
     'dithering': {
       type: 'float',
-      value: 0.1
+      value: 0.05
     },
     'ditheringTextureDimensions': {
       type: 'vec2',
@@ -75,10 +83,12 @@ export const BackgroundDistortionShader = {
 		uniform float rotation;
 		uniform vec3 colorCorrection;
 		uniform vec4 backgroundColor;
+    uniform float lerpToBackground;
 
     uniform float dithering;
     uniform vec2 ditheringTextureDimensions;
     uniform sampler2D tDithering;
+    uniform float gridCellSize;
 
     uniform float time;
     uniform float delta;
@@ -108,6 +118,13 @@ export const BackgroundDistortionShader = {
       vec2 ditheringCoord = gl_FragCoord.xy / ditheringTextureDimensions + vec2(fract(time * 13.41), fract(time * 3.451));
       vec3 ditheringValue = dithering * texture(tDithering, ditheringCoord).rgb - dithering / 2.0;
       gl_FragColor.rgb += ditheringValue;      
+
+      float gridWidth = 1.0;
+      if(mod(gl_FragCoord.x, gridCellSize) < gridWidth || mod(gl_FragCoord.y, gridCellSize) < gridWidth) {
+        gl_FragColor.rgb += vec3(0.009, 0.01, 0.009);
+      }
+
+      gl_FragColor.rgb = mix(gl_FragColor.rgb, backgroundColor.rgb, lerpToBackground);
 
 			gl_FragColor.a = opacity;
 		}`

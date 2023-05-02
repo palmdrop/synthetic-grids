@@ -128,8 +128,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.05, 0.09), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(400, 600), 0, 800);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.1), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(300, 400), 0, 800);
 
       addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.45, 0.55), 0, 1);
       addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(1.8, 2.3), 0, 10);
@@ -191,7 +191,7 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
       setUniform(
         'animationTime',
-        sceneProperties.time * 3,
+        sceneProperties.time * 2.7,
         object.material
       );
 
@@ -278,9 +278,19 @@ export const getAggregateSpace = (
         0.3
       );
 
+      const grid = new THREE.GridHelper(
+        200, 50, 
+        '#8b9084',
+        '#8b9084',
+      )
+
+      grid.rotation.set(Math.PI / 2, 0, 0);
+      grid.position.set(0, 0, -10);
+
       scene.add(
         directionalLight,
-        ambientLight
+        ambientLight,
+        // grid
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;
