@@ -278,19 +278,9 @@ export const getAggregateSpace = (
         0.3
       );
 
-      const grid = new THREE.GridHelper(
-        200, 50, 
-        '#8b9084',
-        '#8b9084',
-      )
-
-      grid.rotation.set(Math.PI / 2, 0, 0);
-      grid.position.set(0, 0, -10);
-
       scene.add(
         directionalLight,
-        ambientLight,
-        // grid
+        ambientLight
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;

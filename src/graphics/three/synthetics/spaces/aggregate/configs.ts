@@ -18,8 +18,8 @@ export const grayFade = (): BackgroundConfig => ({
     */
   },
   blur: {
-    x: 0.00002,
-    y: 0.00002,
+    x: 0.00001,
+    y: 0.00001,
   }
 });
 
