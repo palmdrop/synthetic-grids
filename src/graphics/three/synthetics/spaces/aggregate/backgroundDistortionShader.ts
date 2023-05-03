@@ -52,7 +52,7 @@ export const BackgroundDistortionShader = {
       value: new THREE.Vector3(
         1.0, 1.0, 1.0
       )
-      .multiplyScalar(1.03)
+      .multiplyScalar(1.04)
       ,
       type: 'vec3'
     },
