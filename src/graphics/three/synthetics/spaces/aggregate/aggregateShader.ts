@@ -15,7 +15,7 @@ import { buildShader } from '../../../../../modules/substrates/src/shader/builde
 // import encodedDisplacementProgram from '../../../../../assets/substrates/sediments/sediment5.json';
 import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
 const encodedFragmentPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregates/*.json'));
-// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate1.json';
+// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate10.json';
 const encodedFragmentProgram = encodedFragmentPrograms[Math.floor(Math.random() * encodedFragmentPrograms.length)];
 
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
