@@ -207,9 +207,11 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
 export const getAggregateSpace = (
   renderScene: AbstractRenderScene,
+  interactive?: boolean
 ): SyntheticSpace => {
-  const gui = renderScene.gui;
-  gui.show();
+  if(interactive) {
+    renderScene.gui.show();
+  }
   // Background
   const {
     backgroundRenderer,
@@ -284,7 +286,7 @@ export const getAggregateSpace = (
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;
-      orthographicCamera.zoom = 0.6;
+      orthographicCamera.zoom = 0.5;
     },
     synthetics: [
       synthetic,
