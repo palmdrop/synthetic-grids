@@ -23,7 +23,7 @@ export class SyntheticGrids extends AbstractRenderScene {
     spaceCreator: (renderScene: AbstractRenderScene, interactive?: boolean) => SyntheticSpace,
     spaceMetadata: Record<string, any>,
     onLoad?: VoidCallback | undefined,
-    interactive = true
+    private interactive = true
   ) {
     super(canvas, onLoad, spaceMetadata.postProcessing);
 
@@ -148,6 +148,8 @@ export class SyntheticGrids extends AbstractRenderScene {
   }
 
   toggleGUI() {
+    if(!this.interactive) return;
+
     if(this.guiVisible) {
       this.gui.hide();
     } else {
