@@ -20,14 +20,14 @@ export class SyntheticGrids extends AbstractRenderScene {
 
   constructor(
     canvas: HTMLCanvasElement, 
-    spaceCreator: (renderScene: AbstractRenderScene, interactive?: boolean) => SyntheticSpace,
+    spaceCreator: (renderScene: AbstractRenderScene, interactive?: boolean, onLoad?: VoidCallback) => SyntheticSpace,
     spaceMetadata: Record<string, any>,
     onLoad?: VoidCallback | undefined,
     private interactive = true
   ) {
     super(canvas, onLoad, spaceMetadata.postProcessing);
 
-    this.space = spaceCreator(this, interactive);
+    this.space = spaceCreator(this, interactive, onLoad);
     this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
     if((this.space.controls && interactive) ?? true) {

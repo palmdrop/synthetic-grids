@@ -6,6 +6,7 @@
   import { getAggregateSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/aggregate/aggregateScene";
 
   export let interactive = true;
+  export let isLoaded = false;
 
   let scene: SyntheticGrids;
   let canvas: HTMLCanvasElement;
@@ -14,12 +15,16 @@
     scene.resize();
   }
 
+  const onLoad = () => {
+    isLoaded = true;
+  }
+
   const setupCanvas = (canvasElement: HTMLCanvasElement) => {
     canvas = canvasElement;
   }
 
   onMount(() => {
-    scene = new SyntheticGrids(canvas, getAggregateSpace, spaceMetadata, undefined, interactive);
+    scene = new SyntheticGrids(canvas, getAggregateSpace, spaceMetadata, onLoad, interactive);
     scene.resize();
     scene.start();
 
