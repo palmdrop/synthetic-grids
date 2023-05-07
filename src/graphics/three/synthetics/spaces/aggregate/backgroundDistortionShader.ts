@@ -14,11 +14,11 @@ export const BackgroundDistortionShader = {
 		'opacity': { value: 1.0, type: 'float' },
 
     'backgroundColor': {
-      value: new THREE.Vector4(0.65, 0.65, 0.65, 1.0),
+      value: new THREE.Vector4(0.8, 0.8, 0.8, 1.0),
       type: 'vec4'
     },
     'lerpToBackground': {
-      value: 0.001,
+      value: 0.003,
       type: 'float'
     },
     'gridCellSize': {
@@ -26,7 +26,7 @@ export const BackgroundDistortionShader = {
       type: 'float'
     },
     'gridColor': {
-      value: new THREE.Vector3(0.65, 0.68, 0.65),
+      value: new THREE.Vector3(0.8, 0.9, 0.8),
       //  value: new THREE.Vector3(0.0, 0.1, 0.0),
       // value: new THREE.Vector3(1.0, 1.0, 1.0),
       type: 'vec3'
@@ -52,13 +52,13 @@ export const BackgroundDistortionShader = {
       value: new THREE.Vector3(
         1.0, 1.0, 1.0
       )
-      .multiplyScalar(1.04)
+      .multiplyScalar(1.02)
       ,
       type: 'vec3'
     },
     'dithering': {
       type: 'float',
-      value: 0.02
+      value: 0.03
     },
     'ditheringTextureDimensions': {
       type: 'vec2',

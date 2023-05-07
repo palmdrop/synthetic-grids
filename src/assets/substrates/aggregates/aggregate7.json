@@ -4,11 +4,11 @@
     "430": {
       "type": "root",
       "name": "output",
-      "x": 500,
-      "y": 0,
+      "x": 732.5750099613014,
+      "y": -22.267820102677817,
       "width": 200,
       "height": 212,
-      "layer": 442,
+      "layer": 444,
       "fields": {
         "point": {
           "kind": "static",
@@ -32,7 +32,7 @@
           "kind": "dynamic",
           "type": "vec3",
           "value": {
-            "nodeId": "435"
+            "nodeId": "445"
           },
           "inputLocked": true,
           "anchor": {
@@ -65,7 +65,7 @@
         "scale": {
           "kind": "static",
           "type": "float",
-          "value": 0.00080099,
+          "value": 0.0005,
           "min": 0.00001,
           "max": 0.1,
           "excludeFromFunction": true,
@@ -246,9 +246,9 @@
               "type": "Texture",
               "generator": "Texture.toJSON"
             },
-            "uuid": "3455a972-ea16-426f-aacb-c6a2ac5640c6",
+            "uuid": "2e2c0d72-5fd1-47c7-80b4-19b12290fdda",
             "name": "rocks4.jpg",
-            "image": "ca9a6a51-a0ee-4414-a2ce-3b2634f21662",
+            "image": "9a393987-54b8-467b-9719-4126624a5075",
             "mapping": 300,
             "repeat": [
               1,
@@ -1170,11 +1170,82 @@
       "elevated": false,
       "active": false,
       "hovered": false
+    },
+    "445": {
+      "type": "contrast",
+      "x": 239.83434501686588,
+      "y": -23.042147187866448,
+      "width": 200,
+      "height": 134,
+      "anchor": {
+        "size": 16,
+        "x": 200,
+        "y": 67,
+        "type": "node",
+        "hovered": false,
+        "active": false
+      },
+      "layer": 442,
+      "fields": {
+        "source": {
+          "kind": "dynamic",
+          "type": "vec3",
+          "value": {
+            "nodeId": "435"
+          },
+          "anchor": {
+            "size": 16,
+            "x": 0,
+            "y": 48.25,
+            "type": "field",
+            "hovered": false,
+            "active": false
+          },
+          "previousStaticValue": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "contrast": {
+          "kind": "dynamic",
+          "type": "float",
+          "value": 1.66,
+          "min": 0,
+          "max": 2,
+          "anchor": {
+            "size": 16,
+            "x": 0,
+            "y": 81.75,
+            "type": "field",
+            "active": false,
+            "hovered": false
+          }
+        },
+        "brightness": {
+          "kind": "dynamic",
+          "type": "float",
+          "value": 0.27,
+          "anchor": {
+            "size": 16,
+            "x": 0,
+            "y": 115.25,
+            "type": "field",
+            "active": false,
+            "hovered": false
+          }
+        }
+      },
+      "returnType": "vec3",
+      "id": "445",
+      "elevated": false,
+      "active": true,
+      "hovered": false
     }
   },
   "position": {
-    "x": -314.8328505830119,
-    "y": -80.84332974612855
+    "x": -325.68717829125495,
+    "y": -134.4997198560435
   },
-  "zoom": 0.7255784016045402
+  "zoom": 1.4147166725610931
 }

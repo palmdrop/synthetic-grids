@@ -65,7 +65,7 @@
         "scale": {
           "kind": "static",
           "type": "float",
-          "value": 0.0020098,
+          "value": 0.0016,
           "min": 0.00001,
           "max": 0.1,
           "excludeFromFunction": true,
