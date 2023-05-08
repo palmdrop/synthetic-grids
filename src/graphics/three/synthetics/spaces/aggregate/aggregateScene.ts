@@ -58,7 +58,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
     const dx = x - ((columns - 1) / 2.0);
     const dy = y - ((rows - 1) / 2.0);
     const object = new THREE.Mesh(
-      new THREE.SphereBufferGeometry(20, 200, 200),
+      new THREE.SphereBufferGeometry(20, 100, 100),
       // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
       material
     );
