@@ -107,11 +107,11 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.07, 0.1), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(100, 200), 0, 800);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.5, 0.5), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(50, 60), 0, 800);
 
-      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.45, 0.55), 0, 1);
-      addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(1.8, 2.3), 0, 10);
+      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.1, 0.12), 0, 1);
+      addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(5, 6), 0, 10);
 
       addUniformSlider(objectFolder, 'minSteps', 4, 0, 100, 1);
       addUniformSlider(objectFolder, 'maxSteps', 400, 0, 1000, 1);
@@ -119,7 +119,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
       addUniformSlider(objectFolder, 'add', 0, -200, 200);
       addUniformSlider(objectFolder, 'mult', 1, 0, 100);
 
-      addUniformSlider(materialFolder, 'substrateFrequency', 20, 0, 100);
+      addUniformSlider(materialFolder, 'substrateFrequency', 13, 0, 100);
     });
 
   parent.clear();

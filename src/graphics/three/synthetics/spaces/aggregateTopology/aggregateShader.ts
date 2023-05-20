@@ -6,14 +6,14 @@ import { Program } from '../../../../../modules/substrates/src/interface/types/p
 import { buildProgramFunction, buildProgramShader } from '../../../../../modules/substrates/src/shader/builder/programBuilder';
 import { buildShader } from '../../../../../modules/substrates/src/shader/builder/shaderBuilder';
 
+// NOTE: quite cool displacement programs (noisy)
 const encodedDisplacementPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregates/*.json'));
-const encodedDisplacementProgram = encodedDisplacementPrograms[Math.floor(Math.random() * encodedDisplacementPrograms.length)];
-// import encodedDisplacementProgram from '../../../../../assets/substrates/swamp-mass/swamp3.json';
-// import encodedDisplacementProgram from '../../../../../assets/substrates/moss-structure/moss-structure3.json';
+import encodedDisplacementProgram from '../../../../../assets/substrates/aggregates/aggregate6.json';
+// const encodedDisplacementProgram = encodedDisplacementPrograms[Math.floor(Math.random() * encodedDisplacementPrograms.length)];
+// import encodedDisplacementProgram from '../../../../../assets/substrates/aggregate-topology/displacement/swamp3.json';
+
 const encodedFragmentPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregate-topology/*.json'));
-const encodedFragmentProgram = encodedFragmentPrograms[Math.floor(Math.random() * encodedDisplacementPrograms.length)];
-console.log(encodedFragmentProgram);
-// import encodedFragmentProgram from '../../../../../assets/substrates/aggregates/aggregate10.json';
+const encodedFragmentProgram = encodedFragmentPrograms[Math.floor(Math.random() * encodedFragmentPrograms.length)];
 
 import { makeSampleFuseShader } from '../../../../glsl/shaders/fuse/fuseSampleShader';
 
