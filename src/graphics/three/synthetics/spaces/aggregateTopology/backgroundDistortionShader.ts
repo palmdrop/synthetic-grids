@@ -15,7 +15,7 @@ export const BackgroundDistortionShader = {
 
     'backgroundColor': {
       value: new THREE.Vector3().fromArray(new THREE.Color(
-        '#e9e9d3'
+        '#e9e9dc'
       ).toArray()),
       type: 'vec4'
     },
@@ -29,7 +29,7 @@ export const BackgroundDistortionShader = {
     },
     'gridColor': {
       value: new THREE.Vector3().fromArray(new THREE.Color(
-        '#eeeee4'
+        '#edede5'
       ).toArray()),
       //  value: new THREE.Vector3(0.0, 0.1, 0.0),
       // value: new THREE.Vector3(1.0, 1.0, 1.0),

@@ -54,7 +54,10 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   );
 
   object.visible = false;
-  object.rotation.x = -0.05;
+  // object.rotation.x = -0.03;
+  object.rotation.x = THREE.MathUtils.randFloatSpread(0.1);
+  object.rotation.y = THREE.MathUtils.randFloatSpread(0.1);
+  // object.rotation.z = THREE.MathUtils.randFloatSpread(0.1);
 
   const updateShader = makeShaderUpdater(object);
   Promise.all([
@@ -107,10 +110,10 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
 
       // TODO: save to local storage and read on app load
       addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.5, 0.5), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(50, 60), 0, 800);
+      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.3, 0.6), 0, 1);
+      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(30, 100), 0, 800);
 
-      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.1, 0.12), 0, 1);
+      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.15, 0.3), 0, 1);
       addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(5, 6), 0, 10);
 
       addUniformSlider(objectFolder, 'minSteps', 4, 0, 100, 1);
@@ -252,7 +255,7 @@ export const getAggregateTopologySpace = (
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;
-      orthographicCamera.zoom = 0.5;
+      orthographicCamera.zoom = 0.9;
     },
     synthetics: [
       synthetic,
