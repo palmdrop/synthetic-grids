@@ -10,7 +10,7 @@ import { buildShader } from '../../../../../modules/substrates/src/shader/builde
 const encodedDisplacementPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregate-topology/displacement/*.json'));
 // import encodedDisplacementProgram from '../../../../../assets/substrates/aggregates/aggregate6.json';
 const encodedDisplacementProgram = encodedDisplacementPrograms[Math.floor(Math.random() * encodedDisplacementPrograms.length)];
-// import encodedDisplacementProgram from '../../../../../assets/substrates/aggregates/aggregate10.json';
+// import encodedDisplacementProgram from '../../../../../assets/substrates/aggregate-topology/displacement/aggregate2.json';
 
 const encodedFragmentPrograms = Object.values(import.meta.globEager('../../../../../assets/substrates/aggregate-topology/*.json'));
 const encodedFragmentProgram = encodedFragmentPrograms[Math.floor(Math.random() * encodedFragmentPrograms.length)];

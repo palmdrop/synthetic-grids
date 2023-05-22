@@ -30,7 +30,7 @@ export class SyntheticGrids extends AbstractRenderScene {
     this.space = spaceCreator(this, interactive);
     this.space.sceneConfigurator(this.scene, this.camera, this.renderer);
 
-    if(this.space.controls ?? true) {
+    if((this.space.controls && interactive) ?? true) {
       this.controls = new TrackballControls(
         this.camera,
         canvas
