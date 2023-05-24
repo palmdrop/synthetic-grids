@@ -39,7 +39,7 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
   resizer.setSize(rendererSize.x, rendererSize.y);
 }
 
-const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) => {
+const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, onLoad?: () => void) => {
   const gui = renderScene.gui;
   const material = new THREE.MeshStandardMaterial({
     color: '#777777',
@@ -123,6 +123,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
       addUniformSlider(objectFolder, 'mult', 1, 0, 100);
 
       addUniformSlider(materialFolder, 'substrateFrequency', 13, 0, 100);
+
+      onLoad?.();
     });
 
   parent.clear();
@@ -133,10 +135,10 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene) 
   return object;
 }
 
-const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => {
+const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene, onLoad?: () => void) => {
   const parent = synthetic.object;
 
-  createObject(parent, renderScene);
+  createObject(parent, renderScene, onLoad);
 
   synthetic.update = (sceneProperties, renderScene, delta) => {
     parent.children.forEach((object: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>) => {
@@ -176,7 +178,8 @@ const updateScene = (synthetic: Synthetic, renderScene: AbstractRenderScene) => 
 
 export const getAggregateTopologySpace = (
   renderScene: AbstractRenderScene,
-  interactive?: boolean
+  interactive?: boolean,
+  onLoad?: () => void
 ): SyntheticSpace => {
   if(interactive) {
     renderScene.gui.show();
@@ -228,7 +231,7 @@ export const getAggregateTopologySpace = (
 
   sceneUpdateLoop();
   */
-  updateScene(synthetic, renderScene);
+  updateScene(synthetic, renderScene, onLoad);
 
   const space: SyntheticSpace = {
     onResize: (width, height, renderScene) => {
