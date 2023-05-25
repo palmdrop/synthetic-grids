@@ -8,7 +8,7 @@
 // import App from './FragmentsApp.svelte'
 // import App from './MappingsApp.svelte';
 // import App from './AggregateApp.svelte';
-import App from './AggregateTopologyApp.svelte';
+import App from './BioTerra.svelte';
 
 const app = new App({
   target: document.getElementById('app')
