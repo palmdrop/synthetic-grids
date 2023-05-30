@@ -4,17 +4,12 @@ import type { Synthetic, SyntheticSpace } from '../../scene';
 
 import type { AbstractRenderScene } from '../../../AbstractRenderScene';
 import { makeAspectOrthoResizer } from '../../../systems/AspectOrthoResizer';
-import { createBackgroundRenderer } from './background';
-import { configMakers } from './configs';
-import { addNormalWarpGUI } from '../../../../glsl/shaders/normalWarp/customNormalWarpShader.ts'
-import { 
-  encodedDisplacementProgram, 
-  encodedFragmentProgram,
-  makeShaderUpdater 
-} from './terraShader';
-import { decodeProgram } from '../../../../../modules/substrates/src/stores/programStore';
 import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 import { addThreeColor, addUniforms } from '../../../systems/GuiUtils';
+import { mapNormalShader } from '../../../../glsl/shaders/normalWarp/mapNormalShader';
+import { createFormation } from '../formations/formation';
+import { getSharpConfig, getPolyAggregateConfig } from '../formations/configs';
+import { numToGLSL } from '../../../../../modules/substrates/src/shader/builder/utils/glsl';
 
 export const spaceMetadata = {
   postProcessing: true
@@ -43,114 +38,114 @@ const updateCamera = (object: THREE.Object3D, renderScene: AbstractRenderScene, 
 
 const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, onLoad?: () => void) => {
   const gui = renderScene.gui;
-  const material = new THREE.MeshStandardMaterial({
-    color: '#777777',
-    side: THREE.DoubleSide
-  });
 
-  const object = new THREE.Mesh(
-    // new THREE.SphereBufferGeometry(20, 200, 200),
-    new THREE.PlaneBufferGeometry(20, 20, 500, 500),
-    // new THREE.BoxBufferGeometry(100, 100, 100, 300, 300, 300),
-    material
+  const config = getPolyAggregateConfig()
+  const object = createFormation(
+    config
   );
 
-  object.visible = false;
+  const shader = {
+    ...mapNormalShader
+  };
 
-  const updateShader = makeShaderUpdater(object);
-  Promise.all([
-    decodeProgram(encodedDisplacementProgram as any),
-    decodeProgram(encodedFragmentProgram as any),
-  ])
-    .then(([displacementProgram, fragmentProgram]) => {
-      updateShader(displacementProgram, fragmentProgram);
+  shader.vertexShader = shader.vertexShader.replace(
+    `vertex = vec4(position, 1.0) * modelMatrix;`,
+    `vertex = vec4(position, 1.0) * modelMatrix;
+     normalOffset = length(vertex);
+    `,
+  );
 
-      object.visible = true;
+  shader.fragmentShader = 
+    shader.fragmentShader.replace(
+      'uniform float opacity;',
+      `uniform float opacity;
+       uniform vec3 midColor;
+       uniform float midMultiplier; 
+       uniform float midPow; 
+      `,
+    )
+    .replace(
+    `gl_FragColor = vec4(mix(baseColor, lineColor, n), 1.0);`,
+    `gl_FragColor = vec4(mix(baseColor, lineColor, n), 1.0);
+     gl_FragColor = vec4(mix(gl_FragColor.xyz, midColor, 1.0 - pow(normalOffset * midMultiplier / ${numToGLSL(config.amount)}, midPow)), 1.0);
+    `
+  );
 
-      // Gui
-      const objectFolder = gui.addFolder('object');
-      const materialFolder = gui.addFolder('material');
+  shader.uniforms['midColor'] = {
+    value: new THREE.Color('#777777'),
+    type: 'vec3'
+  }
+  shader.uniforms['midMultiplier'] = {
+    value: 1.0,
+    type: 'float'
+  }
+  shader.uniforms['midPow'] = {
+    value: 1.5,
+    type: 'float'
+  }
 
-      const addUniformSlider = (
-        gui: dat.GUI,
-        name: string,
-        defaultValue: number,
-        min: number,
-        max: number,
-        step?: number
-      ) => {
-        setUniform(name, defaultValue, object.material as any);
-        gui
-          .add({ [name]: defaultValue }, name, min, max, step)
-          .onChange(value => {
-            setUniform(name, value, object.material as any)
-          });
-      }
+  const material = new THREE.ShaderMaterial(
+    shader
+  );
 
-      // TODO: save to local storage and read on app load
-      addUniformSlider(objectFolder, 'correction', 0.0, -1, 1, 0.0001);
-      addUniformSlider(objectFolder, 'frequency', THREE.MathUtils.randFloat(0.3, 0.6), 0, 1);
-      addUniformSlider(objectFolder, 'amplitude', THREE.MathUtils.randFloat(10, 20), 0, 800);
+  object.geometry.center();
 
-      addUniformSlider(objectFolder, 'persistance', THREE.MathUtils.randFloat(0.15, 0.3), 0, 1);
-      addUniformSlider(objectFolder, 'lacunarity', THREE.MathUtils.randFloat(5, 6), 0, 10);
+  (object as any).material = material;
+  object.visible = true;
 
-      addUniformSlider(objectFolder, 'minSteps', 4, 0, 100, 1);
-      addUniformSlider(objectFolder, 'maxSteps', 400, 0, 1000, 1);
+  // Gui
+  const materialFolder = gui.addFolder('material');
 
-      addUniformSlider(objectFolder, 'add', 0, -200, 200);
-      addUniformSlider(objectFolder, 'mult', 1, 0, 100);
+  // addUniformSlider(materialFolder, 'scale', 13, 0, 100);
 
-      // addUniformSlider(materialFolder, 'scale', 13, 0, 100);
+  (material as any).uniforms.scale.value.y = 0.5;
+  addUniforms(materialFolder, material, {
+    scale: {
+      min: 0.0,
+      max: 5.0,
+      step: 0.001,
+    },
+    width: {
+      min: 0.01,
+      max: 10.0,
+      step: 0.001,
+    },
+    midMultiplier: {
+      min: 0,
+      max: 10
+    },
+    midPow: {
+      min: 0,
+      max: 5
+    },
+  });
 
-      const material = object.material as any;
+  material.uniforms.baseColor.value.set(0, 0, 0);
+  addThreeColor(
+    materialFolder, material, 'baseColor',
+    true
+  );
+  addThreeColor(
+    materialFolder, material, 'lineColor',
+    true
+  );
+  addThreeColor(
+    materialFolder, material, 'midColor',
+    true
+  );
 
-      addUniforms(materialFolder, material, {
-        frequency: {
-          min: 0.0,
-          max: 10.0,
-          step: 0.001,
-        },
-        scale: {
-          min: 0.0,
-          max: 1.0,
-          step: 0.001,
-        },
-        amplitude: {
-          min: 0.0,
-          max: 100.0,
-          step: 0.001,
-        },
-        width: {
-          min: 0.01,
-          max: 10.0,
-          step: 0.001,
-        }
-      });
-
-      addThreeColor(
-        materialFolder, material, 'baseColor',
-        true
-      );
-      addThreeColor(
-        materialFolder, material, 'lineColor',
-        true
-      );
-
-      /*
-    'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
-    'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ), type: 'vec3' },
-    'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ), type: 'vec3' },
-    'width': { value: 1.0, type: 'float' },
-    */
-
-      onLoad?.();
-    });
+    /*
+  'scale': { value: new THREE.Vector3(0, 100, 0), type: 'vec3' },
+  'baseColor': { value: new THREE.Color( 0.0, 0.0, 1.0 ), type: 'vec3' },
+  'lineColor': { value: new THREE.Color( 1.0, 1.0, 1.0 ), type: 'vec3' },
+  'width': { value: 1.0, type: 'float' },
+  */
 
   parent.clear();
   parent.add(object);
 
   updateCamera(parent, renderScene);
+  onLoad?.();
 
   return object;
 }
@@ -230,31 +225,6 @@ export const getBioTerraSpace = (
     metadata: {},
   };
 
-  /*
-  const sceneLifeTime = new THREE.Vector2(
-    10 * 1000,
-    30 * 1000
-  );
-
-  const sceneDeadTime = new THREE.Vector2(1800, 4000);
-
-  const sceneUpdateLoop = () => {
-    parent.visible = true;
-    updateScene(synthetic, renderScene);
-    // updateBackgroundEffect();
-
-    setTimeout(() => {
-      parent.visible = false;
-
-      setTimeout(
-        sceneUpdateLoop, 
-        THREE.MathUtils.randFloat(sceneDeadTime.x, sceneDeadTime.y)
-      );
-    }, THREE.MathUtils.randFloat(sceneLifeTime.x, sceneLifeTime.y));
-  }
-
-  sceneUpdateLoop();
-  */
   updateScene(synthetic, renderScene, onLoad);
 
   const space: SyntheticSpace = {
@@ -263,7 +233,6 @@ export const getBioTerraSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      // scene.background = backgroundRenderTarget.texture;
       scene.background = new THREE.Color('#666666');
         
       const directionalLight = new THREE.DirectionalLight(

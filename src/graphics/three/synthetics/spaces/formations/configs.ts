@@ -16,6 +16,37 @@ const getColors = (rockOnly = false) => {
     ];
 }
 
+export const getPolyAggregateConfig = (): FormationConfig => ({
+  size: 50,
+  detail: 200,
+  amount: 50,
+  minSteps: 3,
+  maxSteps: 300,
+
+  scale: {
+    x: THREE.MathUtils.randFloat(0.8, 1.5),
+    y: THREE.MathUtils.randFloat(0.8, 1.5),
+    z: THREE.MathUtils.randFloat(0.8, 1.5),
+  },
+
+  colors: getColors(true),
+
+  defaultRoughness: 0.8,
+  defaultMetalness: 0.15,
+  normalScale: 3.0,
+
+  textureRepeat: 10,
+
+  noiseSettings: {
+    octaves: 5,
+    frequency: 0.005,
+    min: -1.0,
+    max: 1.0,
+    lacunarity: 1.4,
+    persistance: 0.55,
+  }
+});
+
 export const getStairsConfig = (): FormationConfig => ({
   size: 50,
   detail: 400,
