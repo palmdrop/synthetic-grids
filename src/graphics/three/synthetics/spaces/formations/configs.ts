@@ -18,10 +18,10 @@ const getColors = (rockOnly = false) => {
 
 export const getPolyAggregateConfig = (): FormationConfig => ({
   size: 50,
-  detail: 200,
-  amount: 50,
-  minSteps: 3,
-  maxSteps: 300,
+  detail: 400,
+  amount: THREE.MathUtils.randFloat(30, 60),
+  minSteps: 100,
+  maxSteps: 1000,
 
   scale: {
     x: THREE.MathUtils.randFloat(0.8, 1.5),
@@ -39,11 +39,11 @@ export const getPolyAggregateConfig = (): FormationConfig => ({
 
   noiseSettings: {
     octaves: 5,
-    frequency: 0.005,
-    min: -1.0,
-    max: 1.0,
-    lacunarity: 1.4,
-    persistance: 0.55,
+    frequency: 0.002,
+    min: -1.5,
+    max: 1.5,
+    lacunarity: 1.6,
+    persistance: 0.45,
   }
 });
 

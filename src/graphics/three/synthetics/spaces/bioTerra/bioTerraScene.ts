@@ -8,7 +8,7 @@ import { setUniform } from '../../../../../modules/substrates/src/utils/shader';
 import { addThreeColor, addUniforms } from '../../../systems/GuiUtils';
 import { mapNormalShader } from '../../../../glsl/shaders/normalWarp/mapNormalShader';
 import { createFormation } from '../formations/formation';
-import { getSharpConfig, getPolyAggregateConfig } from '../formations/configs';
+import { getPolyAggregateConfig } from '../formations/configs';
 import { numToGLSL } from '../../../../../modules/substrates/src/shader/builder/utils/glsl';
 
 export const spaceMetadata = {
@@ -67,7 +67,8 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
     .replace(
     `gl_FragColor = vec4(mix(baseColor, lineColor, n), 1.0);`,
     `gl_FragColor = vec4(mix(baseColor, lineColor, n), 1.0);
-     gl_FragColor = vec4(mix(gl_FragColor.xyz, midColor, 1.0 - pow(normalOffset * midMultiplier / ${numToGLSL(config.amount)}, midPow)), 1.0);
+     float mn = clamp(1.0 - pow(normalOffset * midMultiplier / ${numToGLSL(config.amount)}, midPow), 0.0, 1.0);
+     gl_FragColor = vec4(mix(gl_FragColor.xyz, midColor, mn), 1.0);
     `
   );
 
@@ -76,11 +77,11 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
     type: 'vec3'
   }
   shader.uniforms['midMultiplier'] = {
-    value: 1.0,
+    value: 0.7,
     type: 'float'
   }
   shader.uniforms['midPow'] = {
-    value: 1.5,
+    value: 1.0,
     type: 'float'
   }
 
@@ -99,6 +100,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
   // addUniformSlider(materialFolder, 'scale', 13, 0, 100);
 
   (material as any).uniforms.scale.value.y = 0.5;
+  (material as any).uniforms.width.value = 1;
   addUniforms(materialFolder, material, {
     scale: {
       min: 0.0,
@@ -120,7 +122,9 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
     },
   });
 
-  material.uniforms.baseColor.value.set(0, 0, 0);
+  material.uniforms.baseColor.value = new THREE.Color('#ffffff');
+  material.uniforms.lineColor.value = new THREE.Color('#a1a957');
+  material.uniforms.midColor.value = new THREE.Color('#c1e337');
   addThreeColor(
     materialFolder, material, 'baseColor',
     true
@@ -233,8 +237,11 @@ export const getBioTerraSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      scene.background = new THREE.Color('#666666');
-        
+      scene.background = new THREE.Color('#d4d4ca');
+
+      const gui = renderScene.gui;
+      addThreeColor(gui, scene, 'background', false);
+
       const directionalLight = new THREE.DirectionalLight(
         'white',
         7
@@ -246,9 +253,27 @@ export const getBioTerraSpace = (
         0.3
       );
 
+      const grid = new THREE.GridHelper(
+        1000, 
+        100,
+        new THREE.Color('#f2ff00'),
+        new THREE.Color('#f7f3c2'),
+      );
+      grid.rotateX(Math.PI / 2.0);
+
+      const grid2 = new THREE.GridHelper(
+        1000, 
+        50.0,
+        new THREE.Color('#f2ff00'),
+        new THREE.Color('#ddd9b7'),
+      );
+      grid2.rotateX(Math.PI / 2.0);
+
       scene.add(
         directionalLight,
-        ambientLight
+        ambientLight,
+        grid,
+        grid2
       );
 
       const orthographicCamera = camera as THREE.OrthographicCamera;

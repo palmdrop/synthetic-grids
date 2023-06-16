@@ -4,6 +4,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { getBioTerraSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/bioTerra/bioTerraScene";
+    import { promptDownload } from "./modules/substrates/src/utils/general";
 
   export let interactive = true;
   export let isLoaded = false;
@@ -23,6 +24,18 @@
     canvas = canvasElement;
   }
 
+  const onKeyDown = (event: KeyboardEvent) => {
+    switch(event.key) {
+      case 'c': {
+        if(scene) {
+          scene.captureFrame(data => {
+            promptDownload(data, 'bioTerra.png');
+          })
+        }
+      } break;
+    }
+  }
+
   onMount(() => {
     scene = new SyntheticGrids(canvas, getBioTerraSpace, spaceMetadata, onLoad, interactive);
     scene.resize();
@@ -38,6 +51,7 @@
 
 <svelte:window 
   on:resize={onResize} 
+  on:keydown={onKeyDown}
 />
 
 <div>
