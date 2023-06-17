@@ -39,7 +39,7 @@ export const getPolyAggregateConfig = (): FormationConfig => ({
 
   noiseSettings: {
     octaves: 5,
-    frequency: 0.002,
+    frequency: 0.004,
     min: -1.5,
     max: 1.5,
     lacunarity: 1.6,

@@ -4,7 +4,7 @@
   import Canvas from "./components/Canvas.svelte";
   import { onMount } from 'svelte';
   import { getBioTerraSpace, spaceMetadata } from "./graphics/three/synthetics/spaces/bioTerra/bioTerraScene";
-    import { promptDownload } from "./modules/substrates/src/utils/general";
+  import { promptDownload } from "./modules/substrates/src/utils/general";
 
   export let interactive = true;
   export let isLoaded = false;

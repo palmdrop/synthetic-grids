@@ -11,6 +11,24 @@ import { createFormation } from '../formations/formation';
 import { getPolyAggregateConfig } from '../formations/configs';
 import { numToGLSL } from '../../../../../modules/substrates/src/shader/builder/utils/glsl';
 
+
+/*
+export const bioTerraPalette = [
+  '#b5aeae', // gray
+  '#ffffff', // bright
+  '#a1a957', // color 1
+  '#c1e337', // color 2
+  '#e4ecc2', // color 3
+];
+*/
+export const bioTerraPalette = [
+  '#cabfbf', // gray
+  '#e1e9ef', // bright
+  '#798b66', // color 1
+  '#b47676', // color 2
+  '#dad8cb', // color 3
+];
+
 export const spaceMetadata = {
   postProcessing: true
 }
@@ -73,7 +91,7 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
   );
 
   shader.uniforms['midColor'] = {
-    value: new THREE.Color('#777777'),
+    value: new THREE.Color(),
     type: 'vec3'
   }
   shader.uniforms['midMultiplier'] = {
@@ -122,9 +140,10 @@ const createObject = (parent: THREE.Object3D, renderScene: AbstractRenderScene, 
     },
   });
 
-  material.uniforms.baseColor.value = new THREE.Color('#ffffff');
-  material.uniforms.lineColor.value = new THREE.Color('#a1a957');
-  material.uniforms.midColor.value = new THREE.Color('#c1e337');
+  material.uniforms.baseColor.value = new THREE.Color(bioTerraPalette[1]);
+  material.uniforms.lineColor.value = new THREE.Color(bioTerraPalette[2]);
+  material.uniforms.midColor.value = new THREE.Color(bioTerraPalette[3]);
+
   addThreeColor(
     materialFolder, material, 'baseColor',
     true
@@ -237,10 +256,11 @@ export const getBioTerraSpace = (
     },
     sceneConfigurator: (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => {
       renderer.autoClearDepth = true;
-      scene.background = new THREE.Color('#d4d4ca');
+      // scene.background = new THREE.Color('#d4d4ca');
+      scene.background = null;
 
       const gui = renderScene.gui;
-      addThreeColor(gui, scene, 'background', false);
+      // addThreeColor(gui, scene, 'background', false);
 
       const directionalLight = new THREE.DirectionalLight(
         'white',
@@ -255,19 +275,23 @@ export const getBioTerraSpace = (
 
       const grid = new THREE.GridHelper(
         1000, 
-        100,
-        new THREE.Color('#f2ff00'),
-        new THREE.Color('#f7f3c2'),
+        THREE.MathUtils.randFloat(50, 100),
+        new THREE.Color(bioTerraPalette[1]),
+        new THREE.Color(bioTerraPalette[1]),
       );
       grid.rotateX(Math.PI / 2.0);
 
       const grid2 = new THREE.GridHelper(
         1000, 
-        50.0,
-        new THREE.Color('#f2ff00'),
-        new THREE.Color('#ddd9b7'),
+        THREE.MathUtils.randFloat(30, 100),
+        new THREE.Color(bioTerraPalette[1]),
+        new THREE.Color(bioTerraPalette[4]),
       );
       grid2.rotateX(Math.PI / 2.0);
+
+      grid.position.z = -100;
+      grid2.position.z = -100;
+
 
       scene.add(
         directionalLight,
