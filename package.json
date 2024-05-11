@@ -24,8 +24,8 @@
   "dependencies": {
     "dat.gui": "^0.7.9",
     "fast-simplex-noise": "^4.0.0",
-    "node-sass": "^7.0.1",
     "postprocessing": "^6.28.1",
+    "sass": "^1.77.1",
     "three": "^0.139.2"
   }
 }
